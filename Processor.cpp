@@ -278,4 +278,61 @@ void alwaysExecute( Processor& proc, const instruction::Unary& ins ) {
     assert( false );
 }
 
+template <>
+optional<Register> decode( const Word& word ) {
+    switch ( word ) {
+    case 0: return Register::A;
+    case 1: return Register::B;
+    case 2: return Register::C;
+    case 3: return Register::X;
+    case 4: return Register::Y;
+    case 5: return Register::Z;
+    case 6: return Register::I;
+    case 7: return Register::J;
+    default: return {};
+    }
+}
 
+template <>
+optional<Opcode> decode( const Word& word ) {
+    switch ( word ) {
+    case 0x01: return Opcode::Set;
+    case 0x02: return Opcode::Add;
+    case 0x03: return Opcode::Sub;
+    default: return {};
+    }
+}
+
+template <typename U, typename V>
+static optional<V> map( const optional<U>& a, std::function<V ( const U& )> f ) {
+    if ( a ) {
+        return f( *a );
+    } else {
+        return {};
+    }
+}
+
+template <>
+optional<Address> decode( const Word& word ) {
+    optional<Address> addr;
+
+    auto regDirect = [&word]() {
+        return map<Register, Address>( decode<Register>( word ), address::registerDirect );
+    };
+
+    auto regIndirect = [&word]() {
+        return map<Register, Address>( decode<Register>( word - 0x8 ), address::registerIndirect );
+    };
+
+    auto regIndirectOffset = [&word]() {
+        return map<Register, Address>( decode<Register>( word - 0x10 ), address::registerIndirectOffset );
+    };
+
+#define TRY( f ) addr = f(); if ( addr ) return addr; else return {}
+
+    TRY( regDirect );
+    TRY( regIndirect );
+    TRY( regIndirectOffset );
+
+#undef TRY
+}

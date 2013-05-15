@@ -17,6 +17,4 @@ int main() {
     };
 
     execute( proc, ins );
-
-    std::cout << proc.read( Register::A ) << std::endl;
 }
