@@ -158,4 +158,10 @@ void write( Processor& proc, const Address& addr, Word value );
 
 }
 
+enum class Opcode {
+    Set,
+    Add,
+    Sub,
+};
+
 #endif // __PROCESSOR_HPP__
