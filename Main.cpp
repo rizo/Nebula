@@ -5,12 +5,12 @@
 int main() {
     auto proc = Processor { 0x10000 };
 
-    proc.write( 0, 5 );
-    proc.write( Register::A, 10 );
+    proc.write( 0, 15 );
+    proc.write( Register::A, 20 );
 
     Instruction ins {
         instruction::Binary {
-            Opcode::Add,
+            Opcode::Sub,
             address::registerDirect( Register::A ),
             address::direct()
         }
