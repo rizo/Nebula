@@ -164,4 +164,8 @@ enum class Opcode {
     Sub,
 };
 
+enum class SpecialOpcode {
+    Jsr
+};
+
 #endif // __PROCESSOR_HPP__
