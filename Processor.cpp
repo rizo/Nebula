@@ -312,8 +312,7 @@ static optional<V> map( const optional<U>& a, std::function<V ( const U& )> f ) 
     }
 }
 
-template <>
-optional<Address> decode( const Word& word ) {
+optional<Address> decodeAddress( const Word& word, AddressContext context ) {
     optional<Address> addr;
 
     auto regDirect = [&word]() {
@@ -328,9 +327,24 @@ optional<Address> decode( const Word& word ) {
         return map<Register, Address>( decode<Register>( word - 0x10 ), address::registerIndirectOffset );
     };
 
+    auto push = [&word, &context]() -> Address {
+        if ( context == AddressContext::B && word == 0x18) {
+            return address::push();
+        } else {
+            return {};
+        }
+    };
+
+    auto pop = [&word, &context]() -> Address {
+        if ( context == AddressContext::A && word == 0x18 ) {
+            return address::pop();
+        } else {
+            return {};
+        }
+    };
+
 #define VALUE( val, f ) [&word]() -> Address { if ( word == val ) return f(); else return {}; }
 
-    auto push = VALUE( 0x18, address::push );
     auto peek = VALUE( 0x19, address::peek );
     auto pick = VALUE( 0x1a, address::pick );
     auto sp = VALUE( 0x1b, address::sp );
@@ -355,6 +369,7 @@ optional<Address> decode( const Word& word ) {
     TRY( regIndirect );
     TRY( regIndirectOffset );
     TRY( push );
+    TRY( pop );
     TRY( peek );
     TRY( pick );
     TRY( sp );

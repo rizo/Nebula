@@ -192,6 +192,10 @@ void execute( Processor& proc, const Instruction& ins );
 void alwaysExecute( Processor& proc, const instruction::Unary& ins );
 void alwaysExecute( Processor& proc, const instruction::Binary& ins );
 
+enum class AddressContext { A, B };
+
+optional<Address> decodeAddress( const Word& word, AddressContext context );
+
 template <typename T>
 optional<T> decode( const Word& ) { return {}; }
 
