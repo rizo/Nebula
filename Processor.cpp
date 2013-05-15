@@ -274,7 +274,7 @@ void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
     }
 }
 
-void alwaysExecute( Processor& proc, const instruction::Unary& ins ) {
+void alwaysExecute( Processor&, const instruction::Unary& ) {
     assert( false );
 }
 
@@ -328,11 +328,43 @@ optional<Address> decode( const Word& word ) {
         return map<Register, Address>( decode<Register>( word - 0x10 ), address::registerIndirectOffset );
     };
 
-#define TRY( f ) addr = f(); if ( addr ) return addr; else return {}
+#define VALUE( val, f ) [&word]() -> Address { if ( word == val ) return f(); else return {}; }
+
+    auto push = VALUE( 0x18, address::push );
+    auto peek = VALUE( 0x19, address::peek );
+    auto pick = VALUE( 0x1a, address::pick );
+    auto sp = VALUE( 0x1b, address::sp );
+    auto pc = VALUE( 0x1c, address::pc );
+    auto ex = VALUE( 0x1d, address::ex );
+    auto indirect = VALUE( 0x1e, address::indirect );
+    auto direct = VALUE( 0x1f, address::direct );
+
+#undef VALUE
+
+    auto fastDirect = [&word]() -> Address {
+        if ( word >= 0x20 && word <= 0x3f ) {
+            return address::fastDirect( word - 0x21 );
+        } else {
+            return {};
+        }
+    };
+
+#define TRY( f ) addr = f(); if ( addr ) return addr;
 
     TRY( regDirect );
     TRY( regIndirect );
     TRY( regIndirectOffset );
-
+    TRY( push );
+    TRY( peek );
+    TRY( pick );
+    TRY( sp );
+    TRY( pc );
+    TRY( ex );
+    TRY( indirect );
+    TRY( direct );
+    TRY( fastDirect );
+    
 #undef TRY
+
+    return {};
 }
