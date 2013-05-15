@@ -9,12 +9,14 @@
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
 
 using Word = std::uint16_t;
 using DoubleWord = std::uint32_t;
 
 using boost::format;
 using boost::optional;
+using boost::variant;
 
 enum class Register {
     A, B, C,
@@ -167,5 +169,27 @@ enum class Opcode {
 enum class SpecialOpcode {
     Jsr
 };
+
+namespace instruction {
+
+struct Unary {
+    SpecialOpcode opcode;
+    Address address;
+};
+
+struct Binary {
+    Opcode opcode;
+    Address addressB;
+    Address addressA;
+};
+
+}
+
+using Instruction = variant<instruction::Unary, instruction::Binary>;
+
+// These will be static eventually.
+void execute( Processor& proc, const Instruction& ins );
+void alwaysExecute( Processor& proc, const instruction::Unary& ins );
+void alwaysExecute( Processor& proc, const instruction::Binary& ins );
 
 #endif // __PROCESSOR_HPP__

@@ -1,8 +1,10 @@
 #include "Processor.hpp"
 
-#include <boost/variant.hpp>
+#include <functional>
 
-using boost::variant;
+#include <boost/phoenix/core/argument.hpp>
+#include <boost/phoenix/operator.hpp>
+
 using boost::static_visitor;
 using boost::apply_visitor;
 
@@ -228,6 +230,52 @@ void write( Processor& proc, const Address& addr, Word value ) {
     }
 }
 
+}
+
+struct ExecuteVisitor : static_visitor<void> {
+    Processor* proc = nullptr;
+
+    explicit ExecuteVisitor( Processor* proc ) : proc { proc } {}
+
+    template <typename InstructionType>
+    void operator()( const InstructionType& ins ) const {
+        alwaysExecute( *proc, ins );
+    }
+};
+
+void execute( Processor& proc, const Instruction& ins ) {
+    apply_visitor( ExecuteVisitor { &proc }, ins );
+}
+
+using BinaryFunction = std::function<Word (Word, Word)>;
+
+void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
+    using namespace boost::phoenix::placeholders;
+
+    auto read = [&proc]( const Address& addr ) {
+        return address::read( proc, addr );
+    };
+
+    auto write = [&proc]( const Address& addr, Word value ) {
+        address::write( proc, addr, value );
+    };
+
+    auto apply = [&]( BinaryFunction f ) {
+        auto x = read( ins.addressB );
+        auto y = read( ins.addressA );
+
+        write( ins.addressB, f( x, y ) );
+    };
+
+    switch ( ins.opcode ) {
+    case Opcode::Set: write( ins.addressB, read( ins.addressA ) );
+    case Opcode::Add: apply( arg1 + arg2 );
+    case Opcode::Sub: apply( arg1 - arg2 );
+    }
+}
+
+void alwaysExecute( Processor& proc, const instruction::Unary& ins ) {
+    assert( false );
 }
 
 
