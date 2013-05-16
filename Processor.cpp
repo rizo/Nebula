@@ -249,7 +249,7 @@ void execute( Processor& proc, const Instruction& ins ) {
 
 using BinaryFunction = std::function<Word (Word, Word)>;
 
-void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
+static void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
     using namespace boost::phoenix::placeholders;
 
     auto read = [&proc]( const Address& addr ) {
@@ -274,7 +274,7 @@ void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
     }
 }
 
-void alwaysExecute( Processor&, const instruction::Unary& ) {
+static void alwaysExecute( Processor&, const instruction::Unary& ) {
     assert( false );
 }
 
@@ -443,4 +443,22 @@ optional<Instruction> decode( const Word& word ) {
     if ( unIns ) return Instruction { *unIns };
 
     return {};
+}
+
+static Instruction fetchNextInstruction( Processor& proc ) {
+    auto word = fetchNextWord( proc );
+
+    auto ins = decode<Instruction>( word );
+
+    if ( ins ) {
+        return *ins;
+    } else {
+        throw error::MalformedInstruction { word };
+    }
+}
+
+void executeNext( Processor& proc ) {
+    auto ins = fetchNextInstruction( proc );
+
+    execute( proc, ins );
 }

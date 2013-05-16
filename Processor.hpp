@@ -72,6 +72,19 @@ public:
     inline Word location() const { return _location; }
 };
 
+class MalformedInstruction : public std::out_of_range {
+    Word _word;
+public:
+    explicit MalformedInstruction( Word word ) :
+        std::out_of_range {
+            (format( "Malformed instruction 0x%04x" ) % word ).str()
+        },
+        _word { word } {
+    }
+
+    inline Word word() const { return _word; }
+};
+
 }
 
 class Processor {
@@ -187,16 +200,13 @@ struct Binary {
 
 using Instruction = variant<instruction::Unary, instruction::Binary>;
 
-// These will be static eventually.
-void execute( Processor& proc, const Instruction& ins );
-void alwaysExecute( Processor& proc, const instruction::Unary& ins );
-void alwaysExecute( Processor& proc, const instruction::Binary& ins );
-
-enum class AddressContext { A, B };
-
-optional<Address> decodeAddress( const Word& word, AddressContext context );
-
 template <typename T>
 optional<T> decode( const Word& ) { return {}; }
+
+enum class AddressContext { A, B };
+optional<Address> decodeAddress( const Word& word, AddressContext context );
+
+void execute( Processor& proc, const Instruction& ins );
+void executeNext( Processor& proc );
 
 #endif // __PROCESSOR_HPP__
