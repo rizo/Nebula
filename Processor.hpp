@@ -13,6 +13,8 @@
 
 using Word = std::uint16_t;
 using DoubleWord = std::uint32_t;
+using SignedWord = std::int16_t;
+using SignedDoubleWord = std::uint32_t;
 
 using boost::format;
 using boost::optional;

@@ -247,8 +247,6 @@ void execute( Processor& proc, const Instruction& ins ) {
     apply_visitor( ExecuteVisitor { &proc }, ins );
 }
 
-using BinaryFunction = std::function<Word (Word, Word)>;
-
 static void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
     using namespace boost::phoenix::placeholders;
 
@@ -260,17 +258,38 @@ static void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
         address::write( proc, addr, value );
     };
 
-    auto apply = [&]( BinaryFunction f ) {
+    auto apply = [&]( std::function<Word( Word, Word )> f ) {
         auto x = read( ins.addressB );
         auto y = read( ins.addressA );
 
         write( ins.addressB, f( x, y ) );
     };
 
+    auto applyExpanded = [&]( std::function<SignedDoubleWord( SignedDoubleWord, SignedDoubleWord )> f,
+                              std::function<void( SignedDoubleWord )> action ) {
+        auto x = static_cast<SignedDoubleWord>( read( ins.addressB ) );
+        auto y = static_cast<SignedDoubleWord>( read( ins.addressA ) );
+        
+        auto z = f( x, y );
+        write( ins.addressB, static_cast<Word>( z ) );
+        action( z );
+    };
+
     switch ( ins.opcode ) {
-    case Opcode::Set: write( ins.addressB, read( ins.addressA ) );
-    case Opcode::Add: apply( arg1 + arg2 );
-    case Opcode::Sub: apply( arg1 - arg2 );
+    case Opcode::Set:
+        write( ins.addressB, read( ins.addressA ) );
+        break;
+    case Opcode::Add: applyExpanded( arg1 + arg2, [&proc]( SignedDoubleWord z ) {
+            if ( z > 0xffff ) {
+                proc.write( Special::Ex, 1 );
+            } else {
+                proc.write( Special::Ex, 0 );
+            }
+        });
+        break;
+    case Opcode::Sub:
+        apply( arg1 - arg2 );
+        break;
     }
 }
 
