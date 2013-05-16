@@ -17,4 +17,13 @@ int main() {
     };
 
     execute( proc, ins );
+
+    auto decoded  = decode<Instruction>( 0x4fe1 );
+    if ( ! decoded ) {
+        std::cout << "Failed to decode!" << std::endl;
+    } else {
+        instruction::Binary binIns = boost::get<instruction::Binary>( *decoded );
+
+        std::cout << "Decode successful!" << std::endl;
+    }
 }

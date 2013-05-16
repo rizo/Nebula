@@ -303,6 +303,14 @@ optional<Opcode> decode( const Word& word ) {
     }
 }
 
+template <>
+optional<SpecialOpcode> decode( const Word& word ) {
+    switch ( word ) {
+    case 0x01: return SpecialOpcode::Jsr;
+    default: return {};
+    }
+}
+
 template <typename U, typename V>
 static optional<V> map( const optional<U>& a, std::function<V ( const U& )> f ) {
     if ( a ) {
@@ -312,74 +320,127 @@ static optional<V> map( const optional<U>& a, std::function<V ( const U& )> f ) 
     }
 }
 
+static optional<Address> decodeRegisterDirect( Word w ) {
+    return map<Register, Address>( decode<Register>( w ), address::registerDirect );
+}
+
+static optional<Address> decodeRegisterIndirect( Word w ) {
+    return map<Register, Address>( decode<Register>( w - 0x8 ), address::registerIndirect );
+}
+
+static optional<Address> decodeRegisterIndirectOffset( Word w ) {
+    return map<Register, Address>( decode<Register>( w - 0x10 ), address::registerIndirectOffset );
+}
+
+static optional<Address> decodePush( Word w ) {
+    if ( w == 0x18 ) {
+        return address::push();
+    } else {
+        return {};
+    }
+}
+
+static optional<Address> decodePop( Word w ) {
+    if ( w == 0x18 ) {
+        return address::pop();
+    } else {
+        return {};
+    }
+}
+
+static optional<Address> decodeFastDirect( Word w ) {
+    if ( w >= 0x20 && w <= 0x3f ) {
+        if ( w == 0x20 ) {
+            return address::fastDirect( 0xffff );
+        } else {
+            return address::fastDirect( w - 0x21 );
+        }
+    } else {
+        return {};
+    }
+}
+
+static
+std::function<optional<Address>( Word )> 
+makeDecoder( Word value,
+             std::function<Address()> f ) {
+    auto dec = [value, f]( Word w ) -> optional<Address> {
+        if ( w == value ) {
+            return f();
+        } else {
+            return {};
+        }
+    };
+
+    return dec;
+}
+
 optional<Address> decodeAddress( const Word& word, AddressContext context ) {
     optional<Address> addr;
 
-    auto regDirect = [&word]() {
-        return map<Register, Address>( decode<Register>( word ), address::registerDirect );
-    };
+    auto decodePeek = makeDecoder( 0x19, address::peek );
+    auto decodePick = makeDecoder( 0x1a, address::pick );
+    auto decodeSp = makeDecoder( 0x1b, address::sp );
+    auto decodePc = makeDecoder( 0x1c, address::pc );
+    auto decodeEx = makeDecoder( 0x1d, address::ex );
+    auto decodeIndirect = makeDecoder( 0x1e, address::indirect );
+    auto decodeDirect = makeDecoder( 0x1f, address::direct );
 
-    auto regIndirect = [&word]() {
-        return map<Register, Address>( decode<Register>( word - 0x8 ), address::registerIndirect );
-    };
+#define TRY( f ) addr = f( word ); if ( addr ) return addr;
 
-    auto regIndirectOffset = [&word]() {
-        return map<Register, Address>( decode<Register>( word - 0x10 ), address::registerIndirectOffset );
-    };
+    if ( context == AddressContext::A ) {
+        TRY( decodePop );
+        TRY( decodeFastDirect );
+    }
 
-    auto push = [&word, &context]() -> Address {
-        if ( context == AddressContext::B && word == 0x18) {
-            return address::push();
-        } else {
-            return {};
-        }
-    };
-
-    auto pop = [&word, &context]() -> Address {
-        if ( context == AddressContext::A && word == 0x18 ) {
-            return address::pop();
-        } else {
-            return {};
-        }
-    };
-
-#define VALUE( val, f ) [&word]() -> Address { if ( word == val ) return f(); else return {}; }
-
-    auto peek = VALUE( 0x19, address::peek );
-    auto pick = VALUE( 0x1a, address::pick );
-    auto sp = VALUE( 0x1b, address::sp );
-    auto pc = VALUE( 0x1c, address::pc );
-    auto ex = VALUE( 0x1d, address::ex );
-    auto indirect = VALUE( 0x1e, address::indirect );
-    auto direct = VALUE( 0x1f, address::direct );
-
-#undef VALUE
-
-    auto fastDirect = [&word]() -> Address {
-        if ( word >= 0x20 && word <= 0x3f ) {
-            return address::fastDirect( word - 0x21 );
-        } else {
-            return {};
-        }
-    };
-
-#define TRY( f ) addr = f(); if ( addr ) return addr;
-
-    TRY( regDirect );
-    TRY( regIndirect );
-    TRY( regIndirectOffset );
-    TRY( push );
-    TRY( pop );
-    TRY( peek );
-    TRY( pick );
-    TRY( sp );
-    TRY( pc );
-    TRY( ex );
-    TRY( indirect );
-    TRY( direct );
-    TRY( fastDirect );
+    TRY( decodeRegisterDirect );
+    TRY( decodeRegisterIndirect );
+    TRY( decodeRegisterIndirectOffset );
+    TRY( decodePush );
+    TRY( decodePop );
+    TRY( decodePeek );
+    TRY( decodePick );
+    TRY( decodeSp );
+    TRY( decodePc );
+    TRY( decodeEx );
+    TRY( decodeIndirect );
+    TRY( decodeDirect );
     
 #undef TRY
+
+    return {};
+}
+
+template <>
+optional<Instruction> decode( const Word& word ) {
+    auto binary = [word]() -> optional<instruction::Binary> {
+        auto opcode = decode<Opcode>( word & 0x1f );
+        if ( ! opcode ) return {};
+
+        auto addrA = decodeAddress( (word & 0xfc00) >> 10, AddressContext::A );
+        if ( ! addrA ) return {};
+
+        auto addrB = decodeAddress( (word & 0x3e0) >> 5, AddressContext::B );
+        if ( ! addrB ) return {};
+
+        return instruction::Binary { *opcode, *addrB, *addrA };
+    };
+
+    auto unary = [word]() -> optional<instruction::Unary> {
+        auto opcode = decode<SpecialOpcode>( (word & 0x3e0) >> 5 );
+        if ( ! opcode ) return {};
+
+        auto addr = decodeAddress( (word & 0xfc00) >> 10, AddressContext::A );
+        if ( ! addr ) return {};
+
+        return instruction::Unary { *opcode, *addr };
+    };
+
+    auto binIns = binary();
+    if ( binIns ) return Instruction { *binIns };
+
+    auto unIns = unary();
+    if ( unIns ) return Instruction { *unIns };
 
     return {};
 }
