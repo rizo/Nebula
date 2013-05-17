@@ -447,7 +447,6 @@ optional<Instruction> decode( const Word& word ) {
 
 static Instruction fetchNextInstruction( Processor& proc ) {
     auto word = fetchNextWord( proc );
-
     auto ins = decode<Instruction>( word );
 
     if ( ins ) {
