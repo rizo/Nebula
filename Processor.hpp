@@ -9,7 +9,6 @@
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
-#include <boost/variant.hpp>
 
 using Word = std::uint16_t;
 using DoubleWord = std::uint32_t;
@@ -18,7 +17,6 @@ using SignedDoubleWord = std::uint32_t;
 
 using boost::format;
 using boost::optional;
-using boost::variant;
 
 enum class Register {
     A, B, C,
@@ -126,52 +124,22 @@ public:
     inline int memorySize() const { return _memory.size(); }
 };
 
-enum class AddressType {
-    RegisterDirect,
-    RegisterIndirect,
-    RegisterIndirectOffset,
-    Push,
-    Pop,
-    Peek,
-    Pick,
-    Sp,
-    Pc,
-    Ex,
-    Indirect,
-    Direct,
-    FastDirect
+class AddressingMode {
+public:
+    virtual Word load( Processor& proc ) const = 0;
+    virtual void store( Processor& proc, Word value ) const = 0;
 };
 
-struct Address {
-    AddressType type;
+namespace mode {
 
-    union {
-        Word word;
-        Register reg;
-        Special spec;
-    };
+struct RegisterDirect : public AddressingMode {
+    Register reg;
+
+    explicit RegisterDirect( Register reg ) : reg { reg } {}
+
+    virtual Word load( Processor& proc ) const { return proc.read( reg ); }
+    virtual void store( Processor& proc, Word value ) const { proc.write( reg, value ); }
 };
-
-namespace address {
-
-Address registerDirect( const Register& reg );
-Address registerIndirect( const Register& reg );
-Address registerIndirectOffset( const Register& reg );
-Address push();
-Address pop();
-Address peek();
-Address pick();
-Address sp();
-Address pc();
-Address ex();
-Address indirect();
-Address direct();
-Address fastDirect( Word word );
-
-bool isLiteral( const Address& addr );
-
-Word read( Processor& proc, const Address& addr );
-void write( Processor& proc, const Address& addr, Word value );
 
 }
 
@@ -185,30 +153,41 @@ enum class SpecialOpcode {
     Jsr
 };
 
-namespace instruction {
-
-struct Unary {
-    SpecialOpcode opcode;
-    Address address;
+class Instruction {
+    virtual void execute( Processor& proc ) const = 0;
 };
 
-struct Binary {
+namespace instruction {
+
+struct Unary : public Instruction {
+    SpecialOpcode opcode;
+    std::shared_ptr<AddressingMode> address = nullptr;
+
+    explicit Unary( SpecialOpcode opcode,
+                    std::shared_ptr<AddressingMode> address ) :
+        opcode { opcode },
+        address { address } {
+    }
+};
+
+struct Binary : public Instruction {
     Opcode opcode;
-    Address addressB;
-    Address addressA;
+    std::shared_ptr<AddressingMode> addressB = nullptr;
+    std::shared_ptr<AddressingMode> addressA = nullptr;
+
+    explicit Binary( Opcode opcode,
+                     std::shared_ptr<AddressingMode> addressB,
+                     std::shared_ptr<AddressingMode> addressA ) :
+        opcode { opcode },
+        addressB { addressB },
+        addressA { addressA } {
+    }
+
+    virtual void execute( Processor& proc ) const;
 };
 
 }
 
-using Instruction = variant<instruction::Unary, instruction::Binary>;
-
-template <typename T>
-optional<T> decode( const Word& ) { return {}; }
-
-enum class AddressContext { A, B };
-optional<Address> decodeAddress( const Word& word, AddressContext context );
-
-void execute( Processor& proc, const Instruction& ins );
 void executeNext( Processor& proc );
 
 #endif // __PROCESSOR_HPP__
