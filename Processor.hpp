@@ -1,19 +1,14 @@
-#ifndef __PROCESSOR_HPP__
-#define __PROCESSOR_HPP__
+#pragma once
+
+#include "Memory.hpp"
 
 #include <array>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
-#include <vector>
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
-
-using Word = std::uint16_t;
-using DoubleWord = std::uint32_t;
-using SignedWord = std::int16_t;
-using SignedDoubleWord = std::uint32_t;
 
 using boost::format;
 using boost::optional;
@@ -28,11 +23,7 @@ enum class Special {
     Pc, Sp, Ex
 };
 
-using Memory = std::vector<Word>;
-
 constexpr Word STACK_BEGIN = 0xffff;
-
-enum class MemoryOperation { Read, Write };
 
 namespace error {
 
@@ -54,24 +45,6 @@ public:
     }
 };
 
-class InvalidMemoryLocation : public std::out_of_range {
-    MemoryOperation _operation;
-    Word _location;
-public:
-    explicit InvalidMemoryLocation( MemoryOperation operation, Word location ) :
-        std::out_of_range {
-            (format( "Cannot %s at memory location 0x%04x" )
-                 % (operation == MemoryOperation::Read ? "read" : "write")
-                 % location ).str()
-        },
-        _operation { operation },
-        _location { location } {
-    }
-
-    inline MemoryOperation operation() const { return _operation; }
-    inline Word location() const { return _location; }
-};
-
 class MalformedInstruction : public std::out_of_range {
     Word _word;
 public:
@@ -88,12 +61,13 @@ public:
 }
 
 class Processor {
-    Memory _memory;
     std::array<Word, 8> _registers;
     Word _pc;
     Word _sp;
     Word _ex;
     int _clock;
+
+    std::shared_ptr<Memory> _memory = nullptr;
 
     using RegisterIndex = decltype( _registers )::size_type;
     static inline RegisterIndex registerIndex( Register reg ) {
@@ -101,27 +75,24 @@ class Processor {
     }
 
 public:
-    explicit Processor( int memorySize ) :
-        _memory { Memory( memorySize ) },
+    explicit Processor( std::shared_ptr<Memory> memory ) :
         _registers { { 0, 0, 0, 0, 0, 0, 0, 0 } },
         _pc { 0 },
         _sp { STACK_BEGIN },
         _ex { 0 },
-        _clock { 0 } {
-    }
+        _clock { 0 },
+        _memory { memory } {}
 
     Word read( Register reg ) const;
     Word read( Special spec ) const;
-    Word read( Word loc ) const;
 
     void write( Register reg, Word val );
     void write( Special spec, Word val );
-    void write( Word loc, Word val );
 
     inline int clock() const { return _clock; }
     inline void tickClock( int ticks ) { _clock += ticks; }
 
-    inline int memorySize() const { return _memory.size(); }
+    inline Memory& memory() { return *_memory; }
 };
 
 class AddressingMode {
@@ -189,5 +160,3 @@ struct Binary : public Instruction {
 }
 
 void executeNext( Processor& proc );
-
-#endif // __PROCESSOR_HPP__

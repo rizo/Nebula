@@ -1,9 +1,11 @@
+#include "Memory.hpp"
 #include "Processor.hpp"
 
 #include <iostream>
 
 int main() {
-    auto proc = Processor { 0x10000 };
+    auto memory = std::make_shared<Memory>( 0x10000 );
+    Processor proc { memory };
 
     proc.write( Register::X, 15 );
     proc.write( Register::A, 5 );

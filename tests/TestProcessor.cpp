@@ -1,37 +1,10 @@
+#include "Random.hpp"
+#include "../Processor.hpp"
+
 #include <array>
 #include <limits>
 
 #include <gtest/gtest.h>
-
-#include "Random.hpp"
-#include "../Processor.hpp"
-
-class MemoryTest : public ::testing::Test {
-protected:
-    Processor _proc;
-public:
-    explicit MemoryTest() : _proc { Processor { 0x10000 } } {}
-};
-
-TEST_F( MemoryTest, Initialization ) {
-    for ( int i = 0; i < _proc.memorySize(); ++i ) {
-        EXPECT_EQ( 0, _proc.read( i ) );
-    }
-}
-
-TEST_F( MemoryTest, ReadWrite ) {
-    auto maxLocation = static_cast<Word>( _proc.memorySize() - 1 );
-    auto locationGen = NumericGenerator<Word> { 0, maxLocation };
-    NumericGenerator<Word> valueGen;
-
-    for ( int i = 0; i < 5000; ++i ) {
-        auto loc = locationGen.next();
-        auto val = valueGen.next();
-
-        _proc.write( loc, val );
-        EXPECT_EQ( val, _proc.read( loc ) );
-    }
-}
 
 class RegisterTest : public ::testing::Test {
 protected:

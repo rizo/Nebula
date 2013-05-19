@@ -18,14 +18,6 @@ Word Processor::read( Special spec ) const {
     }
 }
 
-Word Processor::read( Word loc) const {
-    if ( loc >= _memory.size() ) {
-        throw error::InvalidMemoryLocation { MemoryOperation::Read, loc };
-    }
-
-    return _memory[loc];
-}
-
 void Processor::write( Register reg, Word value ) {
     _registers[registerIndex( reg )] = value;
 }
@@ -36,14 +28,6 @@ void Processor::write( Special spec, Word value ) {
     case Special::Sp: _sp = value; return;
     case Special::Ex: _ex = value; return;
     }
-}
-
-void Processor::write( Word loc, Word value ) {
-    if ( loc >= _memory.size() ) {
-        throw error::InvalidMemoryLocation { MemoryOperation::Write, loc };
-    }
-
-    _memory[loc] = value;
 }
 
 namespace instruction {
