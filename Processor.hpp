@@ -112,6 +112,20 @@ struct RegisterDirect : public AddressingMode {
     virtual void store( Processor& proc, Word value ) const { proc.write( reg, value ); }
 };
 
+struct RegisterIndirect : public AddressingMode {
+    Register reg;
+
+    explicit RegisterIndirect( Register reg ) : reg { reg } {}
+
+    virtual Word load( Processor& proc ) const {
+        return proc.memory().read( proc.read( reg ) );
+    }
+
+    virtual void store( Processor& proc, Word value ) const {
+        proc.memory().write( proc.read( reg ), value );
+    }
+};
+
 }
 
 enum class Opcode {
