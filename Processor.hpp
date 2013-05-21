@@ -75,6 +75,8 @@ class Processor {
     }
 
 public:
+    Processor() = delete;
+
     explicit Processor( std::shared_ptr<Memory> memory ) :
         _registers { { 0, 0, 0, 0, 0, 0, 0, 0 } },
         _pc { 0 },
@@ -107,6 +109,7 @@ struct RegisterDirect : public AddressingMode {
     Register reg;
 
     explicit RegisterDirect( Register reg ) : reg { reg } {}
+    RegisterDirect() = delete;
 
     virtual Word load( Processor& proc ) const { return proc.read( reg ); }
     virtual void store( Processor& proc, Word value ) const { proc.write( reg, value ); }
@@ -116,6 +119,7 @@ struct RegisterIndirect : public AddressingMode {
     Register reg;
 
     explicit RegisterIndirect( Register reg ) : reg { reg } {}
+    RegisterIndirect() = delete;
 
     virtual Word load( Processor& proc ) const {
         return proc.memory().read( proc.read( reg ) );
@@ -153,6 +157,8 @@ struct Unary : public Instruction {
         opcode { opcode },
         address { address } {
     }
+
+    Unary() = delete;
 };
 
 struct Binary : public Instruction {
@@ -167,6 +173,8 @@ struct Binary : public Instruction {
         addressB { addressB },
         addressA { addressA } {
     }
+
+    Binary() = delete;
 
     virtual void execute( Processor& proc ) const;
 };
