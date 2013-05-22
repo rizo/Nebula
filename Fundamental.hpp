@@ -2,6 +2,11 @@
 #define __FUNDAMENTAL_H__
 
 #include <cstdint>
+#include <functional>
+
+#include <boost/optional.hpp>
+
+using boost::optional;
 
 using Word = std::uint16_t;
 using DoubleWord = std::uint32_t;

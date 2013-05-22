@@ -30,6 +30,30 @@ void Processor::write( Special spec, Word value ) {
     }
 }
 
+static Word fetchNextWord( Processor& proc ) {
+    return mode::Direct {}.load( proc );
+}
+
+namespace mode {
+
+Word Direct::load( Processor& proc ) const {
+    common( proc );
+
+    auto pc = proc.read( Special::Pc );
+    proc.write( Special::Pc, pc + 1 );
+    return proc.memory().read( pc );
+}
+
+void Direct::store( Processor& proc, Word value ) const {
+    common( proc );
+
+    auto pc = proc.read( Special::Pc );
+    proc.write( Special::Pc, pc + 1 );
+    proc.memory().write( pc, value );
+}
+
+}
+
 namespace instruction {
 
 void Binary::execute( Processor& proc ) const {
@@ -81,113 +105,83 @@ void Binary::execute( Processor& proc ) const {
 
 }
 
-// void execute( Processor& proc, const Instruction& ins ) {
-//     apply_visitor( ExecuteVisitor { &proc }, ins );
-// }
+template <>
+optional<Register> decode( const Word &w ) {
+    switch ( w ) {
+    case 0: return Register::A;
+    case 1: return Register::B;
+    case 2: return Register::C;
+    case 3: return Register::X;
+    case 4: return Register::Y;
+    case 5: return Register::Z;
+    case 6: return Register::I;
+    case 7: return Register::J;
+    default: return {};
+    }
+}
 
-// static void alwaysExecute( Processor& proc, const instruction::Binary& ins ) {
-//     using namespace boost::phoenix::placeholders;
+template <>
+optional<Opcode> decode( const Word& w ) {
+    switch ( w ) {
+    case 0x01: return Opcode::Set;
+    case 0x02: return Opcode::Add;
+    case 0x03: return Opcode::Sub;
+    default: return {};
+    }
+}
 
-//     auto read = [&proc]( const Address& addr ) {
-//         return address::read( proc, addr );
-//     };
+template <>
+optional<SpecialOpcode> decode( const Word& w ) {
+    switch ( w ) {
+    case 0x01: return SpecialOpcode::Jsr;
+    default: return {};
+    }
+}
 
-//     auto write = [&proc]( const Address& addr, Word value ) {
-//         address::write( proc, addr, value );
-//     };
+static std::shared_ptr<AddressingMode>
+decodeRegisterDirect( Word w ) {
+    auto reg = decode<Register>( w );
 
-//     auto apply = [&]( std::function<Word( Word, Word )> f ) {
-//         auto x = read( ins.addressB );
-//         auto y = read( ins.addressA );
+    if ( reg ) {
+        return std::make_shared<mode::RegisterDirect>( *reg );
+    } else {
+        return nullptr;
+    }
+}
 
-//         write( ins.addressB, f( x, y ) );
-//     };
+static std::shared_ptr<AddressingMode>
+decodeRegisterIndirect( Word w ) {
+    auto reg = decode<Register>( w - 0x8 );
 
-//     auto applyExpanded = [&]( std::function<SignedDoubleWord( SignedDoubleWord, SignedDoubleWord )> f,
-//                               std::function<void( SignedDoubleWord )> action ) {
-//         auto x = static_cast<SignedDoubleWord>( read( ins.addressB ) );
-//         auto y = static_cast<SignedDoubleWord>( read( ins.addressA ) );
-        
-//         auto z = f( x, y );
-//         write( ins.addressB, static_cast<Word>( z ) );
-//         action( z );
-//     };
+    if ( reg ) {
+        return std::make_shared<mode::RegisterIndirect>( *reg );
+    } else {
+        return nullptr;
+    }
+}
 
-//     switch ( ins.opcode ) {
-//     case Opcode::Set:
-//         write( ins.addressB, read( ins.addressA ) );
-//         break;
-//     case Opcode::Add: applyExpanded( arg1 + arg2, [&proc]( SignedDoubleWord z ) {
-//             if ( z > 0xffff ) {
-//                 proc.write( Special::Ex, 1 );
-//             } else {
-//                 proc.write( Special::Ex, 0 );
-//             }
-//         });
-//         break;
-//     case Opcode::Sub:
-//         apply( arg1 - arg2 );
-//         break;
-//     }
-// }
+// static std::shared_ptr<AddressingMode>
+// decodeRegisterIndirectOffset( Word w ) {
+//     auto reg = decode<Register>( w - 0x10 );
 
-// static void alwaysExecute( Processor&, const instruction::Unary& ) {
-//     assert( false );
-// }
-
-// template <>
-// optional<Register> decode( const Word& word ) {
-//     switch ( word ) {
-//     case 0: return Register::A;
-//     case 1: return Register::B;
-//     case 2: return Register::C;
-//     case 3: return Register::X;
-//     case 4: return Register::Y;
-//     case 5: return Register::Z;
-//     case 6: return Register::I;
-//     case 7: return Register::J;
-//     default: return {};
-//     }
-// }
-
-// template <>
-// optional<Opcode> decode( const Word& word ) {
-//     switch ( word ) {
-//     case 0x01: return Opcode::Set;
-//     case 0x02: return Opcode::Add;
-//     case 0x03: return Opcode::Sub;
-//     default: return {};
-//     }
-// }
-
-// template <>
-// optional<SpecialOpcode> decode( const Word& word ) {
-//     switch ( word ) {
-//     case 0x01: return SpecialOpcode::Jsr;
-//     default: return {};
-//     }
-// }
-
-// template <typename U, typename V>
-// static optional<V> map( const optional<U>& a, std::function<V ( const U& )> f ) {
-//     if ( a ) {
-//         return f( *a );
+//     if ( reg ) {
+//         return std::make_shared<mode::RegisterIndirectOffset>( *reg );
 //     } else {
-//         return {};
+//         return nullptr;
 //     }
 // }
 
-// static optional<Address> decodeRegisterDirect( Word w ) {
-//     return map<Register, Address>( decode<Register>( w ), address::registerDirect );
-// }
-
-// static optional<Address> decodeRegisterIndirect( Word w ) {
-//     return map<Register, Address>( decode<Register>( w - 0x8 ), address::registerIndirect );
-// }
-
-// static optional<Address> decodeRegisterIndirectOffset( Word w ) {
-//     return map<Register, Address>( decode<Register>( w - 0x10 ), address::registerIndirectOffset );
-// }
+template <typename T>
+static std::function<std::shared_ptr<T>( Word )>
+decoderByValue( Word value ) {
+    return [value]( Word w ) -> std::shared_ptr<T> {
+        if ( w == value ) {
+            return std::make_shared<T>();
+        } else {
+            return nullptr;
+        }
+    };
+}
 
 // static optional<Address> decodePush( Word w ) {
 //     if ( w == 0x18 ) {
@@ -198,7 +192,7 @@ void Binary::execute( Processor& proc ) const {
 // }
 
 // static optional<Address> decodePop( Word w ) {
-//     if ( w == 0x18 ) {
+//  p   if ( w == 0x18 ) {
 //         return address::pop();
 //     } else {
 //         return {};
@@ -232,41 +226,63 @@ void Binary::execute( Processor& proc ) const {
 //     return dec;
 // }
 
-// optional<Address> decodeAddress( const Word& word, AddressContext context ) {
-//     optional<Address> addr;
+std::shared_ptr<AddressingMode>
+decodeAddress( AddressContext context, Word word ) {
+    std::shared_ptr<AddressingMode> addr = nullptr;
 
-//     auto decodePeek = makeDecoder( 0x19, address::peek );
-//     auto decodePick = makeDecoder( 0x1a, address::pick );
-//     auto decodeSp = makeDecoder( 0x1b, address::sp );
-//     auto decodePc = makeDecoder( 0x1c, address::pc );
-//     auto decodeEx = makeDecoder( 0x1d, address::ex );
-//     auto decodeIndirect = makeDecoder( 0x1e, address::indirect );
-//     auto decodeDirect = makeDecoder( 0x1f, address::direct );
+    auto decodePeek = decoderByValue<mode::Peek>( 0x18 );
+    // auto decodePick = makeDecoder( 0x1a, address::pick );
+    // auto decodeSp = makeDecoder( 0x1b, address::sp );
+    // auto decodePc = makeDecoder( 0x1c, address::pc );
+    // auto decodeEx = makeDecoder( 0x1d, address::ex );
+    // auto decodeIndirect = makeDecoder( 0x1e, address::indirect );
+    // auto decodeDirect = makeDecoder( 0x1f, address::direct );
 
-// #define TRY( f ) addr = f( word ); if ( addr ) return addr;
+#define TRY( f ) addr = f( word ); if ( addr ) return addr;
 
-//     if ( context == AddressContext::A ) {
-//         TRY( decodePop );
-//         TRY( decodeFastDirect );
-//     }
+    // if ( context == AddressContext::A ) {
+    //     TRY( decodePop );
+    //     TRY( decodeFastDirect );
+    // }
 
-//     TRY( decodeRegisterDirect );
-//     TRY( decodeRegisterIndirect );
-//     TRY( decodeRegisterIndirectOffset );
-//     TRY( decodePush );
-//     TRY( decodePop );
-//     TRY( decodePeek );
-//     TRY( decodePick );
-//     TRY( decodeSp );
-//     TRY( decodePc );
-//     TRY( decodeEx );
-//     TRY( decodeIndirect );
-//     TRY( decodeDirect );
+    TRY( decodeRegisterDirect );
+    TRY( decodeRegisterIndirect );
+    // TRY( decodeRegisterIndirectOffset );
+    // TRY( decodePush );
+    // TRY( decodePop );
+    TRY( decodePeek );
+    // TRY( decodePick );
+    // TRY( decodeSp );
+    // TRY( decodePc );
+    // TRY( decodeEx );
+    // TRY( decodeIndirect );
+    // TRY( decodeDirect );
     
-// #undef TRY
+#undef TRY
 
-//     return {};
-// }
+    return {};
+}
+
+static std::shared_ptr<Instruction>
+decodeBinaryInstruction( Word word ) {
+    auto opcode = decode<Opcode>( word & 0x1f );
+    if ( ! opcode ) return nullptr;
+
+    auto addrA = decodeAddress( AddressContext::A, (word & 0xfc00) >> 10 );
+    if ( ! addrA ) return nullptr;
+
+    auto addrB = decodeAddress( AddressContext::B, (word & 0x3e0) >> 5 );
+    if ( ! addrB ) return nullptr;
+
+    return std::make_shared<instruction::Binary>( *opcode, addrB, addrA );
+}
+
+std::shared_ptr<Instruction> decodeInstruction( Word word ) {
+    auto bins = decodeBinaryInstruction( word );
+    if ( bins ) return bins;
+
+    return nullptr;
+}
 
 // template <>
 // optional<Instruction> decode( const Word& word ) {
@@ -302,19 +318,18 @@ void Binary::execute( Processor& proc ) const {
 //     return {};
 // }
 
-// static Instruction fetchNextInstruction( Processor& proc ) {
-//     auto word = fetchNextWord( proc );
-//     auto ins = decode<Instruction>( word );
+static std::shared_ptr<Instruction> fetchNextInstruction( Processor& proc ) {
+    auto word = fetchNextWord( proc );
+    auto ins = decodeInstruction( word );
 
-//     if ( ins ) {
-//         return *ins;
-//     } else {
-//         throw error::MalformedInstruction { word };
-//     }
-// }
+    if ( ins ) {
+        return ins;
+    } else {
+        throw error::MalformedInstruction { word };
+    }
+}
 
-// void executeNext( Processor& proc ) {
-//     auto ins = fetchNextInstruction( proc );
-
-//     execute( proc, ins );
-// }
+void executeNext( Processor& proc ) {
+    auto ins = fetchNextInstruction( proc );
+    ins->execute( proc );
+}

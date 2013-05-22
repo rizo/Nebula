@@ -10,14 +10,8 @@ int main() {
     proc.write( Register::X, 15 );
     proc.write( Register::A, 5 );
 
-    auto ins = instruction::Binary {
-        Opcode::Sub,
-        std::make_shared<mode::RegisterDirect>( Register::X ),
-        std::make_shared<mode::RegisterDirect>( Register::A )
-    };
-
-    ins.execute( proc );
+    proc.memory().write( 0, 0x0062 );
+    executeNext( proc );
 
     std::cout << proc.read( Register::X ) << std::endl;
-
 }

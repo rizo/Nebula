@@ -8,10 +8,8 @@
 #include <stdexcept>
 
 #include <boost/format.hpp>
-#include <boost/optional.hpp>
 
 using boost::format;
-using boost::optional;
 
 enum class Register {
     A, B, C,
@@ -130,6 +128,26 @@ struct RegisterIndirect : public AddressingMode {
     }
 };
 
+struct Peek : public AddressingMode {
+    virtual Word load( Processor& proc ) const {
+        return proc.memory().read( proc.read( Special::Sp ) );
+    }
+
+    virtual void store( Processor& proc, Word value ) const {
+        proc.memory().write( proc.read( Special::Sp ), value );
+    }
+};
+
+struct Direct : public AddressingMode {
+private:
+    inline void common( Processor& proc ) const {
+        proc.tickClock( 1 );
+    }
+public:
+    virtual Word load( Processor& proc ) const;
+    virtual void store( Processor& proc, Word value ) const;
+};
+
 }
 
 enum class Opcode {
@@ -143,6 +161,7 @@ enum class SpecialOpcode {
 };
 
 class Instruction {
+public:
     virtual void execute( Processor& proc ) const = 0;
 };
 
@@ -182,3 +201,13 @@ struct Binary : public Instruction {
 }
 
 void executeNext( Processor& proc );
+
+enum class AddressContext { A, B };
+
+template <typename T>
+optional<T> decode( const Word& ) {
+    return {};
+}
+
+std::shared_ptr<AddressingMode> decodeAddress( AddressContext context, Word word );
+std::shared_ptr<Instruction> decodeInstruction( Word word );
