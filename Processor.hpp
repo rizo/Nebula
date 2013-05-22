@@ -178,6 +178,8 @@ struct Unary : public Instruction {
     }
 
     Unary() = delete;
+
+    virtual void execute( Processor& proc ) const;
 };
 
 struct Binary : public Instruction {

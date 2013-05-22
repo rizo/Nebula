@@ -56,6 +56,10 @@ void Direct::store( Processor& proc, Word value ) const {
 
 namespace instruction {
 
+void Unary::execute( Processor& proc ) const {
+    assert( ! "Unary instructions are unsupported!" );
+}
+
 void Binary::execute( Processor& proc ) const {
     using namespace boost::phoenix::placeholders;
 
@@ -277,46 +281,26 @@ decodeBinaryInstruction( Word word ) {
     return std::make_shared<instruction::Binary>( *opcode, addrB, addrA );
 }
 
+static std::shared_ptr<Instruction>
+decodeUnaryInstruction( Word word ) {
+    auto opcode = decode<SpecialOpcode>( (word & 0x3e0) >> 5 );
+    if ( ! opcode ) return nullptr;
+
+    auto addr = decodeAddress( AddressContext::A, (word & 0xfc00) >> 10 );
+    if ( ! addr ) return nullptr;
+
+    return std::make_shared<instruction::Unary>( *opcode, addr );
+}
+
 std::shared_ptr<Instruction> decodeInstruction( Word word ) {
     auto bins = decodeBinaryInstruction( word );
     if ( bins ) return bins;
 
+    auto uins = decodeUnaryInstruction( word );
+    if ( uins ) return uins;
+
     return nullptr;
 }
-
-// template <>
-// optional<Instruction> decode( const Word& word ) {
-//     auto binary = [word]() -> optional<instruction::Binary> {
-//         auto opcode = decode<Opcode>( word & 0x1f );
-//         if ( ! opcode ) return {};
-
-//         auto addrA = decodeAddress( (word & 0xfc00) >> 10, AddressContext::A );
-//         if ( ! addrA ) return {};
-
-//         auto addrB = decodeAddress( (word & 0x3e0) >> 5, AddressContext::B );
-//         if ( ! addrB ) return {};
-
-//         return instruction::Binary { *opcode, *addrB, *addrA };
-//     };
-
-//     auto unary = [word]() -> optional<instruction::Unary> {
-//         auto opcode = decode<SpecialOpcode>( (word & 0x3e0) >> 5 );
-//         if ( ! opcode ) return {};
-
-//         auto addr = decodeAddress( (word & 0xfc00) >> 10, AddressContext::A );
-//         if ( ! addr ) return {};
-
-//         return instruction::Unary { *opcode, *addr };
-//     };
-
-//     auto binIns = binary();
-//     if ( binIns ) return Instruction { *binIns };
-
-//     auto unIns = unary();
-//     if ( unIns ) return Instruction { *unIns };
-
-//     return {};
-// }
 
 static std::shared_ptr<Instruction> fetchNextInstruction( Processor& proc ) {
     auto word = fetchNextWord( proc );
