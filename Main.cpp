@@ -1,17 +1,27 @@
-#include "Memory.hpp"
-#include "Processor.hpp"
+#include "Simulation/Processor.hpp"
 
 #include <iostream>
+#include <thread>
 
 int main() {
+
     auto memory = std::make_shared<Memory>( 0x10000 );
-    Processor proc { memory };
+    auto proc = make_unique<ProcessorState>( memory );
 
-    proc.write( Register::X, 15 );
-    proc.write( Register::A, 5 );
+    proc->write( Register::X, 15 );
+    proc->write( Register::A, 5 );
 
-    proc.memory().write( 0, 0x0062 );
-    executeNext( proc );
+    // Our program.
+    proc->memory().write( 0, 0x8461 );
+    proc->memory().write( 1, 0x9862 );
+    proc->memory().write( 2, 0x8b81 );
+    
 
-    std::cout << proc.read( Register::X ) << std::endl;
+    sim::Processor procSim { std::move( proc ) };
+
+    std::thread th { [&] { procSim.run(); } };
+
+    std::cout << "Launched the processor!" << std::endl;
+
+    th.join();
 }

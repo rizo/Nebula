@@ -1,5 +1,5 @@
 #include "Random.hpp"
-#include "../Processor.hpp"
+#include "../ProcessorState.hpp"
 
 #include <array>
 #include <limits>
@@ -8,9 +8,9 @@
 
 class RegisterTest : public ::testing::Test {
 protected:
-    Processor _proc;
+    ProcessorState _proc;
 public:
-    explicit RegisterTest() : _proc { Processor { 0 } } {}
+    explicit RegisterTest() : _proc { ProcessorState { 0 } } {}
 };
 
 TEST_F( RegisterTest, Initialization ) {
@@ -53,9 +53,9 @@ TEST_F( RegisterTest, ReadWrite ) {
 
 class SpecialTest : public ::testing::Test {
 protected:
-    Processor _proc;
+    ProcessorState _proc;
 public:
-    explicit SpecialTest() : _proc { Processor { 0 } } {}
+    explicit SpecialTest() : _proc { ProcessorState { 0 } } {}
 };
 
 TEST_F( SpecialTest, Initialization ) {

@@ -10,16 +10,17 @@ find_package (Threads REQUIRED)
 
 add_executable (nebula
   Memory.cpp
-  Processor.cpp
+  ProcessorState.cpp
+  Simulation/Processor.cpp
   Main.cpp)
 
 target_link_libraries (nebula ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable (runTests
   tests/TestMemory.cpp
-  tests/TestProcessor.cpp
+  tests/TestProcessorState.cpp
   Memory.cpp
-  Processor.cpp)
+  ProcessorState.cpp)
 
 target_link_libraries (runTests
   ${CMAKE_THREAD_LIBS_INIT}

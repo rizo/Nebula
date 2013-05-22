@@ -1,4 +1,4 @@
-#include "Processor.hpp"
+#include "ProcessorState.hpp"
 
 #include <functional>
 
@@ -6,11 +6,11 @@
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/operator.hpp>
 
-Word Processor::read( Register reg ) const {
+Word ProcessorState::read( Register reg ) const {
     return _registers[registerIndex( reg )];
 }
 
-Word Processor::read( Special spec ) const {
+Word ProcessorState::read( Special spec ) const {
     switch ( spec ) {
     case Special::Pc: return _pc;
     case Special::Sp: return _sp;
@@ -18,11 +18,11 @@ Word Processor::read( Special spec ) const {
     }
 }
 
-void Processor::write( Register reg, Word value ) {
+void ProcessorState::write( Register reg, Word value ) {
     _registers[registerIndex( reg )] = value;
 }
 
-void Processor::write( Special spec, Word value ) {
+void ProcessorState::write( Special spec, Word value ) {
     switch ( spec ) {
     case Special::Pc: _pc = value; return;
     case Special::Sp: _sp = value; return;
@@ -30,13 +30,13 @@ void Processor::write( Special spec, Word value ) {
     }
 }
 
-static Word fetchNextWord( Processor& proc ) {
+static Word fetchNextWord( ProcessorState& proc ) {
     return mode::Direct {}.load( proc );
 }
 
 namespace mode {
 
-Word Direct::load( Processor& proc ) const {
+Word Direct::load( ProcessorState& proc ) const {
     common( proc );
 
     auto pc = proc.read( Special::Pc );
@@ -44,7 +44,7 @@ Word Direct::load( Processor& proc ) const {
     return proc.memory().read( pc );
 }
 
-void Direct::store( Processor& proc, Word value ) const {
+void Direct::store( ProcessorState& proc, Word value ) const {
     common( proc );
 
     auto pc = proc.read( Special::Pc );
@@ -56,11 +56,11 @@ void Direct::store( Processor& proc, Word value ) const {
 
 namespace instruction {
 
-void Unary::execute( Processor& proc ) const {
+void Unary::execute( ProcessorState& proc ) const {
     assert( ! "Unary instructions are unsupported!" );
 }
 
-void Binary::execute( Processor& proc ) const {
+void Binary::execute( ProcessorState& proc ) const {
     using namespace boost::phoenix::placeholders;
 
     auto load = [&proc]( std::shared_ptr<AddressingMode> addr ) {
@@ -302,7 +302,7 @@ std::shared_ptr<Instruction> decodeInstruction( Word word ) {
     return nullptr;
 }
 
-static std::shared_ptr<Instruction> fetchNextInstruction( Processor& proc ) {
+static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc ) {
     auto word = fetchNextWord( proc );
     auto ins = decodeInstruction( word );
 
@@ -313,7 +313,7 @@ static std::shared_ptr<Instruction> fetchNextInstruction( Processor& proc ) {
     }
 }
 
-void executeNext( Processor& proc ) {
+void executeNext( ProcessorState& proc ) {
     auto ins = fetchNextInstruction( proc );
     ins->execute( proc );
 }

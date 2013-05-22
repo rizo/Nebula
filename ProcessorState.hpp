@@ -58,7 +58,7 @@ public:
 
 }
 
-class Processor {
+class ProcessorState {
     std::array<Word, 8> _registers;
     Word _pc;
     Word _sp;
@@ -73,9 +73,9 @@ class Processor {
     }
 
 public:
-    Processor() = delete;
+    ProcessorState() = delete;
 
-    explicit Processor( std::shared_ptr<Memory> memory ) :
+    explicit ProcessorState( std::shared_ptr<Memory> memory ) :
         _registers { { 0, 0, 0, 0, 0, 0, 0, 0 } },
         _pc { 0 },
         _sp { STACK_BEGIN },
@@ -91,14 +91,15 @@ public:
 
     inline int clock() const { return _clock; }
     inline void tickClock( int ticks ) { _clock += ticks; }
+    inline void clearClock() { _clock = 0; }
 
     inline Memory& memory() { return *_memory; }
 };
 
 class AddressingMode {
 public:
-    virtual Word load( Processor& proc ) const = 0;
-    virtual void store( Processor& proc, Word value ) const = 0;
+    virtual Word load( ProcessorState& proc ) const = 0;
+    virtual void store( ProcessorState& proc, Word value ) const = 0;
 };
 
 namespace mode {
@@ -109,8 +110,8 @@ struct RegisterDirect : public AddressingMode {
     explicit RegisterDirect( Register reg ) : reg { reg } {}
     RegisterDirect() = delete;
 
-    virtual Word load( Processor& proc ) const { return proc.read( reg ); }
-    virtual void store( Processor& proc, Word value ) const { proc.write( reg, value ); }
+    virtual Word load( ProcessorState& proc ) const { return proc.read( reg ); }
+    virtual void store( ProcessorState& proc, Word value ) const { proc.write( reg, value ); }
 };
 
 struct RegisterIndirect : public AddressingMode {
@@ -119,33 +120,33 @@ struct RegisterIndirect : public AddressingMode {
     explicit RegisterIndirect( Register reg ) : reg { reg } {}
     RegisterIndirect() = delete;
 
-    virtual Word load( Processor& proc ) const {
+    virtual Word load( ProcessorState& proc ) const {
         return proc.memory().read( proc.read( reg ) );
     }
 
-    virtual void store( Processor& proc, Word value ) const {
+    virtual void store( ProcessorState& proc, Word value ) const {
         proc.memory().write( proc.read( reg ), value );
     }
 };
 
 struct Peek : public AddressingMode {
-    virtual Word load( Processor& proc ) const {
+    virtual Word load( ProcessorState& proc ) const {
         return proc.memory().read( proc.read( Special::Sp ) );
     }
 
-    virtual void store( Processor& proc, Word value ) const {
+    virtual void store( ProcessorState& proc, Word value ) const {
         proc.memory().write( proc.read( Special::Sp ), value );
     }
 };
 
 struct Direct : public AddressingMode {
 private:
-    inline void common( Processor& proc ) const {
+    inline void common( ProcessorState& proc ) const {
         proc.tickClock( 1 );
     }
 public:
-    virtual Word load( Processor& proc ) const;
-    virtual void store( Processor& proc, Word value ) const;
+    virtual Word load( ProcessorState& proc ) const;
+    virtual void store( ProcessorState& proc, Word value ) const;
 };
 
 }
@@ -162,7 +163,7 @@ enum class SpecialOpcode {
 
 class Instruction {
 public:
-    virtual void execute( Processor& proc ) const = 0;
+    virtual void execute( ProcessorState& proc ) const = 0;
 };
 
 namespace instruction {
@@ -179,7 +180,7 @@ struct Unary : public Instruction {
 
     Unary() = delete;
 
-    virtual void execute( Processor& proc ) const;
+    virtual void execute( ProcessorState& proc ) const;
 };
 
 struct Binary : public Instruction {
@@ -197,12 +198,12 @@ struct Binary : public Instruction {
 
     Binary() = delete;
 
-    virtual void execute( Processor& proc ) const;
+    virtual void execute( ProcessorState& proc ) const;
 };
 
 }
 
-void executeNext( Processor& proc );
+void executeNext( ProcessorState& proc );
 
 enum class AddressContext { A, B };
 
