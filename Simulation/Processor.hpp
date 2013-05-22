@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../ProcessorState.hpp"
+#include "../Simulation.hpp"
 
+#include <atomic>
 #include <chrono>
 
 namespace sim {
@@ -12,7 +14,7 @@ constexpr std::chrono::microseconds PROCESSOR_TICK_DURATION { 10 };
 
 }
 
-class Processor {
+class Processor : public Simulation<ProcessorState> {
     std::unique_ptr<ProcessorState> _proc { nullptr };
     std::chrono::microseconds _tickDuration;
 public:
@@ -22,7 +24,8 @@ public:
 
     Processor() = delete;
 
-    void run();
+    virtual std::unique_ptr<ProcessorState> run();
+    
 };
 
 }

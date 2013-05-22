@@ -1,7 +1,8 @@
 #include "Simulation/Processor.hpp"
 
 #include <iostream>
-#include <thread>
+#include <future>
+// #include <thread>
 
 int main() {
 
@@ -12,16 +13,17 @@ int main() {
     proc->write( Register::A, 5 );
 
     // Our program.
-    proc->memory().write( 0, 0x8461 );
-    proc->memory().write( 1, 0x9862 );
-    proc->memory().write( 2, 0x8b81 );
+    proc->memory().write( 0, 0x0061 );
     
-
     sim::Processor procSim { std::move( proc ) };
-
-    std::thread th { [&] { procSim.run(); } };
+    auto procFut = sim::launch( procSim );
 
     std::cout << "Launched the processor!" << std::endl;
 
-    th.join();
+    std::this_thread::sleep_for( std::chrono::seconds { 3 } );
+    procSim.stop();
+
+    procFut.get();
+
+    std::cout << "Done!" << std::endl;
 }

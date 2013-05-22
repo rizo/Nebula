@@ -1,0 +1,34 @@
+#pragma once
+
+#include "Fundamental.hpp"
+
+#include <atomic>
+#include <future>
+
+template <typename StateType>
+class Simulation {
+protected:
+    std::atomic<bool> _isActive { false };
+public:
+    virtual std::unique_ptr<StateType> run() = 0;
+
+    bool isActive() const { return _isActive.load(); }
+    void setActive() { _isActive.store( true ); }
+    
+    virtual void stop() {
+        _isActive.store( false );
+    }
+
+    virtual ~Simulation() {};
+};
+
+namespace sim {
+
+template <typename StateType>
+std::future<std::unique_ptr<StateType>>
+launch( Simulation<StateType>& sim ) {
+    return std::async( std::launch::async,
+                       [&sim] { return sim.run(); } );
+}
+
+}
