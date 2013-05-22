@@ -7,7 +7,7 @@
 
 template <typename StateType>
 class Simulation {
-protected:
+private:
     std::atomic<bool> _isActive { false };
 public:
     virtual std::unique_ptr<StateType> run() = 0;

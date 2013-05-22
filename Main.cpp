@@ -1,8 +1,6 @@
 #include "Simulation/Processor.hpp"
 
 #include <iostream>
-#include <future>
-// #include <thread>
 
 int main() {
 
