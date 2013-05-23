@@ -5,8 +5,10 @@
 #include <functional>
 #include <memory>
 
+#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
+using boost::format;
 using boost::optional;
 
 using Word = std::uint16_t;

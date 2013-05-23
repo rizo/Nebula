@@ -11,6 +11,8 @@ find_package (Threads REQUIRED)
 add_executable (nebula
   Memory.cpp
   ProcessorState.cpp
+  Computer.cpp
+  Simulation/Clock.cpp
   Simulation/Processor.cpp
   Main.cpp)
 

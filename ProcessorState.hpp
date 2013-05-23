@@ -66,6 +66,7 @@ class ProcessorState {
     int _clock;
 
     std::shared_ptr<Memory> _memory = nullptr;
+    optional<Word> _hwIndex {};
 
     using RegisterIndex = decltype( _registers )::size_type;
     static inline RegisterIndex registerIndex( Register reg ) {
@@ -94,6 +95,16 @@ public:
     inline void clearClock() { _clock = 0; }
 
     inline Memory& memory() { return *_memory; }
+
+    inline optional<Word> takeInterruptIndex() {
+        auto res = _hwIndex;
+        _hwIndex = boost::none;
+        return res;
+    }
+
+    inline void putInterruptIndex( Word index ) {
+        _hwIndex = index;
+    }
 };
 
 class AddressingMode {
@@ -149,6 +160,16 @@ public:
     virtual void store( ProcessorState& proc, Word value ) const;
 };
 
+struct FastDirect : public AddressingMode {
+    Word value;
+
+    explicit FastDirect( Word value ) : value { value } {}
+    FastDirect() = delete;
+
+    virtual Word load( ProcessorState& ) const { return value; }
+    virtual void store( ProcessorState&, Word ) const { /* Nothing. */ }
+};
+
 }
 
 enum class Opcode {
@@ -158,7 +179,8 @@ enum class Opcode {
 };
 
 enum class SpecialOpcode {
-    Jsr
+    Jsr,
+    Hwi
 };
 
 class Instruction {

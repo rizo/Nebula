@@ -57,7 +57,15 @@ void Direct::store( ProcessorState& proc, Word value ) const {
 namespace instruction {
 
 void Unary::execute( ProcessorState& proc ) const {
-    assert( ! "Unary instructions are unsupported!" );
+    auto val = address->load( proc );
+
+    switch ( opcode ) {
+    case SpecialOpcode::Hwi:
+        proc.putInterruptIndex( val );
+        break;
+    default:
+        assert( ! "Unary instruction is unsupported!" );
+    }
 }
 
 void Binary::execute( ProcessorState& proc ) const {
@@ -138,6 +146,7 @@ template <>
 optional<SpecialOpcode> decode( const Word& w ) {
     switch ( w ) {
     case 0x01: return SpecialOpcode::Jsr;
+    case 0x12: return SpecialOpcode::Hwi;
     default: return {};
     }
 }
@@ -175,6 +184,24 @@ decodeRegisterIndirect( Word w ) {
 //     }
 // }
 
+static
+std::shared_ptr<AddressingMode>
+decodeFastDirect( Word w ) {
+    Word value;
+
+    if ( w >= 0x20 && w <= 0x3f ) {
+        if ( w == 0x20 ) {
+            value = 0xffff;
+        } else {
+            value = w - 0x21;
+        }
+
+        return std::make_shared<mode::FastDirect>( value );
+    }
+
+    return nullptr;
+}
+
 template <typename T>
 static std::function<std::shared_ptr<T>( Word )>
 decoderByValue( Word value ) {
@@ -203,32 +230,6 @@ decoderByValue( Word value ) {
 //     }
 // }
 
-// static optional<Address> decodeFastDirect( Word w ) {
-//     if ( w >= 0x20 && w <= 0x3f ) {
-//         if ( w == 0x20 ) {
-//             return address::fastDirect( 0xffff );
-//         } else {
-//             return address::fastDirect( w - 0x21 );
-//         }
-//     } else {
-//         return {};
-//     }
-// }
-
-// static
-// std::function<optional<Address>( Word )> 
-// makeDecoder( Word value,
-//              std::function<Address()> f ) {
-//     auto dec = [value, f]( Word w ) -> optional<Address> {
-//         if ( w == value ) {
-//             return f();
-//         } else {
-//             return {};
-//         }
-//     };
-
-//     return dec;
-// }
 
 std::shared_ptr<AddressingMode>
 decodeAddress( AddressContext context, Word word ) {
@@ -240,6 +241,7 @@ decodeAddress( AddressContext context, Word word ) {
     // auto decodePc = makeDecoder( 0x1c, address::pc );
     // auto decodeEx = makeDecoder( 0x1d, address::ex );
     // auto decodeIndirect = makeDecoder( 0x1e, address::indirect );
+    auto decodeDirect = decoderByValue<mode::Direct>( 0x1f );
     // auto decodeDirect = makeDecoder( 0x1f, address::direct );
 
 #define TRY( f ) addr = f( word ); if ( addr ) return addr;
@@ -260,7 +262,8 @@ decodeAddress( AddressContext context, Word word ) {
     // TRY( decodePc );
     // TRY( decodeEx );
     // TRY( decodeIndirect );
-    // TRY( decodeDirect );
+    TRY( decodeDirect );
+    TRY( decodeFastDirect );
     
 #undef TRY
 
