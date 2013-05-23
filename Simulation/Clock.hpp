@@ -3,8 +3,6 @@
 #include "../Computer.hpp"
 #include "../Simulation.hpp"
 
-namespace sim {
-
 class Clock : public Simulation<void>, public Device {
     Computer& _computer;
     std::shared_ptr<ProcessorInterrupt> _procInt { nullptr };
@@ -17,5 +15,3 @@ public:
 
     virtual DeviceId id() const { return 0x12d0b402; }
 };
-
-}

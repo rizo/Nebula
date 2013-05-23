@@ -15,6 +15,8 @@ constexpr std::chrono::microseconds PROCESSOR_TICK_DURATION { 10 };
 
 }
 
+}
+
 class Processor : public Simulation<ProcessorState> {
     Computer& _computer;
     std::unique_ptr<ProcessorState> _proc { nullptr };
@@ -23,11 +25,9 @@ public:
     explicit Processor( Computer& computer ) :
         _computer { computer },
         _proc { make_unique<ProcessorState>( computer.memory() ) },
-        _tickDuration { defaults::PROCESSOR_TICK_DURATION } {}
+        _tickDuration { sim::defaults::PROCESSOR_TICK_DURATION } {}
 
     Processor() = delete;
 
     virtual std::unique_ptr<ProcessorState> run();
 };
-
-}

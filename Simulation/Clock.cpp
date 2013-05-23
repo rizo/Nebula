@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-namespace sim {
-
 std::unique_ptr<void>
 Clock::run() {
     setActive();
@@ -19,6 +17,4 @@ Clock::run() {
     }
 
     return nullptr;
-}
-
 }

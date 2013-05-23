@@ -2,8 +2,6 @@
 
 #include <thread>
 
-namespace sim {
-
 std::unique_ptr<ProcessorState>
 Processor::run() {
     setActive();
@@ -29,6 +27,4 @@ Processor::run() {
     }
 
     return std::move( _proc );
-}
-
 }
