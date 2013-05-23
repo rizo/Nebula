@@ -150,6 +150,16 @@ struct Peek : public AddressingMode {
     }
 };
 
+struct Pc : public AddressingMode {
+    virtual Word load( ProcessorState& proc ) const {
+        return proc.read( Special::Pc );
+    }
+
+    virtual void store( ProcessorState& proc, Word value ) const {
+        proc.write( Special::Pc, value );
+    }
+};
+
 struct Direct : public AddressingMode {
 private:
     inline void common( ProcessorState& proc ) const {

@@ -18,8 +18,6 @@ Processor::run() {
             // Trigger the interrupt, and wait for the device to respond.
             inter->trigger( std::move( _proc ) );
             _proc = inter->waitForResponse();
-
-            std::cout << "Processor got response from hardware!" << std::endl;
         }
 
         std::this_thread::sleep_for( _tickDuration * _proc->clock() );
