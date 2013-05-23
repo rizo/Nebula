@@ -32,7 +32,7 @@ class Clock : public Simulation<ClockState>, public Device {
 public:
     explicit Clock( Computer& computer ) :
         _computer { computer },
-        _procInt { computer.nextInterrupt( *this) } {}
+        _procInt { computer.nextInterrupt( this) } {}
 
     virtual std::unique_ptr<ClockState> run();
 

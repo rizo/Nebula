@@ -76,13 +76,13 @@ public:
 
     std::shared_ptr<Memory> memory() { return _memory; }
 
-    inline std::shared_ptr<ProcessorInterrupt> nextInterrupt( const Device& dev ) {
+    inline std::shared_ptr<ProcessorInterrupt> nextInterrupt( const Device* const  dev ) {
         if ( static_cast<int>( _devIndex ) >= computer::MAX_DEVICES ) {
             throw error::TooManyDevices {};
         }
 
         _procInts[_devIndex] = std::make_shared<ProcessorInterrupt>();
-        _devIds[_devIndex] = dev.id();
+        _devIds[_devIndex] = dev->id();
 
         return _procInts[_devIndex++];
     }
