@@ -13,7 +13,6 @@ Clock::run() {
         if ( _procInt->isActive() ) {
             auto proc = _procInt->processor();
             auto a = proc->read( Register::A );
-            ClockOperation op;
 
             switch ( a ) {
             case 0:
@@ -27,7 +26,7 @@ Clock::run() {
             _procInt->respond();
         }
 
-        std::this_thread::sleep_for( sim::defaults::CLOCK_BASE_PERIOD * _state.divider );
+        std::this_thread::sleep_for( sim::CLOCK_BASE_PERIOD * _state.divider );
         _state.elapsed += 1;
     }
 

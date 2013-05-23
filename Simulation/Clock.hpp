@@ -5,11 +5,7 @@
 
 namespace sim {
 
-namespace defaults {
-
 constexpr std::chrono::microseconds CLOCK_BASE_PERIOD { 16666 };
-
-}
 
 }
 

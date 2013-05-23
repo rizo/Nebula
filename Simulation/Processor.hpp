@@ -9,11 +9,7 @@
 
 namespace sim {
 
-namespace defaults {
-
 constexpr std::chrono::microseconds PROCESSOR_TICK_DURATION { 10 };
-
-}
 
 }
 
@@ -25,7 +21,7 @@ public:
     explicit Processor( Computer& computer ) :
         _computer { computer },
         _proc { make_unique<ProcessorState>( computer.memory() ) },
-        _tickDuration { sim::defaults::PROCESSOR_TICK_DURATION } {}
+        _tickDuration { sim::PROCESSOR_TICK_DURATION } {}
 
     Processor() = delete;
 

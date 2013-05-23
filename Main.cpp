@@ -28,7 +28,7 @@ int main() {
     auto clockState = sim::launch( clock );
     std::cout << "Launched the clock!" << std::endl;
 
-    std::this_thread::sleep_for( std::chrono::seconds { 2 } );
+    std::this_thread::sleep_for( std::chrono::milliseconds { 500 } );
     proc.stop();
     clock.stop();
 
