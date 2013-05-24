@@ -32,7 +32,13 @@ public:
 
     virtual std::unique_ptr<ClockState> run();
 
-    virtual DeviceId id() const { return 0x12d0b402; }
+    virtual DeviceInfo info() const {
+        return {
+            device::Id { 0x12d0b402 },
+            device::Manufacturer { 0 },
+            device::Version { 1 }
+        };
+    }
 
     void handleInterrupt( ClockOperation op, ProcessorState* proc );
 };

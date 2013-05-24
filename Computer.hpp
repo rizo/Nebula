@@ -7,11 +7,23 @@
 #include <condition_variable>
 #include <stdexcept>
 
-using DeviceId = std::uint32_t;
+namespace device {
+
+struct Id { DoubleWord value; };
+struct Manufacturer { DoubleWord value; };
+struct Version { Word value; };
+
+}
+
+struct DeviceInfo {
+    device::Id id;
+    device::Manufacturer manufacturer;
+    device::Version version;
+};
 
 class Device {
 public:
-    virtual DeviceId id() const = 0;
+    virtual DeviceInfo info() const = 0;
 };
 
 class ProcessorInterrupt {
@@ -66,7 +78,7 @@ public:
 
 class Computer {
     std::array<std::shared_ptr<ProcessorInterrupt>, computer::MAX_DEVICES> _procInts {};
-    std::array<DeviceId, computer::MAX_DEVICES> _devIds {};
+    std::array<DeviceInfo, computer::MAX_DEVICES> _devInfo {};
     Word _devIndex { 0 };
 
     std::shared_ptr<Memory> _memory = nullptr;
@@ -82,7 +94,7 @@ public:
         }
 
         _procInts[_devIndex] = std::make_shared<ProcessorInterrupt>();
-        _devIds[_devIndex] = dev->id();
+        _devInfo[_devIndex] = dev->info();
 
         return _procInts[_devIndex++];
     }
@@ -95,11 +107,11 @@ public:
         return _procInts[index];
     }
 
-    inline DeviceId idByIndex( Word index ) {
+    inline DeviceInfo infoByIndex( Word index ) {
         if ( index >= _devIndex ) {
             throw error::NoSuchDeviceIndex { index };
         }
 
-        return _devIds[index];
+        return _devInfo[index];
     }
 };
