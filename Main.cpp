@@ -33,4 +33,5 @@ int main() {
     clock.stop();
 
     std::cout << procState.get()->read( Register::C ) << std::endl;
+    clockState.get();
 }

@@ -140,6 +140,18 @@ struct RegisterIndirect : public AddressingMode {
     }
 };
 
+struct Push : public AddressingMode {
+    virtual Word load( ProcessorState& ) const {
+        assert( ! "Attempt to load from a 'push' address!" );
+    }
+
+    virtual void store( ProcessorState& proc, Word value ) const {
+        auto sp = proc.read( Special::Sp );
+        proc.memory().write( sp - 1, value );
+        proc.write( Special::Sp, sp - 1 );
+    }
+};
+
 struct Peek : public AddressingMode {
     virtual Word load( ProcessorState& proc ) const {
         return proc.memory().read( proc.read( Special::Sp ) );

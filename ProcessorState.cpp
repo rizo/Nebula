@@ -57,11 +57,13 @@ void Direct::store( ProcessorState& proc, Word value ) const {
 namespace instruction {
 
 void Unary::execute( ProcessorState& proc ) const {
-    auto val = address->load( proc );
-
     switch ( opcode ) {
     case SpecialOpcode::Hwi:
-        proc.putInterruptIndex( val );
+        proc.putInterruptIndex( address->load( proc ) );
+        break;
+    case SpecialOpcode::Jsr:
+        mode::Push {}.store( proc, proc.read( Special::Pc ) );
+        proc.write( Special::Pc, address->load( proc ) );
         break;
     default:
         assert( ! "Unary instruction is unsupported!" );
