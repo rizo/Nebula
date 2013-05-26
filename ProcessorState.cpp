@@ -318,7 +318,8 @@ static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc )
     }
 }
 
-void executeNext( ProcessorState& proc ) {
-    auto ins = fetchNextInstruction( proc );
-    ins->execute( proc );
+void ProcessorState::executeNext() {
+    auto ins = fetchNextInstruction( *this );
+    ins->execute( *this );
+    _lastInstruction = ins;
 }

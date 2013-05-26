@@ -58,12 +58,17 @@ public:
 
 }
 
+// Forward declaration.
+class Instruction;
+
 class ProcessorState {
     std::array<Word, 8> _registers;
     Word _pc;
     Word _sp;
     Word _ex;
+
     int _clock;
+    std::shared_ptr<Instruction> _lastInstruction { nullptr };
 
     std::shared_ptr<Memory> _memory = nullptr;
     optional<Word> _hwIndex {};
@@ -95,6 +100,10 @@ public:
     inline void clearClock() { _clock = 0; }
 
     inline Memory& memory() { return *_memory; }
+
+    const Instruction* lastInstruction() const { return _lastInstruction.get(); }
+
+    void executeNext();
 
     inline optional<Word> takeInterruptIndex() {
         auto res = _hwIndex;

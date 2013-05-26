@@ -7,7 +7,7 @@ Processor::run() {
     setActive();
 
     while ( isActive() ) {
-        executeNext( *_proc );
+        _proc->executeNext();
 
         // Check to see if an interrupt was called to a HW device.
         auto index = _proc->takeInterruptIndex();
