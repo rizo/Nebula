@@ -26,8 +26,6 @@ Processor::run() {
 }
 
 void Processor::executeSpecial( const instruction::Unary* ins ) {
-    Word index;
-
     if ( ins->opcode == SpecialOpcode::Hwi ) {
         Word index = ins->address->load( *_proc );
         auto inter = _computer.interruptByIndex( index );
@@ -38,5 +36,17 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
     } else if ( ins->opcode == SpecialOpcode::Hwn ) {
         ins->address->store( *_proc, _computer.numDevices() );
         _proc->tickClock( 2 );
+    } else if ( ins->opcode == SpecialOpcode::Hwq ) {
+        Word index = ins->address->load( *_proc );
+        auto info = _computer.infoByIndex( index );
+
+        _proc->write( Register::A, info.id.value & 0xffff );
+        _proc->write( Register::B, (info.id.value & 0xffff0000) >> 16 );
+
+        _proc->write( Register::X, info.manufacturer.value & 0xffff );
+        _proc->write( Register::Y,
+                      (info.manufacturer.value & 0xffff0000) >> 16 );
+
+        _proc->write( Register::C, info.version.value );
     }
 }

@@ -201,6 +201,7 @@ enum class Opcode {
 enum class SpecialOpcode {
     Jsr,
     Hwn,
+    Hwq,
     Hwi
 };
 

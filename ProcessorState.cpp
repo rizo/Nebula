@@ -59,6 +59,7 @@ namespace instruction {
 void Unary::execute( ProcessorState& proc ) const {
     switch ( opcode ) {
     case SpecialOpcode::Hwn:
+    case SpecialOpcode::Hwq:
     case SpecialOpcode::Hwi:
         // Handled by the parent simulation.
         break;
@@ -150,6 +151,7 @@ optional<SpecialOpcode> decode( const Word& w ) {
     switch ( w ) {
     case 0x01: return SpecialOpcode::Jsr;
     case 0x10: return SpecialOpcode::Hwn;
+    case 0x11: return SpecialOpcode::Hwq;
     case 0x12: return SpecialOpcode::Hwi;
     default: return {};
     }

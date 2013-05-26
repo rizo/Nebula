@@ -8,26 +8,38 @@ int main( int argc, char* argv[] ) {
     google::InitGoogleLogging( argv[0] );
 
     auto memory = std::make_shared<Memory>( 0x10000 );
-    memory->write( 0, 0x8821 );
-    memory->write( 1, 0x0e00 );
-    memory->write( 2, 0x8640 );
-    memory->write( 3, 0x9381 );
+    memory->write( 0, 0x8620 );
+    memory->write( 1, 0x8b81 );
 
     Computer computer { memory };
 
     Processor proc { computer };
     Clock clock { computer };
 
-    auto procState = sim::launch( proc );
+    auto procStateF = sim::launch( proc );
     LOG( INFO ) << "Launched the processor!";
 
-    auto clockState = sim::launch( clock );
+    auto clockStateF = sim::launch( clock );
     LOG( INFO ) << "Launched the clock!";
 
     std::this_thread::sleep_for( std::chrono::milliseconds { 500 } );
     proc.stop();
     clock.stop();
 
-    std::cout << procState.get()->read( Register::X ) << std::endl;
-    clockState.get();
+    auto procState = procStateF.get();
+
+    std::cout << format( "0x%04x" ) % procState->read( Register::A ) << std::endl;
+    std::cout << format( "0x%04x" ) % procState->read( Register::B ) << std::endl;
+
+    std::cout << std::endl;
+
+    std::cout << format( "0x%04x" ) % procState->read( Register::X ) << std::endl;
+    std::cout << format( "0x%04x" ) % procState->read( Register::Y ) << std::endl;
+
+    
+    std::cout << std::endl;
+
+    std::cout << format( "0x%04x" ) % procState->read( Register::C ) << std::endl;
+    
+    clockStateF.get();
 }
