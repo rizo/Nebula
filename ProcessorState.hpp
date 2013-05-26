@@ -18,7 +18,7 @@ enum class Register {
 };
 
 enum class Special {
-    Pc, Sp, Ex
+    Pc, Sp, Ex, Ia
 };
 
 constexpr Word STACK_BEGIN = 0xffff;
@@ -66,6 +66,7 @@ class ProcessorState {
     Word _pc;
     Word _sp;
     Word _ex;
+    Word _ia;
 
     int _clock;
     std::shared_ptr<Instruction> _lastInstruction { nullptr };
@@ -200,6 +201,8 @@ enum class Opcode {
 
 enum class SpecialOpcode {
     Jsr,
+    Iag,
+    Ias,
     Hwn,
     Hwq,
     Hwi
