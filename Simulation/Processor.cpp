@@ -9,15 +9,8 @@ Processor::run() {
     while ( isActive() ) {
         _proc->executeNext();
 
-        // Check to see if an interrupt was called to a HW device.
-        auto index = _proc->takeInterruptIndex();
-
-        if ( index ) {
-            auto inter = _computer.interruptByIndex( *index );
-            
-            // Trigger the interrupt, and wait for the device to respond.
-            inter->trigger( std::move( _proc ) );
-            _proc = inter->waitForResponse();
+        if ( auto ins = dynamic_cast<const instruction::Unary*>( _proc->lastInstruction() ) ) {
+            executeSpecial( ins );
         }
 
         std::this_thread::sleep_for( _tickDuration * _proc->clock() );
@@ -25,4 +18,19 @@ Processor::run() {
     }
 
     return std::move( _proc );
+}
+
+void Processor::executeSpecial( const instruction::Unary* ins ) {
+    Word index;
+
+    if ( ins->opcode == SpecialOpcode::Hwi ) {
+        Word index = ins->address->load( *_proc );
+        auto inter = _computer.interruptByIndex( index );
+
+        // Trigger the interrupt, and wait for the device to respond.
+        inter->trigger( std::move( _proc ) );
+        _proc = inter->waitForResponse();
+    } else if ( ins->opcode == SpecialOpcode::Hwn ) {
+        ins->address->store( *_proc, _computer.numDevices() );
+    }
 }

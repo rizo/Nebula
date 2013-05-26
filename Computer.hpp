@@ -114,4 +114,6 @@ public:
 
         return _devInfo[index];
     }
+
+    inline int numDevices() const { return _devIndex; }
 };

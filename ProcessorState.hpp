@@ -71,7 +71,6 @@ class ProcessorState {
     std::shared_ptr<Instruction> _lastInstruction { nullptr };
 
     std::shared_ptr<Memory> _memory = nullptr;
-    optional<Word> _hwIndex {};
 
     using RegisterIndex = decltype( _registers )::size_type;
     static inline RegisterIndex registerIndex( Register reg ) {
@@ -104,16 +103,6 @@ public:
     const Instruction* lastInstruction() const { return _lastInstruction.get(); }
 
     void executeNext();
-
-    inline optional<Word> takeInterruptIndex() {
-        auto res = _hwIndex;
-        _hwIndex = boost::none;
-        return res;
-    }
-
-    inline void putInterruptIndex( Word index ) {
-        _hwIndex = index;
-    }
 };
 
 class AddressingMode {
@@ -211,6 +200,7 @@ enum class Opcode {
 
 enum class SpecialOpcode {
     Jsr,
+    Hwn,
     Hwi
 };
 

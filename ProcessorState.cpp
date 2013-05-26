@@ -58,8 +58,9 @@ namespace instruction {
 
 void Unary::execute( ProcessorState& proc ) const {
     switch ( opcode ) {
+    case SpecialOpcode::Hwn:
     case SpecialOpcode::Hwi:
-        proc.putInterruptIndex( address->load( proc ) );
+        // Handled by the parent simulation.
         break;
     case SpecialOpcode::Jsr:
         mode::Push {}.store( proc, proc.read( Special::Pc ) );
@@ -148,6 +149,7 @@ template <>
 optional<SpecialOpcode> decode( const Word& w ) {
     switch ( w ) {
     case 0x01: return SpecialOpcode::Jsr;
+    case 0x10: return SpecialOpcode::Hwn;
     case 0x12: return SpecialOpcode::Hwi;
     default: return {};
     }

@@ -26,4 +26,6 @@ public:
     Processor() = delete;
 
     virtual std::unique_ptr<ProcessorState> run();
+
+    void executeSpecial( const instruction::Unary* ins );
 };
