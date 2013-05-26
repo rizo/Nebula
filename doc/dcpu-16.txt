@@ -1,3 +1,5 @@
+-*-read-only-*-
+
 DCPU-16 Specification
 Copyright 1985 Mojang
 Version 1.7

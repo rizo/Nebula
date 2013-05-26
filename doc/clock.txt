@@ -1,3 +1,5 @@
+-*-read-only-*-
+
 Name: Generic Clock (compatible)
 ID: 0x12d0b402
 Version: 1

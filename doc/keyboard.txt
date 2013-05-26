@@ -1,3 +1,5 @@
+-*-read-only-*-
+
 Name: Generic Keyboard (compatible)
 ID: 0x30cf7406
 Version: 1
