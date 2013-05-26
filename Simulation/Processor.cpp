@@ -6,10 +6,14 @@ std::unique_ptr<ProcessorState>
 Processor::run() {
     setActive();
 
+    LOG( INFO ) << "Processor simulation is active.";
+
     while ( isActive() ) {
         _proc->executeNext();
 
         if ( auto ins = dynamic_cast<const instruction::Unary*>( _proc->lastInstruction() ) ) {
+            LOG( INFO ) << "Processor got special instruction. Executing.";
+
             executeSpecial( ins );
         }
 
@@ -17,6 +21,7 @@ Processor::run() {
         _proc->clearClock();
     }
 
+    LOG( INFO ) << "Processor simulation shutting down.";
     return std::move( _proc );
 }
 
@@ -32,5 +37,6 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
         _proc = inter->waitForResponse();
     } else if ( ins->opcode == SpecialOpcode::Hwn ) {
         ins->address->store( *_proc, _computer.numDevices() );
+        _proc->tickClock( 2 );
     }
 }

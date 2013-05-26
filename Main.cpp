@@ -4,10 +4,14 @@
 
 #include <iostream>
 
-int main() {
+int main( int argc, char* argv[] ) {
+    google::InitGoogleLogging( argv[0] );
+
     auto memory = std::make_shared<Memory>( 0x10000 );
-    memory->write( 0, 0x0e00 );
-    memory->write( 1, 0x8b81 );
+    memory->write( 0, 0x8821 );
+    memory->write( 1, 0x0e00 );
+    memory->write( 2, 0x8640 );
+    memory->write( 3, 0x9381 );
 
     Computer computer { memory };
 
@@ -15,10 +19,10 @@ int main() {
     Clock clock { computer };
 
     auto procState = sim::launch( proc );
-    std::cout << "Launched the processor!" << std::endl;
+    LOG( INFO ) << "Launched the processor!";
 
     auto clockState = sim::launch( clock );
-    std::cout << "Launched the clock!" << std::endl;
+    LOG( INFO ) << "Launched the clock!";
 
     std::this_thread::sleep_for( std::chrono::milliseconds { 500 } );
     proc.stop();

@@ -16,7 +16,9 @@ add_executable (nebula
   Simulation/Processor.cpp
   Main.cpp)
 
-target_link_libraries (nebula ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (nebula
+  glog
+  ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable (runTests
   tests/TestMemory.cpp

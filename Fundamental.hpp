@@ -7,6 +7,8 @@
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <glog/logging.h>
+
 
 using boost::format;
 using boost::optional;
