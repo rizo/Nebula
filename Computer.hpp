@@ -39,7 +39,7 @@ public:
 
     // Receiver interface.
 
-    ProcessorState* processor() { return _proc.get(); }
+    ProcessorState* state() { return _proc.get(); }
     bool isActive() { return _isActive.load(); }
 
     void respond();

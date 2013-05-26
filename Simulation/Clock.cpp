@@ -11,7 +11,7 @@ Clock::run() {
         }
 
         if ( _procInt->isActive() ) {
-            auto proc = _procInt->processor();
+            auto proc = _procInt->state();
             auto a = proc->read( Register::A );
 
             switch ( a ) {
