@@ -27,6 +27,9 @@ Clock::run() {
             case 1:
                 handleInterrupt( ClockOperation::StoreElapsed, proc );
                 break;
+            case 2:
+                handleInterrupt( ClockOperation::EnableInterrupts, proc );
+                break;
             }
             
             _procInt->respond();
@@ -36,6 +39,10 @@ Clock::run() {
 
         std::this_thread::sleep_for( sim::CLOCK_BASE_PERIOD * _state.divider );
         _state.elapsed += 1;
+
+        if ( _state.interruptsEnabled ) {
+            _computer.queue().push( _state.message );
+        }
     }
 
     LOG( INFO ) << "Clock simulation shutting down.";
@@ -65,5 +72,16 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
 
         proc->write( Register::C, _state.elapsed );
         break;
+    case ClockOperation::EnableInterrupts:
+        LOG( INFO ) << "Clock executing 'EnableInterrupts'";
+
+        b = proc->read( Register::B );
+
+        if ( b != 0 ) {
+            _state.interruptsEnabled = true;
+            _state.message = b;
+        } else {
+            _state.interruptsEnabled = false;
+        }
     }
 }

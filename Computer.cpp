@@ -26,3 +26,27 @@ void ProcessorInterrupt::waitForTrigger() {
     _condition.wait( lock, [&] { return isActive(); } );
 }
 
+void InterruptQueue::push( Word message ) {
+    if ( _queuingEnabled ) {
+        if ( _q.size() >= computer::MAX_QUEUED_INTERRUPTS ) {
+            throw error::CaughtFire {};
+        }
+
+        std::lock_guard<std::mutex> _lock { _mutex };
+        _q.emplace( message );
+        _isReady.store( true );
+    }
+}
+
+Word InterruptQueue::pop() {
+    std::lock_guard<std::mutex> _lock { _mutex };
+    auto res = _q.front();
+    _q.pop();
+
+    if ( _q.empty() ) {
+        _isReady.store( false );
+    }
+
+    return res;
+}
+
