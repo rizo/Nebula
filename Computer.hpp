@@ -81,6 +81,11 @@ class Computer {
     std::array<DeviceInfo, computer::MAX_DEVICES> _devInfo {};
     Word _devIndex { 0 };
 
+    InterruptQueue _intQ {};
+    bool _onlyQueuing { false };
+
+    Word _ia { 0 };
+
     std::shared_ptr<Memory> _memory = nullptr;
 public:
     explicit Computer( std::shared_ptr<Memory> memory ) :
@@ -116,4 +121,10 @@ public:
     }
 
     inline int numDevices() const { return _devIndex; }
+
+    inline InterruptQueue& queue() { return _intQ; }
+    inline void setOnlyQueueing( bool val ) { _onlyQueuing = val; }
+
+    inline Word ia() const { return _ia; }
+    inline void setIa( Word location ) { _ia = location; }
 };
