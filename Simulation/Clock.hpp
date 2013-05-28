@@ -18,7 +18,9 @@ enum class ClockOperation {
 struct ClockState {
     Word divider { 1 };
     bool isOn { false };
+    bool interruptsEnabled { false };
     Word elapsed { 0 };
+    Word message { 0 };
 };
 
 class Clock : public Simulation<ClockState>, public Device {

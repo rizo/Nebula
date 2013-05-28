@@ -18,7 +18,7 @@ enum class Register {
 };
 
 enum class Special {
-    Pc, Sp, Ex, Ia
+    Pc, Sp, Ex
 };
 
 constexpr Word STACK_BEGIN = 0xffff;
@@ -66,7 +66,6 @@ class ProcessorState {
     Word _pc;
     Word _sp;
     Word _ex;
-    Word _ia;
 
     int _clock;
     std::shared_ptr<Instruction> _lastInstruction { nullptr };
@@ -151,6 +150,19 @@ struct Push : public AddressingMode {
     }
 };
 
+struct Pop : public AddressingMode {
+    virtual Word load( ProcessorState& proc ) const {
+        auto sp = proc.read( Special::Sp );
+        auto word = proc.memory().read( sp );
+        proc.write( Special::Sp, sp + 1 );
+        return word;
+    }
+
+    virtual void store( ProcessorState&, Word ) const {
+        assert( ! "Attempt to store to a 'pop' address!" );
+    }
+};
+
 struct Peek : public AddressingMode {
     virtual Word load( ProcessorState& proc ) const {
         return proc.memory().read( proc.read( Special::Sp ) );
@@ -203,6 +215,7 @@ enum class SpecialOpcode {
     Jsr,
     Iag,
     Ias,
+    Rfi,
     Hwn,
     Hwq,
     Hwi

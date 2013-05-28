@@ -15,7 +15,6 @@ Word ProcessorState::read( Special spec ) const {
     case Special::Pc: return _pc;
     case Special::Sp: return _sp;
     case Special::Ex: return _ex;
-    case Special::Ia: return _ia;
     }
 }
 
@@ -28,7 +27,6 @@ void ProcessorState::write( Special spec, Word value ) {
     case Special::Pc: _pc = value; return;
     case Special::Sp: _sp = value; return;
     case Special::Ex: _ex = value; return;
-    case Special::Ia: _ia = value; return;
     }
 }
 
@@ -60,6 +58,9 @@ namespace instruction {
 
 void Unary::execute( ProcessorState& proc ) const {
     switch ( opcode ) {
+    case SpecialOpcode::Iag:
+    case SpecialOpcode::Ias:
+    case SpecialOpcode::Rfi:
     case SpecialOpcode::Hwn:
     case SpecialOpcode::Hwq:
     case SpecialOpcode::Hwi:
@@ -68,12 +69,6 @@ void Unary::execute( ProcessorState& proc ) const {
     case SpecialOpcode::Jsr:
         mode::Push {}.store( proc, proc.read( Special::Pc ) );
         proc.write( Special::Pc, address->load( proc ) );
-        break;
-    case SpecialOpcode::Iag:
-        address->store( proc, proc.read( Special::Ia ) );
-        break;
-    case SpecialOpcode::Ias:
-        proc.write( Special::Ia, address->load( proc ) );
         break;
     default:
         assert( ! "Unary instruction is unsupported!" );
@@ -160,6 +155,7 @@ optional<SpecialOpcode> decode( const Word& w ) {
     case 0x01: return SpecialOpcode::Jsr;
     case 0x09: return SpecialOpcode::Iag;
     case 0x0a: return SpecialOpcode::Ias;
+    case 0x0b: return SpecialOpcode::Rfi;
     case 0x10: return SpecialOpcode::Hwn;
     case 0x11: return SpecialOpcode::Hwq;
     case 0x12: return SpecialOpcode::Hwi;

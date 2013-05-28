@@ -17,6 +17,9 @@ class Processor : public Simulation<ProcessorState> {
     Computer& _computer;
     std::unique_ptr<ProcessorState> _proc { nullptr };
     std::chrono::microseconds _tickDuration;
+
+    void handleInterrupt();
+    void executeSpecial( const instruction::Unary* ins );
 public:
     explicit Processor( Computer& computer ) :
         _computer { computer },
@@ -26,6 +29,4 @@ public:
     Processor() = delete;
 
     virtual std::unique_ptr<ProcessorState> run();
-
-    void executeSpecial( const instruction::Unary* ins );
 };

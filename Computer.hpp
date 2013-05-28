@@ -5,7 +5,15 @@
 #include <array>
 #include <atomic>
 #include <condition_variable>
+#include <queue>
 #include <stdexcept>
+
+namespace computer {
+
+constexpr int MAX_DEVICES = 0x10000;
+constexpr int MAX_QUEUED_INTERRUPTS = 256;
+
+}
 
 namespace device {
 
@@ -46,13 +54,29 @@ public:
     void waitForTrigger();
 };
 
-namespace computer {
+class InterruptQueue {
+    std::queue<Word> _q {};
+    std::mutex _mutex {};
+    std::atomic<bool> _queuingEnabled { false };
 
-constexpr int MAX_DEVICES = 0x10000;
+    // Used so that checking the queue doesn't require locking it.
+    std::atomic<bool> _isReady { false };
+public:
+    void push( Word message );
+    Word pop();
+    bool isReady() const { return _isReady.load(); }
 
-}
+    void enable() { _queuingEnabled.store( true ); }
+    void disable() { _queuingEnabled.store( false ); }
+};
 
 namespace error {
+
+class CaughtFire : public std::runtime_error {
+public:
+    explicit CaughtFire() :
+        std::runtime_error { "DCPU-16 caught fire!" } {}
+};
 
 class TooManyDevices : public std::out_of_range {
 public:

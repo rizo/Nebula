@@ -20,24 +20,13 @@ int main( int argc, char* argv[] ) {
     LOG( INFO ) << "Launched the clock!";
 
 
-    std::this_thread::sleep_for( std::chrono::milliseconds { 5000 } );
+    std::this_thread::sleep_for( std::chrono::milliseconds { 10000 } );
     proc.stop();
     clock.stop();
 
     auto procState = procStateF.get();
 
-    std::cout << format( "0x%04x" ) % procState->read( Register::A ) << std::endl;
-    std::cout << format( "0x%04x" ) % procState->read( Register::B ) << std::endl;
-
-    std::cout << std::endl;
-
     std::cout << format( "0x%04x" ) % procState->read( Register::X ) << std::endl;
-    std::cout << format( "0x%04x" ) % procState->read( Register::Y ) << std::endl;
-
-    
-    std::cout << std::endl;
-
-    std::cout << format( "0x%04x" ) % procState->read( Register::C ) << std::endl;
     
     clockStateF.get();
 }
