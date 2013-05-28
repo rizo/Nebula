@@ -45,6 +45,18 @@ public:
         std::out_of_range { "Invalid format for memory file" } {}
 };
 
+class MissingMemoryFile : public std::runtime_error {
+    std::string _path;
+public:
+    explicit MissingMemoryFile( const std::string& path ) :
+        std::runtime_error {
+            (format( "Unable to open file '%s'" ) % path).str()
+        },
+        _path { path } {}
+
+    const std::string& path() const { return _path; }
+};
+
 class MemoryFileTooBig : public std::out_of_range {
     int _memorySize;
 public:

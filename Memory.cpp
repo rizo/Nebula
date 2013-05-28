@@ -45,7 +45,7 @@ Memory::fromFile( const std::string& filename, int size ) {
     };
 
     if ( ! file.is_open() ) {
-        throw error::BadMemoryFile {};
+        throw error::MissingMemoryFile { filename };
     }
 
     auto begin = std::istreambuf_iterator<char> { file };
