@@ -106,7 +106,7 @@ class Computer {
     Word _devIndex { 0 };
 
     InterruptQueue _intQ {};
-    bool _forceQueuing { false };
+    bool _onlyQueuing { false };
 
     Word _ia { 0 };
 
@@ -146,6 +146,8 @@ public:
 
     inline int numDevices() const { return _devIndex; }
     inline InterruptQueue& queue() { return _intQ; }
+
+    inline void setOnlyQueueing( bool val ) { _onlyQueuing = val; }
 
     inline Word ia() const { return _ia; }
     inline void setIa( Word location ) { _ia = location; }
