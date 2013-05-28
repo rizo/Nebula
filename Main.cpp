@@ -19,8 +19,7 @@ int main( int argc, char* argv[] ) {
     auto clockStateF = sim::launch( clock );
     LOG( INFO ) << "Launched the clock!";
 
-
-    std::this_thread::sleep_for( std::chrono::milliseconds { 10000 } );
+    std::this_thread::sleep_for( std::chrono::milliseconds { 5000 } );
     proc.stop();
     clock.stop();
 
