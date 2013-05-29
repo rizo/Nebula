@@ -57,7 +57,8 @@ public:
 class InterruptQueue {
     std::queue<Word> _q {};
     std::mutex _mutex {};
-    std::atomic<bool> _queuingEnabled { false };
+
+    bool _isEnabled { true };
 
     // Used so that checking the queue doesn't require locking it.
     std::atomic<bool> _hasInterrupt { false };
@@ -66,8 +67,7 @@ public:
     Word pop();
     bool hasInterrupt() const { return _hasInterrupt.load(); }
 
-    void enable() { _queuingEnabled.store( true ); }
-    void disable() { _queuingEnabled.store( false ); }
+    void setEnabled( bool value ) { _isEnabled = value; }
 };
 
 namespace error {
@@ -148,7 +148,7 @@ public:
 
     inline InterruptQueue& queue() { return _intQ; }
 
-    inline void setOnlyQueueing( bool val ) { _onlyQueuing = val; }
+    inline void setOnlyQueuing( bool val ) { _onlyQueuing = val; }
     inline bool onlyQueuing() const { return _onlyQueuing; }
 
     inline Word ia() const { return _ia; }

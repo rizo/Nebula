@@ -27,7 +27,7 @@ void ProcessorInterrupt::waitForTrigger() {
 }
 
 void InterruptQueue::push( Word message ) {
-    if ( _queuingEnabled ) {
+    if ( _isEnabled ) {
         if ( _q.size() >= computer::MAX_QUEUED_INTERRUPTS ) {
             throw error::CaughtFire {};
         }

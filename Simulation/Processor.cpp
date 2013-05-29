@@ -18,8 +18,9 @@ Processor::run() {
         std::this_thread::sleep_for( _tickDuration * _proc->clock() );
         _proc->clearClock();
 
-        if ( _computer.queue().hasInterrupt() ) {
-            LOG( INFO ) << "Handling hardware interrupt.";
+        if ( _computer.queue().hasInterrupt() &&
+             _computer.ia() != 0 &&
+             ! _computer.onlyQueuing() ) {
             handleInterrupt();
         }
     }
@@ -29,9 +30,12 @@ Processor::run() {
 }
 
 void Processor::handleInterrupt() {
+    LOG( INFO ) << "Handling HW interrupt.";
+
     auto msg = _computer.queue().pop();
     auto push = mode::Push {};
-
+    
+    _computer.setOnlyQueuing( true );
     push.store( *_proc, _proc->read( Special::Pc ) );
     push.store( *_proc, _proc->read( Register::A ) );
     _proc->write( Special::Pc, _computer.ia() );
@@ -68,17 +72,18 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
     } else if ( ins->opcode == SpecialOpcode::Ias ) {
         auto value = load();
         _computer.setIa( value );
-        
+
         if ( value == 0 ) {
-            LOG( INFO ) << "Disabling interrupt queuing.";
-            _computer.queue().disable();
+            LOG( WARNING ) << "Ignoring incoming HW interrupts.";
+            _computer.queue().setEnabled( false );
         } else {
-            LOG( INFO ) << "Enabling interrupt queuing.";
-            _computer.queue().enable();
+            LOG( INFO ) << "Enabling incoming HW interrupts.";
+            _computer.queue().setEnabled( true );
         }
     } else if ( ins->opcode == SpecialOpcode::Rfi ) {
         auto pop = mode::Pop {};
         _proc->write( Register::A, pop.load( *_proc ) );
         _proc->write( Special::Pc, pop.load( *_proc ) );
+        _computer.setOnlyQueuing( false );
     }
 }

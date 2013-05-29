@@ -65,8 +65,7 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
             _state.divider = b;
             _state.elapsed = 0;
         } else {
-            LOG( INFO ) << "Turning clock off";
-
+            LOG( WARNING ) << "Turning clock off";
             _state.isOn = false;
         }
 
@@ -85,8 +84,7 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
             _state.interruptsEnabled = true;
             _state.message = b;
         } else {
-            LOG( INFO ) << "Turning interrupts off.";
-
+            LOG( WARNING ) << "Turning interrupts off.";
             _state.interruptsEnabled = false;
         }
     }
