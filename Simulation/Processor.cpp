@@ -85,5 +85,7 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
         _proc->write( Register::A, pop.load( *_proc ) );
         _proc->write( Special::Pc, pop.load( *_proc ) );
         _computer.setOnlyQueuing( false );
+    } else if ( ins->opcode == SpecialOpcode::Iaq ) {
+        _computer.setOnlyQueuing( load() != 0 );
     }
 }

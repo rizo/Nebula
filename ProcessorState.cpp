@@ -61,6 +61,7 @@ void Unary::execute( ProcessorState& proc ) const {
     case SpecialOpcode::Iag:
     case SpecialOpcode::Ias:
     case SpecialOpcode::Rfi:
+    case SpecialOpcode::Iaq:
     case SpecialOpcode::Hwn:
     case SpecialOpcode::Hwq:
     case SpecialOpcode::Hwi:

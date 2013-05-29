@@ -216,6 +216,7 @@ enum class SpecialOpcode {
     Iag,
     Ias,
     Rfi,
+    Iaq,
     Hwn,
     Hwq,
     Hwi
