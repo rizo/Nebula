@@ -7,7 +7,7 @@
 int main( int argc, char* argv[] ) {
     google::InitGoogleLogging( argv[0] );
 
-    auto memory = Memory::fromFile( "/home/jesse/foo.bin", 0x10000 );
+    auto memory = Memory::fromFile( argv[1], 0x10000 );
     Computer computer { memory };
 
     Processor proc { computer };

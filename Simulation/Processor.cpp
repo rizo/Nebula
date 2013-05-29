@@ -18,7 +18,7 @@ Processor::run() {
         std::this_thread::sleep_for( _tickDuration * _proc->clock() );
         _proc->clearClock();
 
-        if ( _computer.queue().isReady() ) {
+        if ( _computer.queue().hasInterrupt() ) {
             LOG( INFO ) << "Handling hardware interrupt.";
             handleInterrupt();
         }

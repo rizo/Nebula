@@ -60,11 +60,11 @@ class InterruptQueue {
     std::atomic<bool> _queuingEnabled { false };
 
     // Used so that checking the queue doesn't require locking it.
-    std::atomic<bool> _isReady { false };
+    std::atomic<bool> _hasInterrupt { false };
 public:
     void push( Word message );
     Word pop();
-    bool isReady() const { return _isReady.load(); }
+    bool hasInterrupt() const { return _hasInterrupt.load(); }
 
     void enable() { _queuingEnabled.store( true ); }
     void disable() { _queuingEnabled.store( false ); }

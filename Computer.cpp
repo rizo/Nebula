@@ -34,7 +34,7 @@ void InterruptQueue::push( Word message ) {
 
         std::lock_guard<std::mutex> _lock { _mutex };
         _q.emplace( message );
-        _isReady.store( true );
+        _hasInterrupt.store( true );
     }
 }
 
@@ -44,7 +44,7 @@ Word InterruptQueue::pop() {
     _q.pop();
 
     if ( _q.empty() ) {
-        _isReady.store( false );
+        _hasInterrupt.store( false );
     }
 
     return res;

@@ -59,10 +59,14 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
         b = proc->read( Register::B );
 
         if ( b != 0 ) {
+            LOG( INFO ) << "Turning on clock with divider " << b << ".";
+
             _state.isOn = true;
             _state.divider = b;
             _state.elapsed = 0;
         } else {
+            LOG( INFO ) << "Turning clock off";
+
             _state.isOn = false;
         }
 
@@ -81,6 +85,8 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
             _state.interruptsEnabled = true;
             _state.message = b;
         } else {
+            LOG( INFO ) << "Turning interrupts off.";
+
             _state.interruptsEnabled = false;
         }
     }
