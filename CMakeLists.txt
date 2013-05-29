@@ -8,6 +8,8 @@ enable_testing ()
 
 find_package (Threads REQUIRED)
 
+include_directories (${gtest_SOURCE_DIR}/include)
+
 add_executable (nebula
   Memory.cpp
   ProcessorState.cpp
