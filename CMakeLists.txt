@@ -7,6 +7,7 @@ add_subdirectory (gtest-1.6.0)
 enable_testing ()
 
 find_package (Threads REQUIRED)
+find_package (SDL REQUIRED)
 
 include_directories (${gtest_SOURCE_DIR}/include)
 
@@ -16,9 +17,11 @@ add_executable (nebula
   Computer.cpp
   Simulation/Clock.cpp
   Simulation/Processor.cpp
+  Simulation/Monitor.cpp
   Main.cpp)
 
 target_link_libraries (nebula
+  ${SDL_LIBRARY}
   glog
   ${CMAKE_THREAD_LIBS_INIT})
 
