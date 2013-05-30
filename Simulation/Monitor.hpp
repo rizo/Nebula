@@ -15,6 +15,8 @@ namespace sim {
 
 const int MONITOR_PIXELS_PER_DOT = 5;
 
+const int MONITOR_PIXELS_PER_BORDER = 10;
+
 const int MONITOR_DOTS_PER_SCREEN_WIDTH = 128;
 const int MONITOR_DOTS_PER_SCREEN_HEIGHT = 96;
 
@@ -24,8 +26,13 @@ const int MONITOR_DOTS_PER_CELL_HEIGHT = 8;
 const int MONITOR_CELLS_PER_SCREEN_WIDTH = 32;
 const int MONITOR_CELLS_PER_SCREEN_HEIGHT = 12;
 
-const int MONITOR_PIXELS_PER_SCREEN_WIDTH = MONITOR_DOTS_PER_SCREEN_WIDTH * MONITOR_PIXELS_PER_DOT;
-const int MONITOR_PIXELS_PER_SCREEN_HEIGHT = MONITOR_DOTS_PER_SCREEN_HEIGHT * MONITOR_PIXELS_PER_DOT;
+const int MONITOR_PIXELS_PER_SCREEN_WIDTH =
+    (2 * MONITOR_PIXELS_PER_BORDER)
+    + (MONITOR_DOTS_PER_SCREEN_WIDTH * MONITOR_PIXELS_PER_DOT);
+
+const int MONITOR_PIXELS_PER_SCREEN_HEIGHT =
+    (2 * MONITOR_PIXELS_PER_BORDER)
+    + (MONITOR_DOTS_PER_SCREEN_HEIGHT * MONITOR_PIXELS_PER_DOT);
 
 const int MONITOR_PIXELS_PER_CELL_WIDTH = MONITOR_DOTS_PER_CELL_WIDTH * MONITOR_PIXELS_PER_DOT;
 const int MONITOR_PIXELS_PER_CELL_HEIGHT = MONITOR_DOTS_PER_CELL_HEIGHT * MONITOR_PIXELS_PER_DOT;
@@ -71,13 +78,14 @@ enum class MonitorOperation {
 struct Character { std::uint8_t value; };
 struct BackgroundColor { std::uint8_t value; };
 struct ForegroundColor { std::uint8_t value; };
+struct BorderColor { std::uint8_t value; };
 
 struct MonitorState {
     bool isConnected { false };
     Word videoOffset { 0 };
     Word fontOffset { 0 };
     Word paletteOffset { 0 };
-    Word borderColor { 0 };
+    BorderColor borderColor { 0xe };
 };
 
 class Monitor : public Simulation<MonitorState>, public Device {
@@ -87,10 +95,15 @@ class Monitor : public Simulation<MonitorState>, public Device {
     std::shared_ptr<Memory> _memory { nullptr };
     
     SDL_Surface* _screen { nullptr };
+    
     std::unique_ptr<SDL_Rect> _dot;
+    std::unique_ptr<SDL_Rect> _borderHorizontal;
+    std::unique_ptr<SDL_Rect> _borderVertical;
 
+    void drawBorder();
     void drawFromMemory();
     void drawCell( int x, int y, Character ch, ForegroundColor fg, BackgroundColor bg );
+
     void clear();
     void update() { SDL_Flip( _screen ); }
 
@@ -102,7 +115,15 @@ public:
         _computer { computer },
         _procInt { computer.nextInterrupt( this ) },
         _memory { computer.memory() },
-        _dot { make_unique<SDL_Rect>() } {
+        _dot { make_unique<SDL_Rect>() },
+        _borderHorizontal { make_unique<SDL_Rect>() },
+        _borderVertical { make_unique<SDL_Rect>() } {
+
+        _borderHorizontal->w = sim::MONITOR_PIXELS_PER_SCREEN_WIDTH;
+        _borderHorizontal->h = sim::MONITOR_PIXELS_PER_BORDER;
+
+        _borderVertical->w = sim::MONITOR_PIXELS_PER_BORDER;
+        _borderVertical->h = sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT;
 
         _dot->x = 0;
         _dot->y = 0;

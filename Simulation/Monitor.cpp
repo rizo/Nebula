@@ -35,6 +35,7 @@ std::unique_ptr<MonitorState> Monitor::run() {
         }
 
         clear();
+        drawBorder();
         drawFromMemory();
         update();
 
@@ -43,6 +44,30 @@ std::unique_ptr<MonitorState> Monitor::run() {
 
     LOG( INFO ) << "Monitor simulation shutting down.";
     return {};
+}
+
+void Monitor::drawBorder() {
+    auto color = mapColor( sim::MONITOR_DEFAULT_PALETTE[_state.borderColor.value] );
+
+    // Top.
+    _borderHorizontal->x = 0;
+    _borderHorizontal->y = 0;
+    SDL_FillRect( _screen, _borderHorizontal.get(), color );
+
+    // Bottom.
+    _borderHorizontal->x = 0;
+    _borderHorizontal->y = sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT - sim::MONITOR_PIXELS_PER_BORDER;
+    SDL_FillRect( _screen, _borderHorizontal.get(), color );
+
+    // Left.
+    _borderVertical->x = 0;
+    _borderVertical->y = 0;
+    SDL_FillRect( _screen, _borderVertical.get(), color );
+
+    // Right.
+    _borderVertical->x = sim::MONITOR_PIXELS_PER_SCREEN_WIDTH - sim::MONITOR_PIXELS_PER_BORDER;
+    _borderVertical->y = 0;
+    SDL_FillRect( _screen, _borderVertical.get(), color );
 }
 
 void Monitor::drawFromMemory() {
@@ -112,8 +137,8 @@ void Monitor::drawCell( int x, int y,
     auto bgColor = mapColor( sim::MONITOR_DEFAULT_PALETTE[bg.value] );
 
     auto drawDot = [&] ( int x, int y, bool isForeground) {
-        _dot->x = cellX + (x * sim::MONITOR_PIXELS_PER_DOT_WIDTH );
-        _dot->y = cellY + (y * sim::MONITOR_PIXELS_PER_DOT_HEIGHT );
+        _dot->x = sim::MONITOR_PIXELS_PER_BORDER + cellX + (x * sim::MONITOR_PIXELS_PER_DOT_WIDTH );
+        _dot->y = sim::MONITOR_PIXELS_PER_BORDER + cellY + (y * sim::MONITOR_PIXELS_PER_DOT_HEIGHT );
 
         auto color = isForeground ? fgColor : bgColor;
         SDL_FillRect( _screen, _dot.get(), color );
