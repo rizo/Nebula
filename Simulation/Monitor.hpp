@@ -9,7 +9,7 @@
 #include <boost/utility.hpp>
 #include <SDL/SDL.h>
 
-#define B BOOST_BINARY
+#define BI BOOST_BINARY
 
 namespace sim {
 
@@ -20,6 +20,9 @@ const int MONITOR_DOTS_PER_SCREEN_HEIGHT = 96;
 
 const int MONITOR_DOTS_PER_CELL_WIDTH = 4;
 const int MONITOR_DOTS_PER_CELL_HEIGHT = 8;
+
+const int MONITOR_CELLS_PER_SCREEN_WIDTH = 32;
+const int MONITOR_CELLS_PER_SCREEN_HEIGHT = 12;
 
 const int MONITOR_PIXELS_PER_SCREEN_WIDTH = MONITOR_DOTS_PER_SCREEN_WIDTH * MONITOR_PIXELS_PER_DOT;
 const int MONITOR_PIXELS_PER_SCREEN_HEIGHT = MONITOR_DOTS_PER_SCREEN_HEIGHT * MONITOR_PIXELS_PER_DOT;
@@ -50,10 +53,10 @@ const std::array<Word, 16> MONITOR_DEFAULT_PALETTE { {
 } };
 
 const std::array<std::pair<Word, Word>, 1> MONITOR_DEFAULT_FONT { {
-        { B( 11111110
-             10010010 ),
-          B( 10000010
-             00000000 ) }
+        { BI( 11111110
+              10010010 ),
+          BI( 10000010
+              00000000 ) }
 } };
 
 
@@ -61,11 +64,16 @@ constexpr std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };
 
 }
 
+enum class MonitorOperation {
+    MapVideoMemory
+};
+
 struct Character { std::uint8_t value; };
 struct BackgroundColor { std::uint8_t value; };
 struct ForegroundColor { std::uint8_t value; };
 
 struct MonitorState {
+    bool isConnected { false };
     Word videoOffset { 0 };
     Word fontOffset { 0 };
     Word paletteOffset { 0 };
@@ -73,17 +81,29 @@ struct MonitorState {
 };
 
 class Monitor : public Simulation<MonitorState>, public Device {
+    Computer& _computer;
+    std::shared_ptr<ProcessorInterrupt> _procInt { nullptr };
+    MonitorState _state {};
+    std::shared_ptr<Memory> _memory { nullptr };
+    
     SDL_Surface* _screen { nullptr };
     std::unique_ptr<SDL_Rect> _dot;
 
+    void drawFromMemory();
     void drawCell( int x, int y, Character ch, ForegroundColor fg, BackgroundColor bg );
     void clear();
     void update() { SDL_Flip( _screen ); }
 
     DoubleWord mapColor( Word color );
+
+    void handleInterrupt( MonitorOperation op, ProcessorState* proc );
 public:
-    explicit Monitor() :
+    explicit Monitor( Computer& computer ) :
+        _computer { computer },
+        _procInt { computer.nextInterrupt( this ) },
+        _memory { computer.memory() },
         _dot { make_unique<SDL_Rect>() } {
+
         _dot->x = 0;
         _dot->y = 0;
         _dot->w = sim::MONITOR_PIXELS_PER_DOT_WIDTH;

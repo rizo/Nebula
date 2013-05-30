@@ -14,7 +14,7 @@ int main( int argc, char* argv[] ) {
 
     Processor proc { computer };
     Clock clock { computer };
-    Monitor monitor {};
+    Monitor monitor { computer };
 
     auto procStateF = sim::launch( proc );
     LOG( INFO ) << "Launched the processor!";

@@ -11,15 +11,31 @@ std::unique_ptr<MonitorState> Monitor::run() {
                                 SDL_SWSURFACE );
 
     while ( isActive() )  {
-        clear();
+        if ( ! _state.isConnected ) {
+            LOG( INFO ) << "Monitor is disconnected. Waiting for interrupt.";
 
-        for ( std::uint8_t i = 0; i < 16; ++i ) {
-            drawCell( i, 0,
-                      Character { 0 },
-                      ForegroundColor { i },
-                      BackgroundColor { 2 } );
+            _procInt->waitForTrigger();
         }
 
+        if ( _procInt->isActive() ) {
+            LOG( INFO ) << "Monitor got interrupt.";
+
+            auto proc = _procInt->state();
+            auto a = proc->read( Register::A );
+
+            switch ( a ) {
+            case 0:
+                handleInterrupt( MonitorOperation::MapVideoMemory, proc );
+                break;
+            }
+
+            _procInt->respond();
+
+            LOG( INFO ) << "Monitor handled interrupt.";
+        }
+
+        clear();
+        drawFromMemory();
         update();
 
         std::this_thread::sleep_for( sim::MONITOR_FRAME_DURATION );
@@ -27,6 +43,45 @@ std::unique_ptr<MonitorState> Monitor::run() {
 
     LOG( INFO ) << "Monitor simulation shutting down.";
     return {};
+}
+
+void Monitor::drawFromMemory() {
+    Word w;
+
+    for ( int y = 0; y < sim::MONITOR_CELLS_PER_SCREEN_HEIGHT; ++y ) {
+        for ( int x = 0; x < sim::MONITOR_CELLS_PER_SCREEN_WIDTH; ++x ) {
+            auto loc = (y * sim::MONITOR_CELLS_PER_SCREEN_WIDTH) + x + _state.videoOffset;
+            w = _memory->read( loc );
+
+            drawCell( x, y,
+                      Character { static_cast<std::uint8_t>( w & 0x008f ) },
+                      ForegroundColor { static_cast<std::uint8_t>( (w & 0xf000) >> 12 ) },
+                      BackgroundColor { static_cast<std::uint8_t>( (w & 0x0f00) >> 8 ) } );
+        }
+    }
+}
+
+void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
+    Word b;
+
+    switch ( op ) {
+    case MonitorOperation::MapVideoMemory:
+        LOG( INFO ) << "Monitor executing 'MapVideoMemory'.";
+
+        b = proc->read( Register::B );
+
+        if ( b != 0 ) {
+            LOG( INFO ) << format( "Connecting monitor with video memory at 0x%04x." ) % b;
+
+            _state.isConnected = true;
+            _state.videoOffset = b;
+        } else {
+            LOG( WARNING ) << "Disconnecting monitor.";
+            _state.isConnected = false;
+        }
+
+        break;
+    }
 }
 
 DoubleWord Monitor::mapColor( Word color ) {
