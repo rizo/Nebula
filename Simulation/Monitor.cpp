@@ -3,19 +3,22 @@
 std::unique_ptr<MonitorState> Monitor::run() {
     LOG( INFO ) << "Monitor simulation is active.";
     
-    _screen = SDL_SetVideoMode( sim::MONITOR_PIXEL_WIDTH,
-                                sim::MONITOR_PIXEL_HEIGHT,
+    _screen = SDL_SetVideoMode( sim::MONITOR_PIXELS_PER_SCREEN_WIDTH,
+                                sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT,
                                 16,
                                 SDL_SWSURFACE );
 
-    for ( int i = 0; i < 16; ++i ) {
-        drawCell( i, 0, i );
+    for ( std::uint8_t i = 0; i < 16; ++i ) {
+        drawCell( i, 0,
+                  Character { 0 },
+                  ForegroundColor { i },
+                  BackgroundColor { 2 } );
     }
 
     update();
 
     while ( isActive() ) {
-        SDL_Delay( 10 );
+        std::this_thread::sleep_for( sim::MONITOR_FRAME_DURATION );
     }
 
     LOG( INFO ) << "Monitor simulation shutting down.";
@@ -34,11 +37,36 @@ DoubleWord Monitor::mapColor( Word color ) {
     return SDL_MapRGB( _screen->format, red, green, blue );
 }
 
-void Monitor::drawCell( int x, int y, int colorOffset ) {
-    _cell->x = x * sim::MONITOR_CELL_WIDTH;
-    _cell->y = y * sim::MONITOR_CELL_HEIGHT;
+void Monitor::drawCell( int x, int y,
+                        Character ch,
+                        ForegroundColor fg,
+                        BackgroundColor bg ) {
+    int cellX = x * sim::MONITOR_PIXELS_PER_CELL_WIDTH;
+    int cellY = y * sim::MONITOR_PIXELS_PER_CELL_HEIGHT;
 
-    auto color = mapColor( sim::MONITOR_DEFAULT_PALETTE[colorOffset] );
+    auto fgColor = mapColor( sim::MONITOR_DEFAULT_PALETTE[fg.value] );
+    auto bgColor = mapColor( sim::MONITOR_DEFAULT_PALETTE[bg.value] );
 
-    SDL_FillRect( _screen, _cell.get(), color );
+    auto drawDot = [&] ( int x, int y, bool isForeground) {
+        _dot->x = cellX + (x * sim::MONITOR_PIXELS_PER_DOT_WIDTH );
+        _dot->y = cellY + (y * sim::MONITOR_PIXELS_PER_DOT_HEIGHT );
+
+        auto color = isForeground ? fgColor : bgColor;
+        SDL_FillRect( _screen, _dot.get(), color );
+    };
+
+    auto drawColumn = [&] ( std::uint8_t columnData, int x ) {
+        for ( std::uint8_t i = 0; i < sim::MONITOR_DOTS_PER_CELL_HEIGHT; ++i ) {
+            drawDot( x, i, columnData & (1 << i) );
+        }
+    };
+
+    auto data = sim::MONITOR_DEFAULT_FONT[ch.value];
+    Word first = data.first;
+    Word second = data.second;
+
+    drawColumn( (first & 0xff00) >> 8, 0 );
+    drawColumn( first & 0x00ff, 1 );
+    drawColumn( (second & 0xff00) >> 8, 2 );
+    drawColumn( second & 0x00ff, 3 );
 }
