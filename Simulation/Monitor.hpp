@@ -9,7 +9,7 @@
 #include <boost/utility.hpp>
 #include <SDL/SDL.h>
 
-#define BI BOOST_BINARY
+#define B_ BOOST_BINARY
 
 namespace sim {
 
@@ -60,9 +60,9 @@ const std::array<Word, 16> MONITOR_DEFAULT_PALETTE { {
 } };
 
 const std::array<std::pair<Word, Word>, 1> MONITOR_DEFAULT_FONT { {
-        { BI( 11111110
+        { B_( 11111110
               10010010 ),
-          BI( 10000010
+          B_( 10000010
               00000000 ) }
 } };
 
