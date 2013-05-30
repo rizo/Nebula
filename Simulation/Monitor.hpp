@@ -100,6 +100,10 @@ class Monitor : public Simulation<MonitorState>, public Device {
     std::unique_ptr<SDL_Rect> _borderHorizontal;
     std::unique_ptr<SDL_Rect> _borderVertical;
 
+    Word getColor( std::uint8_t color );
+    Word getColor( ForegroundColor color ) { return getColor( color.value ); }
+    Word getColor( BackgroundColor color ) { return getColor( color.value ); }
+
     void drawBorder();
     void drawFromMemory();
     void drawCell( int x, int y, Character ch, ForegroundColor fg, BackgroundColor bg );

@@ -126,6 +126,15 @@ void Monitor::clear() {
     SDL_FillRect( _screen, nullptr, black );
 }
 
+Word Monitor::getColor( std::uint8_t color ) {
+    if ( _state.paletteOffset == 0 ) {
+        return sim::MONITOR_DEFAULT_PALETTE[color];
+    } else {
+        return _memory->read( _state.paletteOffset + color );
+    }
+}
+
+
 void Monitor::drawCell( int x, int y,
                         Character ch,
                         ForegroundColor fg,
@@ -133,8 +142,8 @@ void Monitor::drawCell( int x, int y,
     int cellX = x * sim::MONITOR_PIXELS_PER_CELL_WIDTH;
     int cellY = y * sim::MONITOR_PIXELS_PER_CELL_HEIGHT;
 
-    auto fgColor = mapColor( sim::MONITOR_DEFAULT_PALETTE[fg.value] );
-    auto bgColor = mapColor( sim::MONITOR_DEFAULT_PALETTE[bg.value] );
+    auto fgColor = mapColor( getColor( fg ) );
+    auto bgColor = mapColor( getColor( bg ) );
 
     auto drawDot = [&] ( int x, int y, bool isForeground) {
         _dot->x = sim::MONITOR_PIXELS_PER_BORDER + cellX + (x * sim::MONITOR_PIXELS_PER_DOT_WIDTH );
