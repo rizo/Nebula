@@ -72,7 +72,8 @@ constexpr std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };
 }
 
 enum class MonitorOperation {
-    MapVideoMemory
+    MapVideoMemory,
+    SetBorderColor
 };
 
 struct Character { std::uint8_t value; };
@@ -85,7 +86,7 @@ struct MonitorState {
     Word videoOffset { 0 };
     Word fontOffset { 0 };
     Word paletteOffset { 0 };
-    BorderColor borderColor { 0xe };
+    BorderColor borderColor { 0 };
 };
 
 class Monitor : public Simulation<MonitorState>, public Device {
@@ -103,6 +104,7 @@ class Monitor : public Simulation<MonitorState>, public Device {
     Word getColor( std::uint8_t color );
     Word getColor( ForegroundColor color ) { return getColor( color.value ); }
     Word getColor( BackgroundColor color ) { return getColor( color.value ); }
+    Word getColor( BorderColor color ) { return getColor( color.value ); }
 
     void drawBorder();
     void drawFromMemory();

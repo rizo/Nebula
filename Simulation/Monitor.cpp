@@ -27,6 +27,9 @@ std::unique_ptr<MonitorState> Monitor::run() {
             case 0:
                 handleInterrupt( MonitorOperation::MapVideoMemory, proc );
                 break;
+            case 1:
+                handleInterrupt( MonitorOperation::SetBorderColor, proc );
+                break;
             }
 
             _procInt->respond();
@@ -47,7 +50,7 @@ std::unique_ptr<MonitorState> Monitor::run() {
 }
 
 void Monitor::drawBorder() {
-    auto color = mapColor( sim::MONITOR_DEFAULT_PALETTE[_state.borderColor.value] );
+    auto color = mapColor( getColor( _state.borderColor ) );
 
     // Top.
     _borderHorizontal->x = 0;
@@ -87,13 +90,16 @@ void Monitor::drawFromMemory() {
 }
 
 void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
-    Word b;
+    Word b = proc->read( Register::B );
 
     switch ( op ) {
+    case MonitorOperation::SetBorderColor:
+        LOG( INFO ) << "Monitor executing 'SetBorderColor'.";
+
+        _state.borderColor = BorderColor { static_cast<std::uint8_t>( b & 0xf ) };
+        break;
     case MonitorOperation::MapVideoMemory:
         LOG( INFO ) << "Monitor executing 'MapVideoMemory'.";
-
-        b = proc->read( Register::B );
 
         if ( b != 0 ) {
             LOG( INFO ) << format( "Connecting monitor with video memory at 0x%04x." ) % b;
