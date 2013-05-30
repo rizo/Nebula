@@ -1,6 +1,8 @@
 #include "Monitor.hpp"
 
 std::unique_ptr<MonitorState> Monitor::run() {
+    setActive();
+
     LOG( INFO ) << "Monitor simulation is active.";
     
     _screen = SDL_SetVideoMode( sim::MONITOR_PIXELS_PER_SCREEN_WIDTH,
@@ -8,16 +10,18 @@ std::unique_ptr<MonitorState> Monitor::run() {
                                 16,
                                 SDL_SWSURFACE );
 
-    for ( std::uint8_t i = 0; i < 16; ++i ) {
-        drawCell( i, 0,
-                  Character { 0 },
-                  ForegroundColor { i },
-                  BackgroundColor { 2 } );
-    }
+    while ( isActive() )  {
+        clear();
 
-    update();
+        for ( std::uint8_t i = 0; i < 16; ++i ) {
+            drawCell( i, 0,
+                      Character { 0 },
+                      ForegroundColor { i },
+                      BackgroundColor { 2 } );
+        }
 
-    while ( isActive() ) {
+        update();
+
         std::this_thread::sleep_for( sim::MONITOR_FRAME_DURATION );
     }
 
@@ -35,6 +39,11 @@ DoubleWord Monitor::mapColor( Word color ) {
     Word red = redPart | (redPart << 4);
 
     return SDL_MapRGB( _screen->format, red, green, blue );
+}
+
+void Monitor::clear() {
+    auto black = SDL_MapRGB( _screen->format, 0, 0, 0 );
+    SDL_FillRect( _screen, nullptr, black );
 }
 
 void Monitor::drawCell( int x, int y,

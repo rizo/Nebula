@@ -77,8 +77,10 @@ class Monitor : public Simulation<MonitorState>, public Device {
     std::unique_ptr<SDL_Rect> _dot;
 
     void drawCell( int x, int y, Character ch, ForegroundColor fg, BackgroundColor bg );
-    DoubleWord mapColor( Word color );
+    void clear();
     void update() { SDL_Flip( _screen ); }
+
+    DoubleWord mapColor( Word color );
 public:
     explicit Monitor() :
         _dot { make_unique<SDL_Rect>() } {
