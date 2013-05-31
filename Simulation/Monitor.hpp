@@ -2,14 +2,12 @@
 
 #include "../Computer.hpp"
 #include "../Simulation.hpp"
+#include "MonitorFont.hpp"
 
 #include <array>
 #include <chrono>
 
-#include <boost/utility.hpp>
 #include <SDL/SDL.h>
-
-#define B_ BOOST_BINARY
 
 namespace sim {
 
@@ -59,12 +57,12 @@ const std::array<Word, 16> MONITOR_DEFAULT_PALETTE { {
     0x0fff
 } };
 
-const std::array<std::pair<Word, Word>, 1> MONITOR_DEFAULT_FONT { {
-        { B_( 11111110
-              10010010 ),
-          B_( 10000010
-              00000000 ) }
-} };
+// const std::array<std::pair<Word, Word>, 1> MONITOR_DEFAULT_FONT { {
+//         { B_( 11111110
+//               10010010 ),
+//           B_( 10000010
+//               00000000 ) }
+// } };
 
 
 constexpr std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };

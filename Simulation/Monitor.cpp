@@ -81,10 +81,14 @@ void Monitor::drawFromMemory() {
             auto loc = (y * sim::MONITOR_CELLS_PER_SCREEN_WIDTH) + x + _state.videoOffset;
             w = _memory->read( loc );
 
+            auto ch = static_cast<std::uint8_t>( w & 0x007f );
+            auto fg = static_cast<std::uint8_t>( (w & 0xf000) >> 12 );
+            auto bg = static_cast<std::uint8_t>( (w & 0x0f00) >> 8 );
+
             drawCell( x, y,
-                      Character { static_cast<std::uint8_t>( w & 0x008f ) },
-                      ForegroundColor { static_cast<std::uint8_t>( (w & 0xf000) >> 12 ) },
-                      BackgroundColor { static_cast<std::uint8_t>( (w & 0x0f00) >> 8 ) } );
+                      Character { ch },
+                      ForegroundColor { fg },
+                      BackgroundColor { bg } );
         }
     }
 }

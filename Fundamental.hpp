@@ -7,6 +7,7 @@
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/utility.hpp>
 #include <glog/logging.h>
 
 
@@ -23,5 +24,7 @@ template<typename T, typename... Args>
 std::unique_ptr<T> make_unique( Args&&... args ) {
     return std::unique_ptr<T>( new T( std::forward<Args>( args )... ) );
 }
+
+#define B_ BOOST_BINARY
 
 #endif // __FUNDAMENTAL_H__
