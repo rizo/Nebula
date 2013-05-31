@@ -43,6 +43,13 @@ std::unique_ptr<MonitorState> Monitor::run() {
         update();
 
         std::this_thread::sleep_for( sim::MONITOR_FRAME_DURATION );
+
+        _state.sinceLastBlink += sim::MONITOR_FRAME_DURATION;
+
+        if ( _state.sinceLastBlink >= std::chrono::duration_cast<std::chrono::microseconds>( sim::MONITOR_BLINK_DURATION ) ) {
+            _state.sinceLastBlink = std::chrono::microseconds { 0 };
+            _state.blinkVisible = ! _state.blinkVisible;
+        }
     }
 
     LOG( INFO ) << "Monitor simulation shutting down.";
@@ -73,6 +80,10 @@ void Monitor::drawBorder() {
     SDL_FillRect( _screen, _borderVertical.get(), color );
 }
 
+static inline int index( int x, int y ) {
+    return (y * sim::MONITOR_CELLS_PER_SCREEN_WIDTH) + x;
+}
+
 void Monitor::drawFromMemory() {
     Word w;
 
@@ -81,9 +92,14 @@ void Monitor::drawFromMemory() {
             auto loc = (y * sim::MONITOR_CELLS_PER_SCREEN_WIDTH) + x + _state.videoOffset;
             w = _memory->read( loc );
 
+            bool doBlink = static_cast<bool>( w & 0x0080 );
             auto ch = static_cast<std::uint8_t>( w & 0x007f );
             auto fg = static_cast<std::uint8_t>( (w & 0xf000) >> 12 );
             auto bg = static_cast<std::uint8_t>( (w & 0x0f00) >> 8 );
+
+            if ( doBlink ) {
+                _state.isBlinking[index( x, y )] = true;
+            }
 
             drawCell( x, y,
                       Character { ch },
@@ -173,8 +189,13 @@ void Monitor::drawCell( int x, int y,
     Word first = data.first;
     Word second = data.second;
 
-    drawColumn( (first & 0xff00) >> 8, 0 );
-    drawColumn( first & 0x00ff, 1 );
-    drawColumn( (second & 0xff00) >> 8, 2 );
-    drawColumn( second & 0x00ff, 3 );
+    bool isBlinking = _state.isBlinking[index( x, y )];
+
+    if ( (isBlinking && _state.blinkVisible)
+         || ! isBlinking ) {
+        drawColumn( (first & 0xff00) >> 8, 0 );
+        drawColumn( first & 0x00ff, 1 );
+        drawColumn( (second & 0xff00) >> 8, 2 );
+        drawColumn( second & 0x00ff, 3 );
+    }
 }

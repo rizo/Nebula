@@ -23,6 +23,8 @@ const int MONITOR_DOTS_PER_CELL_HEIGHT = 8;
 
 const int MONITOR_CELLS_PER_SCREEN_WIDTH = 32;
 const int MONITOR_CELLS_PER_SCREEN_HEIGHT = 12;
+const int MONITOR_CELLS_PER_SCREEN =
+    MONITOR_CELLS_PER_SCREEN_WIDTH * MONITOR_CELLS_PER_SCREEN_HEIGHT;
 
 const int MONITOR_PIXELS_PER_SCREEN_WIDTH =
     (2 * MONITOR_PIXELS_PER_BORDER)
@@ -57,15 +59,10 @@ const std::array<Word, 16> MONITOR_DEFAULT_PALETTE { {
     0x0fff
 } };
 
-// const std::array<std::pair<Word, Word>, 1> MONITOR_DEFAULT_FONT { {
-//         { B_( 11111110
-//               10010010 ),
-//           B_( 10000010
-//               00000000 ) }
-// } };
+const std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };
 
+const std::chrono::milliseconds MONITOR_BLINK_DURATION { 500 };
 
-constexpr std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };
 
 }
 
@@ -85,6 +82,10 @@ struct MonitorState {
     Word fontOffset { 0 };
     Word paletteOffset { 0 };
     BorderColor borderColor { 0 };
+    
+    std::array<bool, sim::MONITOR_CELLS_PER_SCREEN> isBlinking {};
+    bool blinkVisible { true };
+    std::chrono::microseconds sinceLastBlink { 0 };
 };
 
 class Monitor : public Simulation<MonitorState>, public Device {
