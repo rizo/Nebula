@@ -7,7 +7,9 @@
 
 int main( int argc, char* argv[] ) {
     google::InitGoogleLogging( argv[0] );
-    SDL_Init( SDL_INIT_EVERYTHING );
+
+    SDL_Init( SDL_INIT_VIDEO );
+    std::atexit( &SDL_Quit );
 
     auto memory = Memory::fromFile( argv[1], 0x10000 );
     Computer computer { memory };
@@ -35,6 +37,4 @@ int main( int argc, char* argv[] ) {
     
     clockStateF.get();
     monitorStateF.get();
-
-    // SDL_Quit();
 }
