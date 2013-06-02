@@ -97,6 +97,13 @@ void Binary::execute( ProcessorState& proc ) const {
         action( z );
     };
 
+    auto skipUnless = [&] ( std::function<bool( DoubleWord, DoubleWord )> f ) {
+        auto y = load( addressA );
+        auto x = load( addressB );
+
+        proc.setSkip( ! f( x, y ) );
+    };
+
     switch ( opcode ) {
     case Opcode::Set:
         store( addressB, load( addressA ) );
@@ -119,8 +126,10 @@ void Binary::execute( ProcessorState& proc ) const {
                 }
             });
         break;
+    case Opcode::Ife:
+        skipUnless( arg1 == arg2 );
+        break;
     }
-    
 }
 
 }
@@ -146,6 +155,7 @@ optional<Opcode> decode( const Word& w ) {
     case 0x01: return Opcode::Set;
     case 0x02: return Opcode::Add;
     case 0x03: return Opcode::Sub;
+    case 0x12: return Opcode::Ife;
     default: return {};
     }
 }
@@ -331,6 +341,11 @@ static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc )
 
 void ProcessorState::executeNext() {
     auto ins = fetchNextInstruction( *this );
-    ins->execute( *this );
-    _lastInstruction = ins;
+
+    if ( _doSkip ) {
+        _doSkip = false;
+    } else {
+        ins->execute( *this );
+        _lastInstruction = ins;
+    }
 }

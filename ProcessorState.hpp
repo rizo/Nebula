@@ -69,6 +69,7 @@ class ProcessorState {
 
     int _clock;
     std::shared_ptr<Instruction> _lastInstruction { nullptr };
+    bool _doSkip { false };
 
     std::shared_ptr<Memory> _memory = nullptr;
 
@@ -97,6 +98,9 @@ public:
     inline int clock() const { return _clock; }
     inline void tickClock( int ticks ) { _clock += ticks; }
     inline void clearClock() { _clock = 0; }
+
+    inline bool doSkip() const { return _doSkip; }
+    void setSkip( bool value ) { _doSkip = value; }
 
     inline Memory& memory() { return *_memory; }
 
@@ -209,6 +213,7 @@ enum class Opcode {
     Set,
     Add,
     Sub,
+    Ife
 };
 
 enum class SpecialOpcode {
