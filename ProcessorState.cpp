@@ -36,6 +36,14 @@ static Word fetchNextWord( ProcessorState& proc ) {
 
 namespace mode {
 
+Word Indirect::load( ProcessorState& proc ) const {
+    return proc.memory().read( fetchNextWord( proc ) );
+}
+
+void Indirect::store( ProcessorState& proc, Word value ) const {
+    proc.memory().write( fetchNextWord( proc ), value );
+}
+
 Word Direct::load( ProcessorState& proc ) const {
     proc.tickClock( 1 );
 
@@ -57,11 +65,6 @@ void Direct::store( ProcessorState& proc, Word value ) const {
 namespace instruction {
 
 void Unary::execute( ProcessorState& proc ) const {
-    if ( proc.doSkip() ) {
-        advance( proc, address->size() );
-        return;
-    }
-
     switch ( opcode ) {
     case SpecialOpcode::Iag:
     case SpecialOpcode::Ias:
@@ -88,14 +91,15 @@ void Binary::execute( ProcessorState& proc ) const {
         return addr->load( proc );
     };
 
-    if ( proc.doSkip() ) {
-        advance( proc,
-                 addressA->size() + addressB->size() );
-        return;
-    }
-
     auto store = [&proc]( std::shared_ptr<AddressingMode> addr, Word value ) {
         addr->store( proc, value );
+    };
+
+    auto apply = [&] ( std::function<Word( Word, Word )> f ) {
+        auto y = load( addressA );
+        auto x = load( addressB );
+
+        store( addressB, f( x, y ) );
     };
 
     auto applyDouble = [&]( std::function<DoubleWord( DoubleWord, DoubleWord )> f,
@@ -136,6 +140,9 @@ void Binary::execute( ProcessorState& proc ) const {
                 }
             });
         break;
+    case Opcode::Bor:
+        apply( arg1 | arg2 );
+        break;
     case Opcode::Ife:
         skipUnless( arg1 == arg2 );
         break;
@@ -165,6 +172,7 @@ optional<Opcode> decode( const Word& w ) {
     case 0x01: return Opcode::Set;
     case 0x02: return Opcode::Add;
     case 0x03: return Opcode::Sub;
+    case 0x0b: return Opcode::Bor;
     case 0x12: return Opcode::Ife;
     default: return {};
     }
@@ -273,7 +281,7 @@ decodeAddress( AddressContext context, Word word ) {
     // auto decodeSp = makeDecoder( 0x1b, address::sp );
     auto decodePc = decoderByValue<mode::Pc>( 0x1c );
     // auto decodeEx = makeDecoder( 0x1d, address::ex );
-    // auto decodeIndirect = makeDecoder( 0x1e, address::indirect );
+    auto decodeIndirect = decoderByValue<mode::Indirect>( 0x1e );
     auto decodeDirect = decoderByValue<mode::Direct>( 0x1f );
     // auto decodeDirect = makeDecoder( 0x1f, address::direct );
 
@@ -294,7 +302,7 @@ decodeAddress( AddressContext context, Word word ) {
     // TRY( decodeSp );
     TRY( decodePc );
     // TRY( decodeEx );
-    // TRY( decodeIndirect );
+    TRY( decodeIndirect );
     TRY( decodeDirect );
     TRY( decodeFastDirect );
     
@@ -351,11 +359,12 @@ static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc )
 
 void ProcessorState::executeNext() {
     auto ins = fetchNextInstruction( *this );
-    ins->execute( *this );
 
-    if ( _doSkip ) {
+    if ( doSkip() ) {
+        advance( *this, ins->size() );
         setSkip( false );
     } else {
+        ins->execute( *this );
         _lastInstruction = ins;
     }
 }

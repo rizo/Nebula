@@ -189,6 +189,11 @@ struct Pc : public AddressingMode {
     }
 };
 
+struct Indirect : public AddressingMode {
+    virtual Word load( ProcessorState& proc ) const;
+    virtual void store( ProcessorState& proc, Word value ) const;
+};
+
 struct Direct : public AddressingMode {
     virtual Word load( ProcessorState& proc ) const;
     virtual void store( ProcessorState& proc, Word value ) const;
@@ -212,6 +217,7 @@ enum class Opcode {
     Set,
     Add,
     Sub,
+    Bor,
     Ife
 };
 
@@ -229,6 +235,7 @@ enum class SpecialOpcode {
 class Instruction {
 public:
     virtual void execute( ProcessorState& proc ) const = 0;
+    virtual int size() const = 0;
 };
 
 namespace instruction {
@@ -246,6 +253,8 @@ struct Unary : public Instruction {
     Unary() = delete;
 
     virtual void execute( ProcessorState& proc ) const;
+
+    virtual int size() const { return address->size(); }
 };
 
 struct Binary : public Instruction {
@@ -264,6 +273,8 @@ struct Binary : public Instruction {
     Binary() = delete;
 
     virtual void execute( ProcessorState& proc ) const;
+    
+    virtual int size() const { return addressA->size() + addressB->size(); }
 };
 
 }
