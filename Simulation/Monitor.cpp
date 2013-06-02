@@ -27,7 +27,7 @@ std::unique_ptr<MonitorState> Monitor::run() {
             case 0:
                 handleInterrupt( MonitorOperation::MapVideoMemory, proc );
                 break;
-            case 1:
+            case 3:
                 handleInterrupt( MonitorOperation::SetBorderColor, proc );
                 break;
             }
@@ -37,10 +37,15 @@ std::unique_ptr<MonitorState> Monitor::run() {
             LOG( INFO ) << "Monitor handled interrupt.";
         }
 
-        clear();
-        drawBorder();
-        drawFromMemory();
-        update();
+        if ( !_state.isConnected ) {
+            clear();
+            update();
+        } else {
+            clear();
+            drawBorder();
+            drawFromMemory();
+            update();   
+        }
 
         std::this_thread::sleep_for( sim::MONITOR_FRAME_DURATION );
 
