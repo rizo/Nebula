@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ProcessorState.hpp"
+#include "Simulation.hpp"
 
 #include <array>
 #include <atomic>
@@ -52,6 +53,24 @@ public:
 
     void respond();
     void waitForTrigger();
+
+    template <typename StateType>
+    void waitForTriggerOrDeath( Simulation<StateType>& s ) {
+        std::unique_lock<std::mutex> lock { _mutex };
+
+        while ( true ) {
+            if ( _condition.wait_for( lock, std::chrono::milliseconds { 5 },
+                                      [&] { return isActive(); } ) ) {
+                // Timeout, and interrupt is active.
+                break;
+            } else {
+                // Check to see if the simulation has died.
+                if ( ! s.isActive() ) {
+                    break;
+                }
+            }
+        }
+    }
 };
 
 class InterruptQueue {

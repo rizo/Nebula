@@ -14,7 +14,7 @@ std::unique_ptr<MonitorState> Monitor::run() {
         if ( ! _state.isConnected ) {
             LOG( INFO ) << "Monitor is disconnected. Waiting for interrupt.";
 
-            _procInt->waitForTrigger();
+            _procInt->waitForTriggerOrDeath( *this );
         }
 
         if ( _procInt->isActive() ) {
