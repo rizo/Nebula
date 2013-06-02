@@ -179,9 +179,13 @@ void Monitor::drawCell( int x, int y,
         SDL_FillRect( _screen, _dot.get(), color );
     };
 
+    bool isBlinking = _state.isBlinking[index( x, y )];
+
     auto drawColumn = [&] ( std::uint8_t columnData, int x ) {
         for ( std::uint8_t i = 0; i < sim::MONITOR_DOTS_PER_CELL_HEIGHT; ++i ) {
-            drawDot( x, i, columnData & (1 << i) );
+            bool drawFg = (columnData & (1 << i)) &&
+                          ((isBlinking && _state.blinkVisible) || ! isBlinking);
+            drawDot( x, i, drawFg );
         }
     };
 
@@ -189,13 +193,8 @@ void Monitor::drawCell( int x, int y,
     Word first = data.first;
     Word second = data.second;
 
-    bool isBlinking = _state.isBlinking[index( x, y )];
-
-    if ( (isBlinking && _state.blinkVisible)
-         || ! isBlinking ) {
-        drawColumn( (first & 0xff00) >> 8, 0 );
-        drawColumn( first & 0x00ff, 1 );
-        drawColumn( (second & 0xff00) >> 8, 2 );
-        drawColumn( second & 0x00ff, 3 );
-    }
+    drawColumn( (first & 0xff00) >> 8, 0 );
+    drawColumn( first & 0x00ff, 1 );
+    drawColumn( (second & 0xff00) >> 8, 2 );
+    drawColumn( second & 0x00ff, 3 );
 }
