@@ -37,21 +37,33 @@ std::unique_ptr<MonitorState> Monitor::run() {
             LOG( INFO ) << "Monitor handled interrupt.";
         }
 
-        if ( !_state.isConnected ) {
-            clear();
-            update();
-        } else {
-            clear();
-            drawBorder();
-            drawFromMemory();
-            update();   
+        clear();
+
+        if ( _state.isConnected ) {
+            // Show the start-up image if the monitor is still initializing.
+            if ( _state.timeSinceConnected ) {
+                *_state.timeSinceConnected += sim::MONITOR_FRAME_DURATION;
+                drawStartUp();
+
+                if ( *_state.timeSinceConnected >=
+                     std::chrono::duration_cast<std::chrono::microseconds>( sim::MONITOR_START_UP_DURATION ) ) {
+
+                    _state.timeSinceConnected.reset();
+                }
+            } else {
+                drawBorder();
+                drawFromMemory();
+            }
         }
 
+        update();
         std::this_thread::sleep_for( sim::MONITOR_FRAME_DURATION );
 
         _state.sinceLastBlink += sim::MONITOR_FRAME_DURATION;
 
-        if ( _state.sinceLastBlink >= std::chrono::duration_cast<std::chrono::microseconds>( sim::MONITOR_BLINK_DURATION ) ) {
+        if ( _state.sinceLastBlink >=
+             std::chrono::duration_cast<std::chrono::microseconds>( sim::MONITOR_BLINK_DURATION ) ) {
+
             _state.sinceLastBlink = std::chrono::microseconds { 0 };
             _state.blinkVisible = ! _state.blinkVisible;
         }
@@ -59,6 +71,25 @@ std::unique_ptr<MonitorState> Monitor::run() {
 
     LOG( INFO ) << "Monitor simulation shutting down.";
     return {};
+}
+
+void Monitor::drawStartUp() {
+    const int MID_X = sim::MONITOR_CELLS_PER_SCREEN_WIDTH / 2;
+    const int MID_Y = sim::MONITOR_CELLS_PER_SCREEN_HEIGHT / 2;
+
+    auto drawCentered = [&] ( const std::uint8_t* line, std::size_t length ) {
+        for ( std::size_t i = 0; i < length; ++i ) {
+            drawCell( MID_X - (length / 2) + i,
+                      MID_Y - 1,
+                      Character { line[i] },
+                      ForegroundColor { 0xf },
+                      BackgroundColor { 0 } );
+        }
+    };
+
+    const std::array<std::uint8_t, 4> FIRST_LINE = { '1', '8', '0', '2' };
+
+    drawCentered( FIRST_LINE.data(), FIRST_LINE.size() );
 }
 
 void Monitor::drawBorder() {
@@ -130,6 +161,7 @@ void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
             LOG( INFO ) << format( "Connecting monitor with video memory at 0x%04x." ) % b;
 
             _state.isConnected = true;
+            _state.timeSinceConnected = std::chrono::microseconds { 0 };
             _state.videoOffset = b;
         } else {
             LOG( WARNING ) << "Disconnecting monitor.";

@@ -63,6 +63,7 @@ const std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };
 
 const std::chrono::milliseconds MONITOR_BLINK_DURATION { 500 };
 
+const std::chrono::milliseconds MONITOR_START_UP_DURATION { 1250 };
 
 }
 
@@ -77,6 +78,7 @@ struct ForegroundColor { std::uint8_t value; };
 struct BorderColor { std::uint8_t value; };
 
 struct MonitorState {
+    optional<std::chrono::microseconds> timeSinceConnected {};
     bool isConnected { false };
     Word videoOffset { 0 };
     Word fontOffset { 0 };
@@ -108,6 +110,7 @@ class Monitor : public Simulation<MonitorState>, public Device {
     void drawBorder();
     void drawFromMemory();
     void drawCell( int x, int y, Character ch, ForegroundColor fg, BackgroundColor bg );
+    void drawStartUp();
 
     void clear();
     void update() { SDL_Flip( _screen ); }
