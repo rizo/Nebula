@@ -36,6 +36,14 @@ static Word fetchNextWord( ProcessorState& proc ) {
 
 namespace mode {
 
+Word RegisterIndirectOffset::load( ProcessorState& proc ) const {
+    return proc.memory().read( proc.read( reg ) + fetchNextWord( proc ) );
+}
+
+void RegisterIndirectOffset::store( ProcessorState& proc, Word value ) const {
+    proc.memory().write( proc.read( reg ) + fetchNextWord( proc ), value );
+}
+
 Word Indirect::load( ProcessorState& proc ) const {
     return proc.memory().read( fetchNextWord( proc ) );
 }
@@ -214,16 +222,16 @@ decodeRegisterIndirect( Word w ) {
     }
 }
 
-// static std::shared_ptr<AddressingMode>
-// decodeRegisterIndirectOffset( Word w ) {
-//     auto reg = decode<Register>( w - 0x10 );
+static std::shared_ptr<AddressingMode>
+decodeRegisterIndirectOffset( Word w ) {
+    auto reg = decode<Register>( w - 0x10 );
 
-//     if ( reg ) {
-//         return std::make_shared<mode::RegisterIndirectOffset>( *reg );
-//     } else {
-//         return nullptr;
-//     }
-// }
+    if ( reg ) {
+        return std::make_shared<mode::RegisterIndirectOffset>( *reg );
+    } else {
+        return nullptr;
+    }
+}
 
 static
 std::shared_ptr<AddressingMode>
@@ -294,7 +302,7 @@ decodeAddress( AddressContext context, Word word ) {
 
     TRY( decodeRegisterDirect );
     TRY( decodeRegisterIndirect );
-    // TRY( decodeRegisterIndirectOffset );
+    TRY( decodeRegisterIndirectOffset );
     // TRY( decodePush );
     // TRY( decodePop );
     TRY( decodePeek );

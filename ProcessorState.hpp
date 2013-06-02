@@ -144,6 +144,16 @@ struct RegisterIndirect : public AddressingMode {
     }
 };
 
+struct RegisterIndirectOffset : public AddressingMode {
+    Register reg;
+
+    explicit RegisterIndirectOffset( Register reg ) : reg { reg } {}
+    RegisterIndirectOffset() = delete;
+
+    virtual Word load( ProcessorState& proc ) const;
+    virtual void store( ProcessorState& proc, Word value ) const;
+};
+
 struct Push : public AddressingMode {
     virtual Word load( ProcessorState& ) const {
         assert( ! "Attempt to load from a 'push' address!" );
