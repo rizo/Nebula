@@ -37,7 +37,7 @@ static Word fetchNextWord( ProcessorState& proc ) {
 namespace mode {
 
 Word Direct::load( ProcessorState& proc ) const {
-    common( proc );
+    proc.tickClock( 1 );
 
     auto pc = proc.read( Special::Pc );
     proc.write( Special::Pc, pc + 1 );
@@ -45,7 +45,7 @@ Word Direct::load( ProcessorState& proc ) const {
 }
 
 void Direct::store( ProcessorState& proc, Word value ) const {
-    common( proc );
+    proc.tickClock( 1 );
 
     auto pc = proc.read( Special::Pc );
     proc.write( Special::Pc, pc + 1 );
@@ -57,6 +57,11 @@ void Direct::store( ProcessorState& proc, Word value ) const {
 namespace instruction {
 
 void Unary::execute( ProcessorState& proc ) const {
+    if ( proc.doSkip() ) {
+        advance( proc, address->size() );
+        return;
+    }
+
     switch ( opcode ) {
     case SpecialOpcode::Iag:
     case SpecialOpcode::Ias:
@@ -83,24 +88,29 @@ void Binary::execute( ProcessorState& proc ) const {
         return addr->load( proc );
     };
 
+    if ( proc.doSkip() ) {
+        advance( proc,
+                 addressA->size() + addressB->size() );
+        return;
+    }
+
     auto store = [&proc]( std::shared_ptr<AddressingMode> addr, Word value ) {
         addr->store( proc, value );
     };
 
     auto applyDouble = [&]( std::function<DoubleWord( DoubleWord, DoubleWord )> f,
                             std::function<void( DoubleWord )> action ) {
-        auto y = DoubleWord { load( addressA ) };
-        auto x = DoubleWord { load( addressB ) };
-        auto z = f( x, y );
+        auto yd = DoubleWord { load( addressA ) };
+        auto xd = DoubleWord { load( addressB ) };
+        auto zd = f( xd, yd );
 
-        store( addressB, static_cast<Word>( z ) );
-        action( z );
+        store( addressB, static_cast<Word>( zd ) );
+        action( zd );
     };
 
     auto skipUnless = [&] ( std::function<bool( DoubleWord, DoubleWord )> f ) {
         auto y = load( addressA );
         auto x = load( addressB );
-
         proc.setSkip( ! f( x, y ) );
     };
 
@@ -341,11 +351,16 @@ static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc )
 
 void ProcessorState::executeNext() {
     auto ins = fetchNextInstruction( *this );
+    ins->execute( *this );
 
     if ( _doSkip ) {
-        _doSkip = false;
+        setSkip( false );
     } else {
-        ins->execute( *this );
         _lastInstruction = ins;
     }
+}
+
+void advance( ProcessorState& proc, int numWords ) {
+    auto pc = proc.read( Special::Pc );
+    proc.write( Special::Pc, pc + numWords );
 }

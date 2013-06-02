@@ -113,6 +113,8 @@ class AddressingMode {
 public:
     virtual Word load( ProcessorState& proc ) const = 0;
     virtual void store( ProcessorState& proc, Word value ) const = 0;
+    
+    virtual int size() const { return 0; }
 };
 
 namespace mode {
@@ -188,13 +190,10 @@ struct Pc : public AddressingMode {
 };
 
 struct Direct : public AddressingMode {
-private:
-    inline void common( ProcessorState& proc ) const {
-        proc.tickClock( 1 );
-    }
-public:
     virtual Word load( ProcessorState& proc ) const;
     virtual void store( ProcessorState& proc, Word value ) const;
+
+    virtual int size() const { return 1; }
 };
 
 struct FastDirect : public AddressingMode {
@@ -269,7 +268,7 @@ struct Binary : public Instruction {
 
 }
 
-void executeNext( ProcessorState& proc );
+void advance( ProcessorState& proc, int numWords );
 
 enum class AddressContext { A, B };
 
