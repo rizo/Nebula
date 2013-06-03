@@ -94,7 +94,7 @@ void Monitor::drawStartUp() {
 
     const std::array<std::uint8_t, 14> LINE1 = { 'N', 'Y', 'A', ' ', 'E', 'L', 'E', 'K', 'T', 'R', 'I', 'S', 'K', 'A'};
     const std::array<std::uint8_t, 7 > LINE2 = { 'L', 'E', 'M', '1', '8', '0', '2' };
-    const std::array<std::uint8_t, 18> LINE3 = {'L', 'O', 'W', ' ', 'E', 'N', 'E', 'R', 'G', 'Y', ' ', 'M', 'O', 'N', 'I', 'T', 'O', 'R' };
+    const std::array<std::uint8_t, 18> LINE3 = {'L', 'o', 'w', ' ', 'E', 'n', 'e', 'r', 'g', 'y', ' ', 'M', 'o', 'n', 'i', 't', 'o', 'r' };
 
     drawCentered( 0, LINE1.data(), LINE1.size() );
     drawCentered( 2, LINE2.data(), LINE2.size() );
@@ -198,6 +198,19 @@ void Monitor::fill( BackgroundColor bg ) {
     SDL_FillRect( _screen, nullptr, c );
 }
 
+std::pair<Word, Word> Monitor::getCharacter( Character ch ) {
+    if ( _state.fontOffset == 0 ) {
+        return sim::MONITOR_DEFAULT_FONT[ch.value];
+    } else {
+        auto offset = _state.fontOffset + ch.value;
+
+        return {
+            _memory->read( offset ),
+            _memory->read( offset + 1 )
+        };
+    }
+}
+
 Word Monitor::getColor( std::uint8_t color ) {
     if ( _state.paletteOffset == 0 ) {
         return sim::MONITOR_DEFAULT_PALETTE[color];
@@ -205,7 +218,6 @@ Word Monitor::getColor( std::uint8_t color ) {
         return _memory->read( _state.paletteOffset + color );
     }
 }
-
 
 void Monitor::drawCell( int x, int y,
                         Character ch,
@@ -235,7 +247,7 @@ void Monitor::drawCell( int x, int y,
         }
     };
 
-    auto data = sim::MONITOR_DEFAULT_FONT[ch.value];
+    auto data = getCharacter( ch );
     Word first = data.first;
     Word second = data.second;
 
