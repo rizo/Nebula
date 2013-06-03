@@ -74,23 +74,27 @@ std::unique_ptr<MonitorState> Monitor::run() {
 }
 
 void Monitor::drawStartUp() {
-    const int MID_X = sim::MONITOR_CELLS_PER_SCREEN_WIDTH / 2;
-    const int MID_Y = sim::MONITOR_CELLS_PER_SCREEN_HEIGHT / 2;
-    const int NUM_LINES = 1;
+    const int MID_X = (sim::MONITOR_CELLS_PER_SCREEN_WIDTH / 2) - 1;
+    const int MID_Y = (sim::MONITOR_CELLS_PER_SCREEN_HEIGHT / 2) - 1;
+    const int NUM_LINES = 4;
 
     auto drawCentered = [&] ( int lineIndex, const std::uint8_t* line, std::size_t length ) {
         for ( std::size_t i = 0; i < length; ++i ) {
             drawCell( MID_X - (length / 2) + i,
                       MID_Y - (NUM_LINES / 2) + lineIndex,
                       Character { line[i] },
-                      ForegroundColor { 0xf },
-                      BackgroundColor { 0 } );
+                      ForegroundColor { 0xe },
+                      BackgroundColor { 0x9 } );
         }
     };
 
-    const std::array<std::uint8_t, 4> FIRST_LINE = { '1', '8', '0', '2' };
+    const std::array<std::uint8_t, 14> LINE1 = { 'N', 'Y', 'A', ' ', 'E', 'L', 'E', 'K', 'T', 'R', 'I', 'S', 'K', 'A'};
+    const std::array<std::uint8_t, 7 > LINE2 = { 'L', 'E', 'M', '1', '8', '0', '2' };
+    const std::array<std::uint8_t, 18> LINE3 = {'L', 'O', 'W', ' ', 'E', 'N', 'E', 'R', 'G', 'Y', ' ', 'M', 'O', 'N', 'I', 'T', 'O', 'R' };
 
-    drawCentered( 0, FIRST_LINE.data(), FIRST_LINE.size() );
+    drawCentered( 0, LINE1.data(), LINE1.size() );
+    drawCentered( 2, LINE2.data(), LINE2.size() );
+    drawCentered( 3, LINE3.data(), LINE3.size() );
 }
 
 void Monitor::drawBorder() {
