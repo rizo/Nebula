@@ -26,15 +26,12 @@ int main( int argc, char* argv[] ) {
 
     auto monitorStateF = sim::launch( monitor );
 
-    std::this_thread::sleep_for( std::chrono::milliseconds { 5000 } );
+    std::this_thread::sleep_for( std::chrono::milliseconds { 10000 } );
     proc.stop();
     clock.stop();
     monitor.stop();
 
-    auto procState = procStateF.get();
-
-    std::cout << format( "0x%04x" ) % procState->read( Register::X ) << std::endl;
-    
+    procStateF.get();
     clockStateF.get();
     monitorStateF.get();
 }
