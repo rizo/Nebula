@@ -83,7 +83,7 @@ struct MonitorState {
     Word videoOffset { 0 };
     Word fontOffset { 0 };
     Word paletteOffset { 0 };
-    BorderColor borderColor { 0 };
+    BorderColor borderColor { 9 };
     
     std::array<bool, sim::MONITOR_CELLS_PER_SCREEN> isBlinking;
     bool blinkVisible { true };
@@ -112,7 +112,8 @@ class Monitor : public Simulation<MonitorState>, public Device {
     void drawCell( int x, int y, Character ch, ForegroundColor fg, BackgroundColor bg );
     void drawStartUp();
 
-    void clear();
+    void fill( BackgroundColor bg );
+    void clear() { fill( BackgroundColor { 0 } ); }
     void update() { SDL_Flip( _screen ); }
 
     DoubleWord mapColor( Word color );

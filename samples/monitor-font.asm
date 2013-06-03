@@ -65,11 +65,6 @@ _loop:
         SET     PC, _loop
 
 _done:
-        ;; Set the border color.
-        SET     B, 3
-        SET     A, 3
-        HWI     [lem1802_index]
-        
         ;; Set video RAM address.
         SET     A, 0
         SET     B, video_addr

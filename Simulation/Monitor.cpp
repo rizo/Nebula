@@ -78,6 +78,8 @@ void Monitor::drawStartUp() {
     const int MID_Y = (sim::MONITOR_CELLS_PER_SCREEN_HEIGHT / 2) - 1;
     const int NUM_LINES = 4;
 
+    fill( BackgroundColor { 0x9 } );
+
     auto drawCentered = [&] ( int lineIndex, const std::uint8_t* line, std::size_t length ) {
         for ( std::size_t i = 0; i < length; ++i ) {
             drawCell( MID_X - (length / 2) + i,
@@ -87,6 +89,8 @@ void Monitor::drawStartUp() {
                       BackgroundColor { 0x9 } );
         }
     };
+
+    
 
     const std::array<std::uint8_t, 14> LINE1 = { 'N', 'Y', 'A', ' ', 'E', 'L', 'E', 'K', 'T', 'R', 'I', 'S', 'K', 'A'};
     const std::array<std::uint8_t, 7 > LINE2 = { 'L', 'E', 'M', '1', '8', '0', '2' };
@@ -189,9 +193,9 @@ DoubleWord Monitor::mapColor( Word color ) {
     return SDL_MapRGB( _screen->format, red, green, blue );
 }
 
-void Monitor::clear() {
-    auto black = SDL_MapRGB( _screen->format, 0, 0, 0 );
-    SDL_FillRect( _screen, nullptr, black );
+void Monitor::fill( BackgroundColor bg ) {
+    auto c = mapColor( getColor( bg ) );
+    SDL_FillRect( _screen, nullptr, c );
 }
 
 Word Monitor::getColor( std::uint8_t color ) {
