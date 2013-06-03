@@ -76,11 +76,12 @@ std::unique_ptr<MonitorState> Monitor::run() {
 void Monitor::drawStartUp() {
     const int MID_X = sim::MONITOR_CELLS_PER_SCREEN_WIDTH / 2;
     const int MID_Y = sim::MONITOR_CELLS_PER_SCREEN_HEIGHT / 2;
+    const int NUM_LINES = 1;
 
-    auto drawCentered = [&] ( const std::uint8_t* line, std::size_t length ) {
+    auto drawCentered = [&] ( int lineIndex, const std::uint8_t* line, std::size_t length ) {
         for ( std::size_t i = 0; i < length; ++i ) {
             drawCell( MID_X - (length / 2) + i,
-                      MID_Y - 1,
+                      MID_Y - (NUM_LINES / 2) + lineIndex,
                       Character { line[i] },
                       ForegroundColor { 0xf },
                       BackgroundColor { 0 } );
@@ -89,7 +90,7 @@ void Monitor::drawStartUp() {
 
     const std::array<std::uint8_t, 4> FIRST_LINE = { '1', '8', '0', '2' };
 
-    drawCentered( FIRST_LINE.data(), FIRST_LINE.size() );
+    drawCentered( 0, FIRST_LINE.data(), FIRST_LINE.size() );
 }
 
 void Monitor::drawBorder() {
