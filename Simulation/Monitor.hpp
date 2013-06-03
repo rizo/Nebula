@@ -69,7 +69,8 @@ const std::chrono::milliseconds MONITOR_START_UP_DURATION { 2500 };
 
 enum class MonitorOperation {
     MapVideoMemory,
-    SetBorderColor
+    MapFontMemory,
+    SetBorderColor,
 };
 
 struct Character { std::uint8_t value; };

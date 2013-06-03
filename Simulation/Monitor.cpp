@@ -27,6 +27,9 @@ std::unique_ptr<MonitorState> Monitor::run() {
             case 0:
                 handleInterrupt( MonitorOperation::MapVideoMemory, proc );
                 break;
+            case 1:
+                handleInterrupt( MonitorOperation::MapFontMemory, proc );
+                break;
             case 3:
                 handleInterrupt( MonitorOperation::SetBorderColor, proc );
                 break;
@@ -89,8 +92,6 @@ void Monitor::drawStartUp() {
                       BackgroundColor { 0x9 } );
         }
     };
-
-    
 
     const std::array<std::uint8_t, 14> LINE1 = { 'N', 'Y', 'A', ' ', 'E', 'L', 'E', 'K', 'T', 'R', 'I', 'S', 'K', 'A'};
     const std::array<std::uint8_t, 7 > LINE2 = { 'L', 'E', 'M', '1', '8', '0', '2' };
@@ -178,6 +179,10 @@ void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
         }
 
         break;
+    case MonitorOperation::MapFontMemory:
+        LOG( INFO ) << format( "Monitor executing 'MapFontMemory' at 0x%04x" ) % b;
+
+        _state.fontOffset = b;
     }
 }
 
