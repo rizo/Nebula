@@ -8,8 +8,14 @@
 template <typename StateType>
 class Simulation {
 private:
-    std::atomic<bool> _isActive { false };
+    std::atomic<bool> _isActive;
 public:
+    explicit Simulation() :
+        _isActive { false } {}
+
+    explicit Simulation( const Simulation& s ) :
+        _isActive { s._isActive.load() } {}
+    
     virtual std::unique_ptr<StateType> run() = 0;
 
     bool isActive() const { return _isActive.load(); }

@@ -5,7 +5,7 @@
 
 namespace sim {
 
-constexpr std::chrono::microseconds CLOCK_BASE_PERIOD { 16666 };
+const std::chrono::microseconds CLOCK_BASE_PERIOD { 16666 };
 
 }
 
@@ -29,8 +29,9 @@ class Clock : public Simulation<ClockState>, public Device {
     ClockState _state {};
 public:
     explicit Clock( Computer& computer ) :
-        _computer { computer },
-        _procInt { computer.nextInterrupt( this) } {}
+        Simulation<ClockState> {},
+        _computer( computer ),
+        _procInt { computer.nextInterrupt( this ) } {}
 
     virtual std::unique_ptr<ClockState> run();
 

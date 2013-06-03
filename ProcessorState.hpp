@@ -157,6 +157,7 @@ struct RegisterIndirectOffset : public AddressingMode {
 struct Push : public AddressingMode {
     virtual Word load( ProcessorState& ) const {
         assert( ! "Attempt to load from a 'push' address!" );
+        return 0;
     }
 
     virtual void store( ProcessorState& proc, Word value ) const {

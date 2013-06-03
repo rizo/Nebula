@@ -11,8 +11,8 @@
 
 namespace computer {
 
-constexpr int MAX_DEVICES = 0x10000;
-constexpr int MAX_QUEUED_INTERRUPTS = 256;
+constexpr std::size_t MAX_DEVICES = 0x10000;
+constexpr std::size_t MAX_QUEUED_INTERRUPTS = 256;
 
 }
 
@@ -36,11 +36,17 @@ public:
 };
 
 class ProcessorInterrupt {
-    std::atomic<bool> _isActive { false };
-    std::condition_variable _condition;
-    std::mutex _mutex;
+    std::atomic<bool> _isActive;
+    std::condition_variable _condition {};
+    std::mutex _mutex {};
     std::unique_ptr<ProcessorState> _proc = nullptr;
 public:
+    explicit ProcessorInterrupt() :
+        _isActive { false } {}
+
+    explicit ProcessorInterrupt( const ProcessorInterrupt& inter ) :
+        _isActive { inter._isActive.load() } {}
+    
     // Sender interface.
 
     void trigger( std::unique_ptr<ProcessorState>&& proc );
@@ -106,23 +112,23 @@ public:
 };
 
 class NoSuchDeviceIndex : public std::out_of_range {
-    Word _index;
+    std::size_t _index;
 public:
-    explicit NoSuchDeviceIndex( Word index ) :
+    explicit NoSuchDeviceIndex( std::size_t index ) :
         std::out_of_range {
             (format( "No such device index: 0x%04x" ) % index).str()
         },
         _index { index } {}
 
-    Word index() const { return _index; }
+    std::size_t index() const { return _index; }
 };
 
 }
 
 class Computer {
-    std::array<std::shared_ptr<ProcessorInterrupt>, computer::MAX_DEVICES> _procInts {};
-    std::array<DeviceInfo, computer::MAX_DEVICES> _devInfo {};
-    Word _devIndex { 0 };
+    std::array<std::shared_ptr<ProcessorInterrupt>, computer::MAX_DEVICES> _procInts;
+    std::array<DeviceInfo, computer::MAX_DEVICES> _devInfo;
+    std::size_t _devIndex { 0 };
 
     InterruptQueue _intQ {};
     bool _onlyQueuing { false };
@@ -132,12 +138,15 @@ class Computer {
     std::shared_ptr<Memory> _memory = nullptr;
 public:
     explicit Computer( std::shared_ptr<Memory> memory ) :
-        _memory { memory } {}
+        _memory { memory } {
+
+        _procInts.fill( nullptr );
+    }
 
     std::shared_ptr<Memory> memory() { return _memory; }
 
     inline std::shared_ptr<ProcessorInterrupt> nextInterrupt( const Device* const  dev ) {
-        if ( static_cast<int>( _devIndex ) >= computer::MAX_DEVICES ) {
+        if ( _devIndex >= computer::MAX_DEVICES ) {
             throw error::TooManyDevices {};
         }
 
@@ -147,7 +156,7 @@ public:
         return _procInts[_devIndex++];
     }
 
-    inline std::shared_ptr<ProcessorInterrupt> interruptByIndex( Word index ) {
+    inline std::shared_ptr<ProcessorInterrupt> interruptByIndex( std::size_t index ) {
         if ( index >= _devIndex ) {
             throw error::NoSuchDeviceIndex { index };
         }
@@ -155,7 +164,7 @@ public:
         return _procInts[index];
     }
 
-    inline DeviceInfo infoByIndex( Word index ) {
+    inline DeviceInfo infoByIndex( std::size_t index ) {
         if ( index >= _devIndex ) {
             throw error::NoSuchDeviceIndex { index };
         }
@@ -163,7 +172,7 @@ public:
         return _devInfo[index];
     }
 
-    inline int numDevices() const { return _devIndex; }
+    inline std::size_t numDevices() const { return _devIndex; }
 
     inline InterruptQueue& queue() { return _intQ; }
 

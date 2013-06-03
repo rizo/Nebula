@@ -9,7 +9,7 @@
 
 namespace sim {
 
-constexpr std::chrono::microseconds PROCESSOR_TICK_DURATION { 10 };
+const std::chrono::microseconds PROCESSOR_TICK_DURATION { 10 };
 
 }
 
@@ -22,11 +22,13 @@ class Processor : public Simulation<ProcessorState> {
     void executeSpecial( const instruction::Unary* ins );
 public:
     explicit Processor( Computer& computer ) :
-        _computer { computer },
+        Simulation<ProcessorState> {},
+        _computer( computer ),
         _proc { make_unique<ProcessorState>( computer.memory() ) },
         _tickDuration { sim::PROCESSOR_TICK_DURATION } {}
 
     Processor() = delete;
+    Processor( const Processor& ) = delete;
 
     virtual std::unique_ptr<ProcessorState> run();
 };

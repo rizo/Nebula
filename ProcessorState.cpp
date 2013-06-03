@@ -16,6 +16,10 @@ Word ProcessorState::read( Special spec ) const {
     case Special::Sp: return _sp;
     case Special::Ex: return _ex;
     }
+
+    // This shouldn't be necessary, but GCC complains (wrongly) that
+    // not all cases are handled in the above.
+    return 0;
 }
 
 void ProcessorState::write( Register reg, Word value ) {
@@ -281,7 +285,7 @@ decoderByValue( Word value ) {
 
 
 std::shared_ptr<AddressingMode>
-decodeAddress( AddressContext context, Word word ) {
+decodeAddress( AddressContext, Word word ) {
     std::shared_ptr<AddressingMode> addr = nullptr;
 
     auto decodePeek = decoderByValue<mode::Peek>( 0x18 );

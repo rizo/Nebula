@@ -85,7 +85,7 @@ struct MonitorState {
     Word paletteOffset { 0 };
     BorderColor borderColor { 0 };
     
-    std::array<bool, sim::MONITOR_CELLS_PER_SCREEN> isBlinking {};
+    std::array<bool, sim::MONITOR_CELLS_PER_SCREEN> isBlinking;
     bool blinkVisible { true };
     std::chrono::microseconds sinceLastBlink { 0 };
 };
@@ -93,7 +93,7 @@ struct MonitorState {
 class Monitor : public Simulation<MonitorState>, public Device {
     Computer& _computer;
     std::shared_ptr<ProcessorInterrupt> _procInt { nullptr };
-    MonitorState _state {};
+    MonitorState _state;
     std::shared_ptr<Memory> _memory { nullptr };
     
     SDL_Surface* _screen { nullptr };
@@ -120,12 +120,15 @@ class Monitor : public Simulation<MonitorState>, public Device {
     void handleInterrupt( MonitorOperation op, ProcessorState* proc );
 public:
     explicit Monitor( Computer& computer ) :
-        _computer { computer },
+        Simulation<MonitorState> {},
+        _computer( computer ),
         _procInt { computer.nextInterrupt( this ) },
         _memory { computer.memory() },
         _dot { make_unique<SDL_Rect>() },
         _borderHorizontal { make_unique<SDL_Rect>() },
         _borderVertical { make_unique<SDL_Rect>() } {
+
+        _state.isBlinking.fill( false );
 
         _borderHorizontal->w = sim::MONITOR_PIXELS_PER_SCREEN_WIDTH;
         _borderHorizontal->h = sim::MONITOR_PIXELS_PER_BORDER;

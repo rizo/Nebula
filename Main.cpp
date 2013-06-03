@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-int main( int argc, char* argv[] ) {
+int main( int, char* argv[] ) {
     google::InitGoogleLogging( argv[0] );
 
     SDL_Init( SDL_INIT_VIDEO );
