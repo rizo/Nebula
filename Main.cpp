@@ -1,4 +1,5 @@
 #include "Computer.hpp"
+#include "Sdl.hpp"
 #include "Simulation/Clock.hpp"
 #include "Simulation/Processor.hpp"
 #include "Simulation/Monitor.hpp"
@@ -7,9 +8,7 @@
 
 int main( int, char* argv[] ) {
     google::InitGoogleLogging( argv[0] );
-
-    SDL_Init( SDL_INIT_VIDEO );
-    std::atexit( &SDL_Quit );
+    sdl::initialize();
 
     auto memory = Memory::fromFile( argv[1], 0x10000 );
     Computer computer { memory };
@@ -25,8 +24,23 @@ int main( int, char* argv[] ) {
     LOG( INFO ) << "Launched the clock!";
 
     auto monitorStateF = sim::launch( monitor );
+    LOG( INFO ) << "Launched the monitor!";
 
-    std::this_thread::sleep_for( std::chrono::milliseconds { 10000 } );
+    SDL_Event event;
+    while ( true ) {
+        if ( SDL_PollEvent( &event ) ) {
+            if ( event.type == SDL_QUIT ) {
+                break;
+            }
+        }
+
+        if ( sim::isReady( procStateF ) ) {
+            break;
+        }
+
+        std::this_thread::sleep_for( std::chrono::milliseconds { 10 } );
+    }
+
     proc.stop();
     clock.stop();
     monitor.stop();

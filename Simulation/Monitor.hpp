@@ -2,12 +2,11 @@
 
 #include "../Computer.hpp"
 #include "../Simulation.hpp"
+#include "../Sdl.hpp"
 #include "MonitorFont.hpp"
 
 #include <array>
 #include <chrono>
-
-#include <SDL/SDL.h>
 
 namespace sim {
 
@@ -96,8 +95,9 @@ class Monitor : public Simulation<MonitorState>, public Device {
     std::shared_ptr<ProcessorInterrupt> _procInt { nullptr };
     MonitorState _state;
     std::shared_ptr<Memory> _memory { nullptr };
-    
-    SDL_Surface* _screen { nullptr };
+
+    sdl::UniqueSurface _screen { nullptr };
+    // SDL_Surface* _screen { nullptr };
     
     std::unique_ptr<SDL_Rect> _dot;
     std::unique_ptr<SDL_Rect> _borderHorizontal;
@@ -117,7 +117,7 @@ class Monitor : public Simulation<MonitorState>, public Device {
 
     void fill( BackgroundColor bg );
     void clear() { fill( BackgroundColor { 0 } ); }
-    void update() { SDL_Flip( _screen ); }
+    void update() { SDL_Flip( _screen.get() ); }
 
     DoubleWord mapColor( Word color );
 
@@ -154,11 +154,5 @@ public:
             device::Manufacturer { 0x1c6c8b36 },
             device::Version { 0x1802 }
         };
-    }
-
-    ~Monitor() {
-        if ( _screen ) {
-            SDL_FreeSurface( _screen );
-        }
     }
 };

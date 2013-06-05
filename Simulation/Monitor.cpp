@@ -1,14 +1,11 @@
+#include "../Sdl.hpp"
 #include "Monitor.hpp"
 
 std::unique_ptr<MonitorState> Monitor::run() {
     setActive();
 
     LOG( INFO ) << "Monitor simulation is active.";
-    
-    _screen = SDL_SetVideoMode( sim::MONITOR_PIXELS_PER_SCREEN_WIDTH,
-                                sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT,
-                                16,
-                                SDL_SWSURFACE );
+    _screen = std::move( sdl::SCREEN );
 
     while ( isActive() )  {
         if ( ! _state.isConnected ) {
@@ -108,22 +105,22 @@ void Monitor::drawBorder() {
     // Top.
     _borderHorizontal->x = 0;
     _borderHorizontal->y = 0;
-    SDL_FillRect( _screen, _borderHorizontal.get(), color );
+    SDL_FillRect( _screen.get(), _borderHorizontal.get(), color );
 
     // Bottom.
     _borderHorizontal->x = 0;
     _borderHorizontal->y = sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT - sim::MONITOR_PIXELS_PER_BORDER;
-    SDL_FillRect( _screen, _borderHorizontal.get(), color );
+    SDL_FillRect( _screen.get(), _borderHorizontal.get(), color );
 
     // Left.
     _borderVertical->x = 0;
     _borderVertical->y = 0;
-    SDL_FillRect( _screen, _borderVertical.get(), color );
+    SDL_FillRect( _screen.get(), _borderVertical.get(), color );
 
     // Right.
     _borderVertical->x = sim::MONITOR_PIXELS_PER_SCREEN_WIDTH - sim::MONITOR_PIXELS_PER_BORDER;
     _borderVertical->y = 0;
-    SDL_FillRect( _screen, _borderVertical.get(), color );
+    SDL_FillRect( _screen.get(), _borderVertical.get(), color );
 }
 
 static inline int index( int x, int y ) {
@@ -200,7 +197,7 @@ DoubleWord Monitor::mapColor( Word color ) {
 
 void Monitor::fill( BackgroundColor bg ) {
     auto c = mapColor( getColor( bg ) );
-    SDL_FillRect( _screen, nullptr, c );
+    SDL_FillRect( _screen.get(), nullptr, c );
 }
 
 std::pair<Word, Word> Monitor::getCharacter( Character ch ) {
@@ -239,7 +236,7 @@ void Monitor::drawCell( int x, int y,
         _dot->y = sim::MONITOR_PIXELS_PER_BORDER + cellY + (y * sim::MONITOR_PIXELS_PER_DOT_HEIGHT );
 
         auto color = isForeground ? fgColor : bgColor;
-        SDL_FillRect( _screen, _dot.get(), color );
+        SDL_FillRect( _screen.get(), _dot.get(), color );
     };
 
     bool isBlinking = _state.isBlinking[index( x, y )];

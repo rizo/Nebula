@@ -15,6 +15,7 @@ add_executable (nebula
   Memory.cpp
   ProcessorState.cpp
   Computer.cpp
+  Sdl.cpp
   Simulation/Clock.cpp
   Simulation/Processor.cpp
   Simulation/Monitor.cpp
