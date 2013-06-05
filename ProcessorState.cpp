@@ -370,8 +370,6 @@ static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc )
 }
 
 void ProcessorState::executeNext() {
-    dumpToLog( *this );
-
     auto ins = fetchNextInstruction( *this );
 
     if ( doSkip() ) {
