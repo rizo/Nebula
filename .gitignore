@@ -1,2 +1,4 @@
 debug
 release
+Samples/*.bin
+Samples/*.list
