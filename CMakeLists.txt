@@ -33,6 +33,7 @@ add_executable (runTests
 
 target_link_libraries (runTests
   ${CMAKE_THREAD_LIBS_INIT}
+  glog
   gtest
   gtest_main)
   
