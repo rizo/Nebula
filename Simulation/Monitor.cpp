@@ -27,6 +27,9 @@ std::unique_ptr<MonitorState> Monitor::run() {
             case 1:
                 handleInterrupt( MonitorOperation::MapFontMemory, proc );
                 break;
+            case 2:
+                handleInterrupt( MonitorOperation::MapPaletteMemory, proc );
+                break;
             case 3:
                 handleInterrupt( MonitorOperation::SetBorderColor, proc );
                 break;
@@ -176,10 +179,16 @@ void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
         }
 
         break;
+    case MonitorOperation::MapPaletteMemory:
+        LOG( INFO ) << format( "Monitor executing 'MapPaletteMemory' at 0x%04x" ) % b;
+
+        _state.paletteOffset = b;
+        break;
     case MonitorOperation::MapFontMemory:
         LOG( INFO ) << format( "Monitor executing 'MapFontMemory' at 0x%04x" ) % b;
 
         _state.fontOffset = b;
+        break;
     }
 }
 
