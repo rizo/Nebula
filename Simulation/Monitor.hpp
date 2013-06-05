@@ -71,6 +71,8 @@ enum class MonitorOperation {
     MapFontMemory,
     MapPaletteMemory,
     SetBorderColor,
+    DumpFont,
+    DumpPalette
 };
 
 struct Character { std::uint8_t value; };

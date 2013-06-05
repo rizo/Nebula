@@ -33,6 +33,12 @@ std::unique_ptr<MonitorState> Monitor::run() {
             case 3:
                 handleInterrupt( MonitorOperation::SetBorderColor, proc );
                 break;
+            case 4:
+                handleInterrupt( MonitorOperation::DumpFont, proc );
+                break;
+            case 5:
+                handleInterrupt( MonitorOperation::DumpPalette, proc );
+                break;
             }
 
             _procInt->respond();
@@ -188,6 +194,25 @@ void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
         LOG( INFO ) << format( "Monitor executing 'MapFontMemory' at 0x%04x" ) % b;
 
         _state.fontOffset = b;
+        break;
+    case MonitorOperation::DumpFont:
+        LOG( INFO ) << format( "Monitor executing 'DumpFont' at %0x%04x" ) % b;
+
+        for ( Word i = 0; i < 2 * sim::MONITOR_DEFAULT_FONT.size(); i += 2 ) {
+            auto letter = sim::MONITOR_DEFAULT_FONT[i];
+
+            _memory->write( b + i, letter.first );
+            _memory->write( b + i + 1, letter.second );
+        }
+
+        break;
+    case MonitorOperation::DumpPalette:
+        LOG( INFO ) << format( "Monitor executing 'DumpFont' at %0x%04x" ) % b;
+
+        for ( Word i = 0; i < sim::MONITOR_DEFAULT_PALETTE.size(); ++i ) {
+            _memory->write( b + i, sim::MONITOR_DEFAULT_PALETTE[i] );
+        }
+
         break;
     }
 }
