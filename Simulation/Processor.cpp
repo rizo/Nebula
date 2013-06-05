@@ -9,13 +9,15 @@ Processor::run() {
     LOG( INFO ) << "Processor simulation is active.";
 
     while ( isActive() ) {
+        auto now = std::chrono::system_clock::now();
+
         _proc->executeNext();
 
         if ( auto ins = dynamic_cast<const instruction::Unary*>( _proc->lastInstruction() ) ) {
             executeSpecial( ins );
         }
 
-        std::this_thread::sleep_for( _tickDuration * _proc->clock() );
+        std::this_thread::sleep_until( now + (_tickDuration * _proc->clock()) );
         _proc->clearClock();
 
         if ( _computer.queue().hasInterrupt() &&
