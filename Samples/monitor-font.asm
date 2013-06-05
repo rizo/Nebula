@@ -1,7 +1,7 @@
 ;;; monitor-font.asm
 ;;;
 ;;; Demonstrate the font built-in to the LEM1802 display.
-        
+
 ;;;
 ;;; Constants
 
@@ -15,39 +15,30 @@
 
         .org data_addr
 
-lem1802_index: .reserve 1
-
+lem1802_index:
+        .reserve 1
+        
+        .include "find-device.asm"
 ;;; 
 ;;; Program
 
         .org 0x0
 
-        JSR     find_lem1802
+        ;; Find the LEM180
+        SET     PUSH, 0xf615
+        SET     PUSH, 0x7349
+        SET     PUSH, 0x1802
+        JSR     find_device
+        SET     0, POP
+        SET     0, POP
+        SET     0, POP
+
+        IFE     X, 0xffff
+        SET     PC, done
+        SET     [lem1802_index], X
+        
         JSR     display
 done:   
-        SET     PC, done
-
-find_lem1802:
-        HWN     I               ; Get the number of connected devices.
-        SET     J, 0            ; Index counter.
-_loop:
-        HWQ     J
-        ;; Check the current device against the ID of the LEM1802.
-        IFE     A, 0xf615
-        IFE     B, 0x7349
-        IFE     C, 0x1802
-        SET     PC, _success
-
-        ;; Not this device. Increment.
-        ADD     J, 1
-        IFE     J, I
-        SET     PC, _failure    ; LEM1802 not found.
-
-        SET     PC, _loop
-_success:
-        SET     [lem1802_index], J
-        SET     PC, POP
-_failure:
         SET     PC, done
 
 display:
