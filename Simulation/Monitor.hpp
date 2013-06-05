@@ -63,7 +63,7 @@ const std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };
 
 const std::chrono::milliseconds MONITOR_BLINK_DURATION { 500 };
 
-const std::chrono::milliseconds MONITOR_START_UP_DURATION { 2500 };
+const std::chrono::milliseconds MONITOR_START_UP_DURATION { 1250 };
 
 }
 
