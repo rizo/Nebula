@@ -190,6 +190,13 @@ struct Peek : public AddressingMode {
     }
 };
 
+struct Pick : public AddressingMode {
+    virtual Word load( ProcessorState& proc ) const;
+    virtual void store( ProcessorState& proc, Word value ) const;
+
+    virtual int size() const { return 1; }
+};
+
 struct Pc : public AddressingMode {
     virtual Word load( ProcessorState& proc ) const {
         return proc.read( Special::Pc );
@@ -291,6 +298,7 @@ struct Binary : public Instruction {
 }
 
 void advance( ProcessorState& proc, int numWords );
+void dumpToLog( ProcessorState& proc );
 
 enum class AddressContext { A, B };
 

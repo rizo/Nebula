@@ -48,6 +48,16 @@ void RegisterIndirectOffset::store( ProcessorState& proc, Word value ) const {
     proc.memory().write( proc.read( reg ) + fetchNextWord( proc ), value );
 }
 
+Word Pick::load( ProcessorState& proc ) const {
+    auto sp = proc.read( Special::Sp );
+    return proc.memory().read( sp + fetchNextWord( proc ) );
+}
+
+void Pick::store( ProcessorState& proc, Word value ) const {
+    auto sp = proc.read( Special::Sp );
+    proc.memory().write( sp + fetchNextWord( proc ), value );
+}
+
 Word Indirect::load( ProcessorState& proc ) const {
     return proc.memory().read( fetchNextWord( proc ) );
 }
@@ -77,6 +87,8 @@ void Direct::store( ProcessorState& proc, Word value ) const {
 namespace instruction {
 
 void Unary::execute( ProcessorState& proc ) const {
+    Word loc;
+
     switch ( opcode ) {
     case SpecialOpcode::Iag:
     case SpecialOpcode::Ias:
@@ -88,8 +100,9 @@ void Unary::execute( ProcessorState& proc ) const {
         // Handled by the parent simulation.
         break;
     case SpecialOpcode::Jsr:
+        loc = address->load( proc );
         mode::Push {}.store( proc, proc.read( Special::Pc ) );
-        proc.write( Special::Pc, address->load( proc ) );
+        proc.write( Special::Pc, loc );
         break;
     default:
         assert( ! "Unary instruction is unsupported!" );
@@ -267,30 +280,15 @@ decoderByValue( Word value ) {
     };
 }
 
-// static optional<Address> decodePush( Word w ) {
-//     if ( w == 0x18 ) {
-//         return address::push();
-//     } else {
-//         return {};
-//     }
-// }
-
-// static optional<Address> decodePop( Word w ) {
-//  p   if ( w == 0x18 ) {
-//         return address::pop();
-//     } else {
-//         return {};
-//     }
-// }
-
-
 std::shared_ptr<AddressingMode>
-decodeAddress( AddressContext, Word word ) {
+decodeAddress( AddressContext context, Word word ) {
     std::shared_ptr<AddressingMode> addr = nullptr;
 
-    auto decodePeek = decoderByValue<mode::Peek>( 0x18 );
-    // auto decodePick = makeDecoder( 0x1a, address::pick );
+    auto decodePush = decoderByValue<mode::Push>( 0x18 );
+    auto decodePop = decoderByValue<mode::Pop>( 0x18 );
+    auto decodePeek = decoderByValue<mode::Peek>( 0x19 );
     // auto decodeSp = makeDecoder( 0x1b, address::sp );
+    auto decodePick = decoderByValue<mode::Pick>( 0x1a );
     auto decodePc = decoderByValue<mode::Pc>( 0x1c );
     // auto decodeEx = makeDecoder( 0x1d, address::ex );
     auto decodeIndirect = decoderByValue<mode::Indirect>( 0x1e );
@@ -299,24 +297,26 @@ decodeAddress( AddressContext, Word word ) {
 
 #define TRY( f ) addr = f( word ); if ( addr ) return addr;
 
-    // if ( context == AddressContext::A ) {
-    //     TRY( decodePop );
-    //     TRY( decodeFastDirect );
-    // }
+    if ( context == AddressContext::A ) {
+        TRY( decodePop );
+        TRY( decodeFastDirect );
+    }
+
+    if ( context == AddressContext::B ) {
+        TRY( decodePush );
+    }
 
     TRY( decodeRegisterDirect );
     TRY( decodeRegisterIndirect );
     TRY( decodeRegisterIndirectOffset );
-    // TRY( decodePush );
-    // TRY( decodePop );
+    TRY( decodePush );
     TRY( decodePeek );
-    // TRY( decodePick );
+    TRY( decodePick );
     // TRY( decodeSp );
     TRY( decodePc );
     // TRY( decodeEx );
     TRY( decodeIndirect );
     TRY( decodeDirect );
-    TRY( decodeFastDirect );
     
 #undef TRY
 
@@ -370,6 +370,8 @@ static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc )
 }
 
 void ProcessorState::executeNext() {
+    dumpToLog( *this );
+
     auto ins = fetchNextInstruction( *this );
 
     if ( doSkip() ) {
@@ -384,4 +386,30 @@ void ProcessorState::executeNext() {
 void advance( ProcessorState& proc, int numWords ) {
     auto pc = proc.read( Special::Pc );
     proc.write( Special::Pc, pc + numWords );
+}
+
+void dumpToLog( ProcessorState& proc ) {
+    LOG( INFO ) << "\n";
+    LOG( INFO ) << format( "PC   : 0x%04x" ) % proc.read( Special::Pc );
+    LOG( INFO ) << format( "SP   : 0x%04x" ) % proc.read( Special::Sp );
+    LOG( INFO ) << format( "EX   : 0x%04x" ) % proc.read( Special::Ex );
+    LOG( INFO ) << format( "A    : 0x%04x" ) % proc.read( Register::A );
+    LOG( INFO ) << format( "B    : 0x%04x" ) % proc.read( Register::B );
+    LOG( INFO ) << format( "C    : 0x%04x" ) % proc.read( Register::C );
+    LOG( INFO ) << format( "X    : 0x%04x" ) % proc.read( Register::X );
+    LOG( INFO ) << format( "Y    : 0x%04x" ) % proc.read( Register::Y );
+    LOG( INFO ) << format( "Z    : 0x%04x" ) % proc.read( Register::Z );
+    LOG( INFO ) << format( "I    : 0x%04x" ) % proc.read( Register::I );
+    LOG( INFO ) << format( "J    : 0x%04x" ) % proc.read( Register::J );
+    LOG( INFO ) << format( "skip : %s" ) % proc.doSkip();
+
+    std::string stackContents { "" };
+    const int STACK_SIZE = STACK_BEGIN - proc.read( Special::Sp );
+
+    for ( int i = 0; i < STACK_SIZE; ++i ) {
+        stackContents += (format( "0x%04x, " ) % proc.memory().read( proc.read( Special::Sp ) + i )).str();
+    }
+
+    LOG( INFO ) << "stack: " << stackContents;
+    LOG( INFO ) << "\n";
 }
