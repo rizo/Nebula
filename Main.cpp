@@ -1,6 +1,7 @@
 #include "Computer.hpp"
 #include "Sdl.hpp"
 #include "Simulation/Clock.hpp"
+#include "Simulation/Keyboard.hpp"
 #include "Simulation/Processor.hpp"
 #include "Simulation/Monitor.hpp"
 
@@ -16,6 +17,7 @@ int main( int, char* argv[] ) {
     Processor proc { computer };
     Clock clock { computer };
     Monitor monitor { computer };
+    Keyboard keyboard { computer };
 
     auto procStateF = sim::launch( proc );
     LOG( INFO ) << "Launched the processor!";
@@ -26,11 +28,16 @@ int main( int, char* argv[] ) {
     auto monitorStateF = sim::launch( monitor );
     LOG( INFO ) << "Launched the monitor!";
 
+    auto keyboardStateF = sim::launch( keyboard );
+    LOG( INFO ) << "Launched the keyboard!";
+
     SDL_Event event;
     while ( true ) {
         if ( SDL_PollEvent( &event ) ) {
             if ( event.type == SDL_QUIT ) {
                 break;
+            } else if ( event.type == SDL_KEYDOWN ) {
+                keyboard.state().setKey( &event.key.keysym );
             }
         }
 
@@ -44,8 +51,12 @@ int main( int, char* argv[] ) {
     proc.stop();
     clock.stop();
     monitor.stop();
+    keyboard.stop();
 
-    procStateF.get();
     clockStateF.get();
     monitorStateF.get();
+    keyboardStateF.get();
+    auto state = procStateF.get();
+
+    dumpToLog( *state );
 }

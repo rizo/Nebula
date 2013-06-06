@@ -236,7 +236,8 @@ enum class Opcode {
     Add,
     Sub,
     Bor,
-    Ife
+    Ife,
+    Ifn
 };
 
 enum class SpecialOpcode {

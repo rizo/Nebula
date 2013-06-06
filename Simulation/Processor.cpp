@@ -9,6 +9,8 @@ Processor::run() {
     LOG( INFO ) << "Processor simulation is active.";
 
     while ( isActive() ) {
+        // dumpToLog( *_proc );
+
         auto now = std::chrono::system_clock::now();
 
         _proc->executeNext();

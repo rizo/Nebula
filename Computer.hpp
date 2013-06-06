@@ -128,7 +128,7 @@ public:
 class Computer {
     std::array<std::shared_ptr<ProcessorInterrupt>, computer::MAX_DEVICES> _procInts;
     std::array<DeviceInfo, computer::MAX_DEVICES> _devInfo;
-    std::size_t _devIndex { 0 };
+    std::size_t _devIndex { 1 };
 
     InterruptQueue _intQ {};
     bool _onlyQueuing { false };

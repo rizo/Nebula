@@ -33,8 +33,8 @@ lem1802_index:
         SET     0, POP
         SET     0, POP
 
-        IFE     X, 0xffff
-        SET     PC, done
+        IFE     X, 0
+        SET     PC, done        ; Failed to find the LEM1802.
         SET     [lem1802_index], X
         
         JSR     display

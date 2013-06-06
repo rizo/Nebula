@@ -9,6 +9,7 @@ void initialize() {
     SDL_Init( SDL_INIT_VIDEO );
     std::atexit( &SDL_Quit );
 
+    SDL_EnableUNICODE( 1 );
     SCREEN.reset ( SDL_SetVideoMode( sim::MONITOR_PIXELS_PER_SCREEN_WIDTH,
                                      sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT,
                                      16,

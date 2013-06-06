@@ -171,6 +171,9 @@ void Binary::execute( ProcessorState& proc ) const {
     case Opcode::Ife:
         skipUnless( arg1 == arg2 );
         break;
+    case Opcode::Ifn:
+        skipUnless( arg1 != arg2 );
+        break;
     }
 }
 
@@ -199,6 +202,7 @@ optional<Opcode> decode( const Word& w ) {
     case 0x03: return Opcode::Sub;
     case 0x0b: return Opcode::Bor;
     case 0x12: return Opcode::Ife;
+    case 0x13: return Opcode::Ifn;
     default: return {};
     }
 }

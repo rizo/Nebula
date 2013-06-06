@@ -19,6 +19,7 @@ add_executable (nebula
   Simulation/Clock.cpp
   Simulation/Processor.cpp
   Simulation/Monitor.cpp
+  Simulation/Keyboard.cpp
   Main.cpp)
 
 target_link_libraries (nebula
