@@ -39,6 +39,8 @@ public:
 
     bool hasKey() const { return _hasKey.load(); }
 
+    void setKey( const SDL_keysym* ks );
+
     optional<Word> key() const {
         if ( hasKey() ) {
             return _key.load();
@@ -48,8 +50,6 @@ public:
     }
 
     void clear() { _hasKey.store( false ); }
-
-    void setKey( const SDL_keysym* ks );
 
     bool interruptSent() const { return _interruptSent; }
     void setInterruptSent( bool value ) { _interruptSent = value; }
