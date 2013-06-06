@@ -8,6 +8,7 @@
         .def video_addr 0x9000
         .def data_addr 0x100
         .def font_style 0xf000           ; White FG, black BG.
+        .def cursor_style 0x0f00          ; Black FG, white FG.
         
         .org data_addr
 
@@ -42,7 +43,15 @@ character_pos:  .reserve 1
         SET     B, [keyboard_index]
         HWI     [keyboard_index]
 
-done:   SET     PC, done        
+        JSR     display_cursor
+
+done:   SET     PC, done
+
+display_cursor:
+        SET     X, [character_pos]
+        SET     [video_addr + X], cursor_style
+
+        SET     PC, POP
 
 ;;; IN:
 ;;;     1 - The character to display.
@@ -62,11 +71,12 @@ display_character:
         IFE     Y, 0
         SET     PC, _done
 
+        SET     [video_addr + Y], font_style
         SUB     [character_pos], 1
         SUB     Y, 1
         SET     [video_addr + Y], font_style
         SET     PC, _done
-        
+
 _display:
         ;; Check to make sure it's a displayable character.
         IFL     X, 32
@@ -79,7 +89,8 @@ _display:
         SET     [video_addr + Y], X
         ADD     [character_pos], 1
 
-_done:        
+_done:
+        JSR     display_cursor
         SET     Y, POP
         
         SET     PC, POP
