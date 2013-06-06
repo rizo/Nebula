@@ -7,7 +7,7 @@
 
         .def video_addr 0x9000
         .def data_addr 0x100
-        .def font_style 0xf000  ; White FG, black BG.
+        .def font_style 0xf000           ; White FG, black BG.
         
         .org data_addr
 
@@ -42,7 +42,7 @@ character_pos:  .reserve 1
         SET     B, [keyboard_index]
         HWI     [keyboard_index]
 
-done:   SET     PC, done
+done:   SET     PC, done        
 
 ;;; IN:
 ;;;     1 - The character to display.
@@ -51,18 +51,35 @@ done:   SET     PC, done
 display_character:
         SET     PUSH, Y
 
+        SET     X, PICK 2       ; The character.
+        SET     Y, [character_pos]
+
+        ;; Apply the backspace character
+        IFN     X, 0x10
+        SET     PC, _display
+
+        ;; Check to see if we're at the beginning of the screen.
+        IFE     Y, 0
+        SET     PC, _done
+
+        SUB     [character_pos], 1
+        SUB     Y, 1
+        SET     [video_addr + Y], font_style
+        SET     PC, _done
+        
+_display:
         ;; Check to make sure it's a displayable character.
-        IFL     PICK 2, 32
-        SET     PC, _ignore
-        IFG     PICK 2, 126
-        SET     PC, _ignore
+        IFL     X, 32
+        SET     PC, _done
+        IFG     X, 126
+        SET     PC, _done
         
         SET     X, font_style
         BOR     X, PICK 2
-        SET     Y, [character_pos]
         SET     [video_addr + Y], X
         ADD     [character_pos], 1
-_ignore:        
+
+_done:        
         SET     Y, POP
         
         SET     PC, POP
@@ -80,4 +97,3 @@ handle_keyboard:
         HWI     [keyboard_index]
         
         RFI     0
-
