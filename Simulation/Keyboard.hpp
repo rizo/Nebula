@@ -8,7 +8,7 @@
 
 namespace sim {
 
-const std::chrono::milliseconds KEYBOARD_SLEEP_DURATION { 50 };
+const std::chrono::milliseconds KEYBOARD_SLEEP_DURATION { 5 };
 
 }
 

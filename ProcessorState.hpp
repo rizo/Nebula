@@ -111,10 +111,20 @@ public:
 
 class AddressingMode {
 public:
-    virtual Word load( ProcessorState& proc ) const = 0;
-    virtual void store( ProcessorState& proc, Word value ) const = 0;
+    virtual Word load( ProcessorState& proc ) = 0;
+    virtual void store( ProcessorState& proc, Word value ) = 0;
     
     virtual int size() const { return 0; }
+};
+
+class LongAddressingMode : public AddressingMode {
+    optional<Word> _next {};
+public:
+    explicit LongAddressingMode() : AddressingMode {} {}
+
+    Word next( ProcessorState& proc );
+
+    virtual int size() const { return 1; }
 };
 
 namespace mode {
@@ -125,8 +135,8 @@ struct RegisterDirect : public AddressingMode {
     explicit RegisterDirect( Register reg ) : reg { reg } {}
     RegisterDirect() = delete;
 
-    virtual Word load( ProcessorState& proc ) const { return proc.read( reg ); }
-    virtual void store( ProcessorState& proc, Word value ) const { proc.write( reg, value ); }
+    virtual Word load( ProcessorState& proc ) { return proc.read( reg ); }
+    virtual void store( ProcessorState& proc, Word value ) { proc.write( reg, value ); }
 };
 
 struct RegisterIndirect : public AddressingMode {
@@ -135,32 +145,35 @@ struct RegisterIndirect : public AddressingMode {
     explicit RegisterIndirect( Register reg ) : reg { reg } {}
     RegisterIndirect() = delete;
 
-    virtual Word load( ProcessorState& proc ) const {
+    virtual Word load( ProcessorState& proc ) {
         return proc.memory().read( proc.read( reg ) );
     }
 
-    virtual void store( ProcessorState& proc, Word value ) const {
+    virtual void store( ProcessorState& proc, Word value ) {
         proc.memory().write( proc.read( reg ), value );
     }
 };
 
-struct RegisterIndirectOffset : public AddressingMode {
+struct RegisterIndirectOffset : public LongAddressingMode {
     Register reg;
 
-    explicit RegisterIndirectOffset( Register reg ) : reg { reg } {}
+    explicit RegisterIndirectOffset( Register reg ) :
+        LongAddressingMode {},
+        reg { reg } {}
+
     RegisterIndirectOffset() = delete;
 
-    virtual Word load( ProcessorState& proc ) const;
-    virtual void store( ProcessorState& proc, Word value ) const;
+    virtual Word load( ProcessorState& proc );
+    virtual void store( ProcessorState& proc, Word value );
 };
 
 struct Push : public AddressingMode {
-    virtual Word load( ProcessorState& ) const {
+    virtual Word load( ProcessorState& ) {
         assert( ! "Attempt to load from a 'push' address!" );
         return 0;
     }
 
-    virtual void store( ProcessorState& proc, Word value ) const {
+    virtual void store( ProcessorState& proc, Word value ) {
         auto sp = proc.read( Special::Sp );
         proc.memory().write( sp - 1, value );
         proc.write( Special::Sp, sp - 1 );
@@ -168,55 +181,57 @@ struct Push : public AddressingMode {
 };
 
 struct Pop : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) const {
+    virtual Word load( ProcessorState& proc ) {
         auto sp = proc.read( Special::Sp );
         auto word = proc.memory().read( sp );
         proc.write( Special::Sp, sp + 1 );
         return word;
     }
 
-    virtual void store( ProcessorState&, Word ) const {
+    virtual void store( ProcessorState&, Word ) {
         assert( ! "Attempt to store to a 'pop' address!" );
     }
 };
 
 struct Peek : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) const {
+    virtual Word load( ProcessorState& proc ) {
         return proc.memory().read( proc.read( Special::Sp ) );
     }
 
-    virtual void store( ProcessorState& proc, Word value ) const {
+    virtual void store( ProcessorState& proc, Word value ) {
         proc.memory().write( proc.read( Special::Sp ), value );
     }
 };
 
-struct Pick : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) const;
-    virtual void store( ProcessorState& proc, Word value ) const;
+struct Pick : public LongAddressingMode {
+    explicit Pick() : LongAddressingMode {} {}
 
-    virtual int size() const { return 1; }
+    virtual Word load( ProcessorState& proc );
+    virtual void store( ProcessorState& proc, Word value );
 };
 
 struct Pc : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) const {
+    virtual Word load( ProcessorState& proc ) {
         return proc.read( Special::Pc );
     }
 
-    virtual void store( ProcessorState& proc, Word value ) const {
+    virtual void store( ProcessorState& proc, Word value ) {
         proc.write( Special::Pc, value );
     }
 };
 
-struct Indirect : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) const;
-    virtual void store( ProcessorState& proc, Word value ) const;
+struct Indirect : public LongAddressingMode {
+    explicit Indirect() : LongAddressingMode {} {}
+
+    virtual Word load( ProcessorState& proc );
+    virtual void store( ProcessorState& proc, Word value );
 };
 
-struct Direct : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) const;
-    virtual void store( ProcessorState& proc, Word value ) const;
+struct Direct : public LongAddressingMode {
+    explicit Direct() : LongAddressingMode {} {}
 
-    virtual int size() const { return 1; }
+    virtual Word load( ProcessorState& proc );
+    virtual void store( ProcessorState& proc, Word value );
 };
 
 struct FastDirect : public AddressingMode {
@@ -225,8 +240,8 @@ struct FastDirect : public AddressingMode {
     explicit FastDirect( Word value ) : value { value } {}
     FastDirect() = delete;
 
-    virtual Word load( ProcessorState& ) const { return value; }
-    virtual void store( ProcessorState&, Word ) const { /* Nothing. */ }
+    virtual Word load( ProcessorState& ) { return value; }
+    virtual void store( ProcessorState&, Word ) { /* Nothing. */ }
 };
 
 }
@@ -237,7 +252,9 @@ enum class Opcode {
     Sub,
     Bor,
     Ife,
-    Ifn
+    Ifn,
+    Ifg,
+    Ifl
 };
 
 enum class SpecialOpcode {

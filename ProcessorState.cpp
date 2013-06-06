@@ -35,38 +35,6 @@ void ProcessorState::write( Special spec, Word value ) {
 }
 
 static Word fetchNextWord( ProcessorState& proc ) {
-    return mode::Direct {}.load( proc );
-}
-
-namespace mode {
-
-Word RegisterIndirectOffset::load( ProcessorState& proc ) const {
-    return proc.memory().read( proc.read( reg ) + fetchNextWord( proc ) );
-}
-
-void RegisterIndirectOffset::store( ProcessorState& proc, Word value ) const {
-    proc.memory().write( proc.read( reg ) + fetchNextWord( proc ), value );
-}
-
-Word Pick::load( ProcessorState& proc ) const {
-    auto sp = proc.read( Special::Sp );
-    return proc.memory().read( sp + fetchNextWord( proc ) );
-}
-
-void Pick::store( ProcessorState& proc, Word value ) const {
-    auto sp = proc.read( Special::Sp );
-    proc.memory().write( sp + fetchNextWord( proc ), value );
-}
-
-Word Indirect::load( ProcessorState& proc ) const {
-    return proc.memory().read( fetchNextWord( proc ) );
-}
-
-void Indirect::store( ProcessorState& proc, Word value ) const {
-    proc.memory().write( fetchNextWord( proc ), value );
-}
-
-Word Direct::load( ProcessorState& proc ) const {
     proc.tickClock( 1 );
 
     auto pc = proc.read( Special::Pc );
@@ -74,12 +42,48 @@ Word Direct::load( ProcessorState& proc ) const {
     return proc.memory().read( pc );
 }
 
-void Direct::store( ProcessorState& proc, Word value ) const {
-    proc.tickClock( 1 );
+Word LongAddressingMode::next( ProcessorState& proc ) {
+    if ( ! _next ) {
+        _next = fetchNextWord( proc );
+    }
 
-    auto pc = proc.read( Special::Pc );
-    proc.write( Special::Pc, pc + 1 );
-    proc.memory().write( pc, value );
+    return *_next;
+}
+
+namespace mode {
+
+Word RegisterIndirectOffset::load( ProcessorState& proc ) {
+    return proc.memory().read( proc.read( reg ) + fetchNextWord( proc ) );
+}
+
+void RegisterIndirectOffset::store( ProcessorState& proc, Word value ) {
+    proc.memory().write( proc.read( reg ) + fetchNextWord( proc ), value );
+}
+
+Word Pick::load( ProcessorState& proc ) {
+    auto sp = proc.read( Special::Sp );
+    return proc.memory().read( sp + next( proc ) );
+}
+
+void Pick::store( ProcessorState& proc, Word value ) {
+    auto sp = proc.read( Special::Sp );
+    proc.memory().write( sp + next( proc ), value );
+}
+
+Word Indirect::load( ProcessorState& proc ) {
+    return proc.memory().read( next( proc ) );
+}
+
+void Indirect::store( ProcessorState& proc, Word value ) {
+    proc.memory().write( next( proc ), value );
+}
+
+Word Direct::load( ProcessorState& proc ) {
+    return next( proc );
+}
+
+void Direct::store( ProcessorState&, Word ) {
+    // Nothing.
 }
 
 }
@@ -140,6 +144,7 @@ void Binary::execute( ProcessorState& proc ) const {
     auto skipUnless = [&] ( std::function<bool( DoubleWord, DoubleWord )> f ) {
         auto y = load( addressA );
         auto x = load( addressB );
+
         proc.setSkip( ! f( x, y ) );
     };
 
@@ -174,6 +179,12 @@ void Binary::execute( ProcessorState& proc ) const {
     case Opcode::Ifn:
         skipUnless( arg1 != arg2 );
         break;
+    case Opcode::Ifg:
+        skipUnless( arg1 > arg2 );
+        break;
+    case Opcode::Ifl:
+        skipUnless( arg1 < arg2 );
+        break;
     }
 }
 
@@ -203,6 +214,8 @@ optional<Opcode> decode( const Word& w ) {
     case 0x0b: return Opcode::Bor;
     case 0x12: return Opcode::Ife;
     case 0x13: return Opcode::Ifn;
+    case 0x14: return Opcode::Ifg;
+    case 0x16: return Opcode::Ifl;
     default: return {};
     }
 }

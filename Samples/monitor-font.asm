@@ -18,21 +18,13 @@
 lem1802_index:
         .reserve 1
         
-        .include "find-device.asm"
+        .include "devices.asm"
 ;;; 
 ;;; Program
 
         .org 0x0
 
-        ;; Find the LEM180
-        SET     PUSH, 0xf615
-        SET     PUSH, 0x7349
-        SET     PUSH, 0x1802
-        JSR     find_device
-        SET     0, POP
-        SET     0, POP
-        SET     0, POP
-
+        JSR     find_lem1802
         IFE     X, 0
         SET     PC, done        ; Failed to find the LEM1802.
         SET     [lem1802_index], X

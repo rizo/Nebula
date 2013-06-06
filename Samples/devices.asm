@@ -1,5 +1,8 @@
-;;; find-device.asm
+;;; devices.asm
 ;;;
+;;; Routines for interfacing with harware.
+
+
 ;;; IN:
 ;;;     3 - First word of the device ID.
 ;;;     2 - Second word of the device ID.
@@ -55,4 +58,34 @@ _done:
         
         SET     PC, POP
         
-        
+;;; IN:
+;;;
+;;; OUT:
+;;;     X - The hardware index of the lem1802, or 0 if is not
+;;;     connected.
+find_lem1802:
+        SET     PUSH, 0xf615
+        SET     PUSH, 0x7349
+        SET     PUSH, 0x1802
+        JSR     find_device
+        SET     0, POP
+        SET     0, POP
+        SET     0, POP
+
+        SET     PC, POP
+
+;;; IN:
+;;;
+;;; OUT:
+;;;     X - The hardware index of the keyboard, or 0 if is not
+;;;     connected.
+find_keyboard:
+        SET     PUSH, 0x7406
+        SET     PUSH, 0x30cf
+        SET     PUSH, 1
+        JSR     find_device
+        SET     0, POP
+        SET     0, POP
+        SET     0, POP
+
+        SET     PC, POP
