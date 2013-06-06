@@ -14,6 +14,8 @@ Clock::run() {
             _procInt->waitForTriggerOrDeath( *this );
         }
 
+        auto now = std::chrono::system_clock::now();
+
         if ( _procInt->isActive() ) {
             LOG( INFO ) << "Clock got interrupt.";
 
@@ -37,7 +39,7 @@ Clock::run() {
             LOG( INFO ) << "Clock handled interrupt.";
         }
 
-        std::this_thread::sleep_for( sim::CLOCK_BASE_PERIOD * _state.divider );
+        std::this_thread::sleep_until( now + (sim::CLOCK_BASE_PERIOD * _state.divider) );
         _state.elapsed += 1;
 
         if ( _state.interruptsEnabled ) {
@@ -74,6 +76,7 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
         LOG( INFO ) << "Clock executing 'StoreElapsed'";
 
         proc->write( Register::C, _state.elapsed );
+
         break;
     case ClockOperation::EnableInterrupts:
         LOG( INFO ) << "Clock executing 'EnableInterrupts'";
@@ -87,5 +90,7 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
             LOG( WARNING ) << "Turning interrupts off.";
             _state.interruptsEnabled = false;
         }
+
+        break;
     }
 }
