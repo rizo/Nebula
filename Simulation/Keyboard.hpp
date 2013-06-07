@@ -6,6 +6,8 @@
 
 #include <atomic>
 
+DEFINE_LOGGER( KEYBOARD, "Keyboard" )
+
 namespace nebula {
 
 namespace sim {

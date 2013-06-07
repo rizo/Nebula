@@ -48,7 +48,7 @@ void KeyboardState::setKey( const SDL_keysym* ks ) noexcept {
     }
 
     if ( k != 0 ) {
-        LOG( INFO ) << format( "Got <%d>" ) % k;
+        LOG( KEYBOARD, info ) << format( "Got <%d>" ) % k;
 
         _key.store( k );
         _hasKey.store( true );
@@ -59,7 +59,7 @@ void KeyboardState::setKey( const SDL_keysym* ks ) noexcept {
 std::unique_ptr<KeyboardState> Keyboard::run() {
     setActive();
 
-    LOG( INFO ) << "Simulation active.";
+    LOG( KEYBOARD, info ) << "Simulation active.";
 
     while ( isActive() ) {
         if ( _state.hasKey() &&
@@ -71,7 +71,7 @@ std::unique_ptr<KeyboardState> Keyboard::run() {
         }
 
         if ( _procInt->isActive() ) {
-            LOG( INFO ) << "Got interrupt.";
+            LOG( KEYBOARD, info ) << "Got interrupt.";
 
             auto proc = _procInt->state();
             auto a = proc->read( Register::A );
@@ -93,13 +93,13 @@ std::unique_ptr<KeyboardState> Keyboard::run() {
 
             _procInt->respond();
 
-            LOG( INFO ) << "Handled interrupt.";
+            LOG( KEYBOARD, info ) << "Handled interrupt.";
         }
 
         std::this_thread::sleep_for( sim::KEYBOARD_SLEEP_DURATION );
     }
 
-    LOG( INFO ) << "shutting down.";
+    LOG( KEYBOARD, info ) << "shutting down.";
     return make_unique<KeyboardState>( _state );
 }
 
@@ -108,12 +108,12 @@ void Keyboard::handleInterrupt( KeyboardOperation op, ProcessorState* proc ) {
 
     switch ( op ) {
     case KeyboardOperation::Clear:
-        LOG( INFO ) << "'Clear'";
+        LOG( KEYBOARD, info ) << "'Clear'";
         _state.clear();
 
         break;
     case KeyboardOperation::Store:
-        LOG( INFO ) << "'Store'";
+        LOG( KEYBOARD, info ) << "'Store'";
 
         if ( ! _state.hasKey() ) {
             proc->write( Register::C, 0 );
@@ -123,7 +123,7 @@ void Keyboard::handleInterrupt( KeyboardOperation op, ProcessorState* proc ) {
 
         break;
     case KeyboardOperation::Query:
-        LOG( INFO ) <<  "'Query'";
+        LOG( KEYBOARD, info ) <<  "'Query'";
 
         b = proc->read( Register::B );
         if ( _state.hasKey() ) {
@@ -134,7 +134,7 @@ void Keyboard::handleInterrupt( KeyboardOperation op, ProcessorState* proc ) {
 
         break;
     case KeyboardOperation::EnableInterrupts:
-        LOG( INFO ) << "'EnableInterrupts'";
+        LOG( KEYBOARD, info ) << "'EnableInterrupts'";
 
         b = proc->read( Register::B );
 

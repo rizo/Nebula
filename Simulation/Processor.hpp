@@ -7,6 +7,8 @@
 #include <atomic>
 #include <chrono>
 
+DEFINE_LOGGER( PROC, "Processor" )
+
 namespace nebula {
 
 namespace sim {

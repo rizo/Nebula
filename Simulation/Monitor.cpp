@@ -1,6 +1,8 @@
 #include "../Sdl.hpp"
 #include "Monitor.hpp"
 
+DEFINE_LOGGER( MONITOR, "Monitor" )
+
 namespace nebula {
 
 Monitor::Monitor( Computer& computer ) :
@@ -29,18 +31,18 @@ Monitor::Monitor( Computer& computer ) :
 std::unique_ptr<MonitorState> Monitor::run() {
     setActive();
 
-    LOG( INFO ) << "Monitor simulation is active.";
+    LOG( MONITOR, info ) << "Monitor simulation is active.";
     _screen = std::move( sdl::SCREEN );
 
     while ( isActive() )  {
         if ( ! _state.isConnected ) {
-            LOG( INFO ) << "Monitor is disconnected. Waiting for interrupt.";
+            LOG( MONITOR, info ) << "Monitor is disconnected. Waiting for interrupt.";
 
             _procInt->waitForTriggerOrDeath( *this );
         }
 
         if ( _procInt->isActive() ) {
-            LOG( INFO ) << "Monitor got interrupt.";
+            LOG( MONITOR, info ) << "Monitor got interrupt.";
 
             auto proc = _procInt->state();
             auto a = proc->read( Register::A );
@@ -68,7 +70,7 @@ std::unique_ptr<MonitorState> Monitor::run() {
 
             _procInt->respond();
 
-            LOG( INFO ) << "Monitor handled interrupt.";
+            LOG( MONITOR, info ) << "Monitor handled interrupt.";
         }
 
         clear();
@@ -103,7 +105,7 @@ std::unique_ptr<MonitorState> Monitor::run() {
         }
     }
 
-    LOG( INFO ) << "Monitor simulation shutting down.";
+    LOG( MONITOR, info ) << "Monitor simulation shutting down.";
     return {};
 }
 
@@ -191,37 +193,37 @@ void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
 
     switch ( op ) {
     case MonitorOperation::SetBorderColor:
-        LOG( INFO ) << "Monitor executing 'SetBorderColor'.";
+        LOG( MONITOR, info ) << "Monitor executing 'SetBorderColor'.";
 
         _state.borderColor = BorderColor { static_cast<std::uint8_t>( b & 0xf ) };
         break;
     case MonitorOperation::MapVideoMemory:
-        LOG( INFO ) << "Monitor executing 'MapVideoMemory'.";
+        LOG( MONITOR, info ) << "Monitor executing 'MapVideoMemory'.";
 
         if ( b != 0 ) {
-            LOG( INFO ) << format( "Connecting monitor with video memory at 0x%04x." ) % b;
+            LOG( MONITOR, info ) << format( "Connecting monitor with video memory at 0x%04x." ) % b;
 
             _state.isConnected = true;
             _state.timeSinceConnected = std::chrono::microseconds { 0 };
             _state.videoOffset = b;
         } else {
-            LOG( WARNING ) << "Disconnecting monitor.";
+            LOG( MONITOR, warning ) << "Disconnecting monitor.";
             _state.isConnected = false;
         }
 
         break;
     case MonitorOperation::MapPaletteMemory:
-        LOG( INFO ) << format( "Monitor executing 'MapPaletteMemory' at 0x%04x" ) % b;
+        LOG( MONITOR, info ) << format( "Monitor executing 'MapPaletteMemory' at 0x%04x" ) % b;
 
         _state.paletteOffset = b;
         break;
     case MonitorOperation::MapFontMemory:
-        LOG( INFO ) << format( "Monitor executing 'MapFontMemory' at 0x%04x" ) % b;
+        LOG( MONITOR, info ) << format( "Monitor executing 'MapFontMemory' at 0x%04x" ) % b;
 
         _state.fontOffset = b;
         break;
     case MonitorOperation::DumpFont:
-        LOG( INFO ) << format( "Monitor executing 'DumpFont' at %0x%04x" ) % b;
+        LOG( MONITOR, info ) << format( "Monitor executing 'DumpFont' at %0x%04x" ) % b;
 
         for ( Word i = 0; i < 2 * sim::MONITOR_DEFAULT_FONT.size(); i += 2 ) {
             auto letter = sim::MONITOR_DEFAULT_FONT[i];
@@ -232,7 +234,7 @@ void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
 
         break;
     case MonitorOperation::DumpPalette:
-        LOG( INFO ) << format( "Monitor executing 'DumpFont' at %0x%04x" ) % b;
+        LOG( MONITOR, info ) << format( "Monitor executing 'DumpFont' at %0x%04x" ) % b;
 
         for ( Word i = 0; i < sim::MONITOR_DEFAULT_PALETTE.size(); ++i ) {
             _memory->write( b + i, sim::MONITOR_DEFAULT_PALETTE[i] );

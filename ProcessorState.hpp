@@ -7,6 +7,8 @@
 #include <memory>
 #include <stdexcept>
 
+DEFINE_LOGGER( PSTATE, "ProcessorState" )
+
 namespace nebula {
 
 enum class Register {

@@ -6,12 +6,12 @@ std::unique_ptr<ClockState>
 Clock::run() {
     setActive();
 
-    LOG( INFO ) << "Simulation is active.";
+    LOG( CLOCK, info ) << "Simulation is active.";
 
     while ( isActive() ) {
         if ( ! _state.isOn ) {
             // Do nothing until the clock is triggered by the processor.
-            LOG( INFO ) << "Off. waiting for interrupt.";
+            LOG( CLOCK, info ) << "Off. waiting for interrupt.";
 
             _procInt->waitForTriggerOrDeath( *this );
         }
@@ -19,7 +19,7 @@ Clock::run() {
         auto now = std::chrono::system_clock::now();
 
         if ( _procInt->isActive() ) {
-            LOG( INFO ) << "Got interrupt.";
+            LOG( CLOCK, info ) << "Got interrupt.";
 
             auto proc = _procInt->state();
             auto a = proc->read( Register::A );
@@ -38,7 +38,7 @@ Clock::run() {
             
             _procInt->respond();
 
-            LOG( INFO ) << "Handled interrupt.";
+            LOG( CLOCK, info ) << "Handled interrupt.";
         }
 
         std::this_thread::sleep_until( now + (sim::CLOCK_BASE_PERIOD * _state.divider) );
@@ -49,7 +49,7 @@ Clock::run() {
         }
     }
 
-    LOG( INFO ) << "Shutting down.";
+    LOG( CLOCK, info ) << "Shutting down.";
     return make_unique<ClockState>( _state );
 }
 
@@ -58,30 +58,30 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
 
     switch ( op ) {
     case ClockOperation::SetDivider:
-        LOG( INFO ) << "'SetDivider'";
+        LOG( CLOCK, info ) << "'SetDivider'";
 
         b = proc->read( Register::B );
 
         if ( b != 0 ) {
-            LOG( INFO ) << "Turning on with divider " << b << ".";
+            LOG( CLOCK, info ) << "Turning on with divider " << b << ".";
 
             _state.isOn = true;
             _state.divider = b;
             _state.elapsed = 0;
         } else {
-            LOG( WARNING ) << "Turning off.";
+            LOG( CLOCK, warning ) << "Turning off.";
             _state.isOn = false;
         }
 
         break;
     case ClockOperation::StoreElapsed:
-        LOG( INFO ) << "'StoreElapsed'";
+        LOG( CLOCK, info ) << "'StoreElapsed'";
 
         proc->write( Register::C, _state.elapsed );
 
         break;
     case ClockOperation::EnableInterrupts:
-        LOG( INFO ) << "'EnableInterrupts'";
+        LOG( CLOCK, info ) << "'EnableInterrupts'";
 
         b = proc->read( Register::B );
 
@@ -89,7 +89,7 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
             _state.interruptsEnabled = true;
             _state.message = b;
         } else {
-            LOG( WARNING ) << "Turning interrupts off.";
+            LOG( CLOCK, warning ) << "Turning interrupts off.";
             _state.interruptsEnabled = false;
         }
 

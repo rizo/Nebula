@@ -3,6 +3,8 @@
 #include "../Computer.hpp"
 #include "../Simulation.hpp"
 
+DEFINE_LOGGER( CLOCK, "Clock" )
+
 namespace nebula {
 
 namespace sim {

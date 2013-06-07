@@ -9,8 +9,10 @@
 
 using namespace nebula;
 
+DEFINE_LOGGER( MAIN, "Main" )
+
 int main( int, char* argv[] ) {
-    google::InitGoogleLogging( argv[0] );
+    logging::initialize( true, logging::Severity::info );
     sdl::initialize();
 
     auto memory = Memory::fromFile( argv[1], 0x10000 );
@@ -22,16 +24,16 @@ int main( int, char* argv[] ) {
     Keyboard keyboard { computer };
 
     auto procStateF = sim::launch( proc );
-    LOG( INFO ) << "Launched the processor!";
+    LOG( MAIN, info ) << "Launched the processor!";
 
     auto clockStateF = sim::launch( clock );
-    LOG( INFO ) << "Launched the clock!";
+    LOG( MAIN, info ) << "Launched the clock!";
 
     auto monitorStateF = sim::launch( monitor );
-    LOG( INFO ) << "Launched the monitor!";
+    LOG( MAIN, info ) << "Launched the monitor!";
 
     auto keyboardStateF = sim::launch( keyboard );
-    LOG( INFO ) << "Launched the keyboard!";
+    LOG( MAIN, info ) << "Launched the keyboard!";
 
     SDL_Event event;
     while ( true ) {

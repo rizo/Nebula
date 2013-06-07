@@ -420,19 +420,19 @@ void advance( ProcessorState& proc, int numWords ) {
 }
 
 void dumpToLog( ProcessorState& proc ) {
-    LOG( INFO ) << "\n";
-    LOG( INFO ) << format( "PC   : 0x%04x" ) % proc.read( Special::Pc );
-    LOG( INFO ) << format( "SP   : 0x%04x" ) % proc.read( Special::Sp );
-    LOG( INFO ) << format( "EX   : 0x%04x" ) % proc.read( Special::Ex );
-    LOG( INFO ) << format( "A    : 0x%04x" ) % proc.read( Register::A );
-    LOG( INFO ) << format( "B    : 0x%04x" ) % proc.read( Register::B );
-    LOG( INFO ) << format( "C    : 0x%04x" ) % proc.read( Register::C );
-    LOG( INFO ) << format( "X    : 0x%04x" ) % proc.read( Register::X );
-    LOG( INFO ) << format( "Y    : 0x%04x" ) % proc.read( Register::Y );
-    LOG( INFO ) << format( "Z    : 0x%04x" ) % proc.read( Register::Z );
-    LOG( INFO ) << format( "I    : 0x%04x" ) % proc.read( Register::I );
-    LOG( INFO ) << format( "J    : 0x%04x" ) % proc.read( Register::J );
-    LOG( INFO ) << format( "skip : %s" ) % proc.doSkip();
+    LOG( PSTATE, info ) << "\n";
+    LOG( PSTATE, info ) << format( "PC   : 0x%04x" ) % proc.read( Special::Pc );
+    LOG( PSTATE, info ) << format( "SP   : 0x%04x" ) % proc.read( Special::Sp );
+    LOG( PSTATE, info ) << format( "EX   : 0x%04x" ) % proc.read( Special::Ex );
+    LOG( PSTATE, info ) << format( "A    : 0x%04x" ) % proc.read( Register::A );
+    LOG( PSTATE, info ) << format( "B    : 0x%04x" ) % proc.read( Register::B );
+    LOG( PSTATE, info ) << format( "C    : 0x%04x" ) % proc.read( Register::C );
+    LOG( PSTATE, info ) << format( "X    : 0x%04x" ) % proc.read( Register::X );
+    LOG( PSTATE, info ) << format( "Y    : 0x%04x" ) % proc.read( Register::Y );
+    LOG( PSTATE, info ) << format( "Z    : 0x%04x" ) % proc.read( Register::Z );
+    LOG( PSTATE, info ) << format( "I    : 0x%04x" ) % proc.read( Register::I );
+    LOG( PSTATE, info ) << format( "J    : 0x%04x" ) % proc.read( Register::J );
+    LOG( PSTATE, info ) << format( "skip : %s" ) % proc.doSkip();
 
     std::string stackContents { "" };
     const int STACK_SIZE = processor::STACK_BEGIN - proc.read( Special::Sp );
@@ -441,8 +441,8 @@ void dumpToLog( ProcessorState& proc ) {
         stackContents += (format( "0x%04x, " ) % proc.memory().read( proc.read( Special::Sp ) + i )).str();
     }
 
-    LOG( INFO ) << "stack: " << stackContents;
-    LOG( INFO ) << "\n";
+    LOG( PSTATE, info ) << "stack: " << stackContents;
+    LOG( PSTATE, info ) << "\n";
 }
 
 }

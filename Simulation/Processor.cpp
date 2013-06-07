@@ -8,7 +8,7 @@ std::unique_ptr<ProcessorState>
 Processor::run() {
     setActive();
 
-    LOG( INFO ) << "Processor simulation is active.";
+    LOG( PROC, info ) << "Processor simulation is active.";
 
     while ( isActive() ) {
         // dumpToLog( *_proc );
@@ -31,12 +31,12 @@ Processor::run() {
         }
     }
 
-    LOG( INFO ) << "Processor simulation shutting down.";
+    LOG( PROC, info ) << "Processor simulation shutting down.";
     return std::move( _proc );
 }
 
 void Processor::handleInterrupt() {
-    LOG( INFO ) << "Handling HW interrupt.";
+    LOG( PROC, info ) << "Handling HW interrupt.";
 
     auto msg = _computer.queue().pop();
     auto push = mode::Push {};
@@ -80,10 +80,10 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
         _computer.setIa( value );
 
         if ( value == 0 ) {
-            LOG( WARNING ) << "Ignoring incoming HW interrupts.";
+            LOG( PROC, warning ) << "Ignoring incoming HW interrupts.";
             _computer.queue().setEnabled( false );
         } else {
-            LOG( INFO ) << "Enabling incoming HW interrupts.";
+            LOG( PROC, info ) << "Enabling incoming HW interrupts.";
             _computer.queue().setEnabled( true );
         }
     } else if ( ins->opcode == SpecialOpcode::Rfi ) {

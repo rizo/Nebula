@@ -6,12 +6,16 @@ set (CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -pedantic -Wno-missing-braces -ma
 add_subdirectory (gtest-1.6.0)
 enable_testing ()
 
+find_package (Boost REQUIRED COMPONENTS log log_setup thread system)
 find_package (Threads REQUIRED)
 find_package (SDL REQUIRED)
+
+add_definitions (-DBOOST_ALL_DYN_LINK)
 
 include_directories (${gtest_SOURCE_DIR}/include)
 
 add_executable (nebula
+  Fundamental.cpp
   Memory.cpp
   ProcessorState.cpp
   Computer.cpp
@@ -24,7 +28,7 @@ add_executable (nebula
 
 target_link_libraries (nebula
   ${SDL_LIBRARY}
-  glog
+  ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable (runTests
@@ -35,7 +39,7 @@ add_executable (runTests
 
 target_link_libraries (runTests
   ${CMAKE_THREAD_LIBS_INIT}
-  glog
+  ${Boost_LIBRARIES}
   gtest
   gtest_main)
   
