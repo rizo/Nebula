@@ -7,8 +7,8 @@
 
         .def video_addr 0x9000
         .def data_addr 0x100
-        .def font_style 0xf000           ; White FG, black BG.
-        .def cursor_style 0x0f00          ; Black FG, white FG.
+        .def font_style 0xf000   ; White FG, black BG.
+        .def cursor_style 0x0f00 ; Black FG, white FG.
         
         .org data_addr
 
@@ -55,8 +55,6 @@ display_cursor:
 
 ;;; IN:
 ;;;     1 - The character to display.
-;;;
-;;; OUT:
 display_character:
         SET     PUSH, Y
 
