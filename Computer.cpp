@@ -1,5 +1,7 @@
 #include "Computer.hpp"
 
+namespace nebula {
+
 void ProcessorInterrupt::trigger( std::unique_ptr<ProcessorState>&& proc ) {
     _isActive.store( true );
     _proc = std::move( proc );
@@ -50,3 +52,33 @@ Word InterruptQueue::pop() {
     return res;
 }
 
+std::shared_ptr<ProcessorInterrupt>
+Computer::nextInterrupt( const Device* const  dev ) {
+    if ( _devIndex >= computer::MAX_DEVICES ) {
+        throw error::TooManyDevices {};
+    }
+
+    _procInts[_devIndex] = std::make_shared<ProcessorInterrupt>();
+    _devInfo[_devIndex] = dev->info();
+
+    return _procInts[_devIndex++];
+}
+
+std::shared_ptr<ProcessorInterrupt>
+Computer::interruptByIndex( std::size_t index ) {
+    if ( index >= _devIndex ) {
+        throw error::NoSuchDeviceIndex { index };
+    }
+
+    return _procInts[index];
+}
+
+DeviceInfo Computer::infoByIndex( std::size_t index ) {
+    if ( index >= _devIndex ) {
+        throw error::NoSuchDeviceIndex { index };
+    }
+
+    return _devInfo[index];
+}
+
+}

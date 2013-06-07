@@ -6,10 +6,12 @@
 
 #include <boost/spirit/include/qi.hpp>
 
+namespace nebula {
+
 Word Memory::read( Word offset ) {
     if ( offset >= size() ) {
         throw error::InvalidMemoryLocation {
-            memory::Operation::Read,
+            MemoryOperation::Read,
             offset
         };    
     }
@@ -21,7 +23,7 @@ Word Memory::read( Word offset ) {
 void Memory::write( Word offset, Word value ) {
     if ( offset >= size() ) {
         throw error::InvalidMemoryLocation {
-            memory::Operation::Write,
+            MemoryOperation::Write,
             offset
         };
     }
@@ -73,4 +75,6 @@ Memory::fromFile( const std::string& filename, int size ) {
     std::move( result.begin(), result.end(), mem->_vec.begin() );
 
     return mem;
+}
+
 }

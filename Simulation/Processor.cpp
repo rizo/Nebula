@@ -2,6 +2,8 @@
 
 #include <thread>
 
+namespace nebula {
+
 std::unique_ptr<ProcessorState>
 Processor::run() {
     setActive();
@@ -92,4 +94,6 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
     } else if ( ins->opcode == SpecialOpcode::Iaq ) {
         _computer.setOnlyQueuing( load() != 0 );
     }
+}
+
 }

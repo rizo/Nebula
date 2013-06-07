@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+using namespace nebula;
+
 class RegisterTest : public ::testing::Test {
 protected:
     ProcessorState _proc;
@@ -59,7 +61,7 @@ public:
 };
 
 TEST_F( SpecialTest, Initialization ) {
-    EXPECT_EQ( STACK_BEGIN, _proc.read( Special::Sp ) );
+    EXPECT_EQ( processor::STACK_BEGIN, _proc.read( Special::Sp ) );
     EXPECT_EQ( 0, _proc.read( Special::Pc ) );
     EXPECT_EQ( 0, _proc.read( Special::Ex ) );
 }

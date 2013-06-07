@@ -6,11 +6,13 @@
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/operator.hpp>
 
-Word ProcessorState::read( Register reg ) const {
+namespace nebula {
+
+Word ProcessorState::read( Register reg ) const noexcept {
     return _registers[registerIndex( reg )];
 }
 
-Word ProcessorState::read( Special spec ) const {
+Word ProcessorState::read( Special spec ) const noexcept {
     switch ( spec ) {
     case Special::Pc: return _pc;
     case Special::Sp: return _sp;
@@ -22,11 +24,11 @@ Word ProcessorState::read( Special spec ) const {
     return 0;
 }
 
-void ProcessorState::write( Register reg, Word value ) {
+void ProcessorState::write( Register reg, Word value ) noexcept {
     _registers[registerIndex( reg )] = value;
 }
 
-void ProcessorState::write( Special spec, Word value ) {
+void ProcessorState::write( Special spec, Word value ) noexcept {
     switch ( spec ) {
     case Special::Pc: _pc = value; return;
     case Special::Sp: _sp = value; return;
@@ -58,6 +60,20 @@ Word RegisterIndirectOffset::load( ProcessorState& proc ) {
 
 void RegisterIndirectOffset::store( ProcessorState& proc, Word value ) {
     proc.memory().write( proc.read( reg ) + fetchNextWord( proc ), value );
+}
+
+void Push::store( ProcessorState& proc, Word value ) {
+    auto sp = proc.read( Special::Sp );
+    proc.memory().write( sp - 1, value );
+    proc.write( Special::Sp, sp - 1 );
+}
+
+Word Pop::load( ProcessorState& proc ) {
+    auto sp = proc.read( Special::Sp );
+    auto word = proc.memory().read( sp );
+    proc.write( Special::Sp, sp + 1 );
+
+    return word;
 }
 
 Word Pick::load( ProcessorState& proc ) {
@@ -419,7 +435,7 @@ void dumpToLog( ProcessorState& proc ) {
     LOG( INFO ) << format( "skip : %s" ) % proc.doSkip();
 
     std::string stackContents { "" };
-    const int STACK_SIZE = STACK_BEGIN - proc.read( Special::Sp );
+    const int STACK_SIZE = processor::STACK_BEGIN - proc.read( Special::Sp );
 
     for ( int i = 0; i < STACK_SIZE; ++i ) {
         stackContents += (format( "0x%04x, " ) % proc.memory().read( proc.read( Special::Sp ) + i )).str();
@@ -427,4 +443,6 @@ void dumpToLog( ProcessorState& proc ) {
 
     LOG( INFO ) << "stack: " << stackContents;
     LOG( INFO ) << "\n";
+}
+
 }

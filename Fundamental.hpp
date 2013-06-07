@@ -1,5 +1,4 @@
-#ifndef __FUNDAMENTAL_H__
-#define __FUNDAMENTAL_H__
+#pragma once
 
 #include <cstdint>
 #include <functional>
@@ -10,6 +9,7 @@
 #include <boost/utility.hpp>
 #include <glog/logging.h>
 
+namespace nebula {
 
 using boost::format;
 using boost::optional;
@@ -20,11 +20,11 @@ using DoubleWord = std::uint32_t;
 using SignedWord = std::int16_t;
 using SignedDoubleWord = std::uint32_t;
 
+}
+
 template<typename T, typename... Args>
 std::unique_ptr<T> make_unique( Args&&... args ) {
     return std::unique_ptr<T>( new T( std::forward<Args>( args )... ) );
 }
 
 #define B_ BOOST_BINARY
-
-#endif // __FUNDAMENTAL_H__

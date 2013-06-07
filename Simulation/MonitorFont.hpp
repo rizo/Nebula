@@ -1,5 +1,7 @@
 #pragma once
 
+namespace nebula {
+
 namespace sim {
 
 const std::array<std::pair<Word, Word>, 128> MONITOR_DEFAULT_FONT {{
@@ -733,5 +735,6 @@ const std::array<std::pair<Word, Word>, 128> MONITOR_DEFAULT_FONT {{
               00000000 ) },
 } };
 
+}
 
 }

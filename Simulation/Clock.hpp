@@ -3,6 +3,8 @@
 #include "../Computer.hpp"
 #include "../Simulation.hpp"
 
+namespace nebula {
+
 namespace sim {
 
 const std::chrono::microseconds CLOCK_BASE_PERIOD { 16666 };
@@ -27,6 +29,8 @@ class Clock : public Simulation<ClockState>, public Device {
     Computer& _computer;
     std::shared_ptr<ProcessorInterrupt> _procInt { nullptr };
     ClockState _state {};
+
+    void handleInterrupt( ClockOperation op, ProcessorState* proc );
 public:
     explicit Clock( Computer& computer ) :
         Simulation<ClockState> {},
@@ -35,13 +39,13 @@ public:
 
     virtual std::unique_ptr<ClockState> run();
 
-    virtual DeviceInfo info() const {
+    virtual DeviceInfo info() const noexcept override {
         return {
             device::Id { 0x12d0b402 },
             device::Manufacturer { 0 },
             device::Version { 1 }
         };
     }
-
-    void handleInterrupt( ClockOperation op, ProcessorState* proc );
 };
+
+}

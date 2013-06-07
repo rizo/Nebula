@@ -9,10 +9,14 @@
 #include <queue>
 #include <stdexcept>
 
+namespace nebula {
+
 namespace computer {
 
-constexpr std::size_t MAX_DEVICES = 0x10000;
-constexpr std::size_t MAX_QUEUED_INTERRUPTS = 256;
+// We support (0x10000 - 1) devices since an index of zero is used as an
+// error value for hardware-related instructions.
+const std::size_t MAX_DEVICES = 0xffff;
+const std::size_t MAX_QUEUED_INTERRUPTS = 256;
 
 }
 
@@ -32,10 +36,10 @@ struct DeviceInfo {
 
 class Device {
 public:
-    virtual DeviceInfo info() const = 0;
+    virtual DeviceInfo info() const noexcept = 0;
 };
 
-class ProcessorInterrupt {
+class ProcessorInterrupt final {
     std::atomic<bool> _isActive;
     std::condition_variable _condition {};
     std::mutex _mutex {};
@@ -54,8 +58,8 @@ public:
 
     // Receiver interface.
 
-    ProcessorState* state() { return _proc.get(); }
-    bool isActive() { return _isActive.load(); }
+    ProcessorState* state() noexcept { return _proc.get(); }
+    bool isActive() noexcept { return _isActive.load(); }
 
     void respond();
     void waitForTrigger();
@@ -79,7 +83,7 @@ public:
     }
 };
 
-class InterruptQueue {
+class InterruptQueue final {
     std::queue<Word> _q {};
     std::mutex _mutex {};
 
@@ -90,9 +94,9 @@ class InterruptQueue {
 public:
     void push( Word message );
     Word pop();
-    bool hasInterrupt() const { return _hasInterrupt.load(); }
+    inline bool hasInterrupt() const noexcept { return _hasInterrupt.load(); }
 
-    void setEnabled( bool value ) { _isEnabled = value; }
+    inline void setEnabled( bool value ) noexcept { _isEnabled = value; }
 };
 
 namespace error {
@@ -120,12 +124,12 @@ public:
         },
         _index { index } {}
 
-    std::size_t index() const { return _index; }
+    std::size_t index() const noexcept { return _index; }
 };
 
 }
 
-class Computer {
+class Computer final {
     std::array<std::shared_ptr<ProcessorInterrupt>, computer::MAX_DEVICES> _procInts;
     std::array<DeviceInfo, computer::MAX_DEVICES> _devInfo;
     std::size_t _devIndex { 1 };
@@ -135,7 +139,7 @@ class Computer {
 
     Word _ia { 0 };
 
-    std::shared_ptr<Memory> _memory = nullptr;
+    std::shared_ptr<Memory> _memory { nullptr };
 public:
     explicit Computer( std::shared_ptr<Memory> memory ) :
         _memory { memory } {
@@ -143,42 +147,21 @@ public:
         _procInts.fill( nullptr );
     }
 
-    std::shared_ptr<Memory> memory() { return _memory; }
+    inline std::shared_ptr<Memory> memory() noexcept { return _memory; }
 
-    inline std::shared_ptr<ProcessorInterrupt> nextInterrupt( const Device* const  dev ) {
-        if ( _devIndex >= computer::MAX_DEVICES ) {
-            throw error::TooManyDevices {};
-        }
+    std::shared_ptr<ProcessorInterrupt> nextInterrupt( const Device* const  dev );
+    std::shared_ptr<ProcessorInterrupt> interruptByIndex( std::size_t index );
+    DeviceInfo infoByIndex( std::size_t index );
 
-        _procInts[_devIndex] = std::make_shared<ProcessorInterrupt>();
-        _devInfo[_devIndex] = dev->info();
+    inline std::size_t numDevices() const noexcept { return _devIndex; }
 
-        return _procInts[_devIndex++];
-    }
+    inline InterruptQueue& queue() noexcept { return _intQ; }
 
-    inline std::shared_ptr<ProcessorInterrupt> interruptByIndex( std::size_t index ) {
-        if ( index >= _devIndex ) {
-            throw error::NoSuchDeviceIndex { index };
-        }
+    inline void setOnlyQueuing( bool val ) noexcept { _onlyQueuing = val; }
+    inline bool onlyQueuing() const noexcept { return _onlyQueuing; }
 
-        return _procInts[index];
-    }
-
-    inline DeviceInfo infoByIndex( std::size_t index ) {
-        if ( index >= _devIndex ) {
-            throw error::NoSuchDeviceIndex { index };
-        }
-
-        return _devInfo[index];
-    }
-
-    inline std::size_t numDevices() const { return _devIndex; }
-
-    inline InterruptQueue& queue() { return _intQ; }
-
-    inline void setOnlyQueuing( bool val ) { _onlyQueuing = val; }
-    inline bool onlyQueuing() const { return _onlyQueuing; }
-
-    inline Word ia() const { return _ia; }
-    inline void setIa( Word location ) { _ia = location; }
+    inline Word ia() const noexcept { return _ia; }
+    inline void setIa( Word location ) noexcept { _ia = location; }
 };
+
+}

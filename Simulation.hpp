@@ -5,6 +5,8 @@
 #include <atomic>
 #include <future>
 
+namespace nebula {
+
 template <typename StateType>
 class Simulation {
 private:
@@ -18,8 +20,8 @@ public:
     
     virtual std::unique_ptr<StateType> run() = 0;
 
-    bool isActive() const { return _isActive.load(); }
-    void setActive() { _isActive.store( true ); }
+    inline bool isActive() const noexcept { return _isActive.load(); }
+    inline void setActive() noexcept { _isActive.store( true ); }
     
     virtual void stop() {
         _isActive.store( false );
@@ -40,6 +42,8 @@ launch( Simulation<StateType>& sim ) {
 template <typename StateType>
 bool isReady( std::future<std::unique_ptr<StateType>>& f ) {
     return f.wait_for( std::chrono::seconds { 0 } ) == std::future_status::ready;
+}
+
 }
 
 }

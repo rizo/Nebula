@@ -1,6 +1,8 @@
 #include "Keyboard.hpp"
 
-void KeyboardState::setKey( const SDL_keysym* ks ) {
+namespace nebula {
+
+void KeyboardState::setKey( const SDL_keysym* ks ) noexcept {
     Word k { 0 };
 
     // Check for a letter.
@@ -145,4 +147,6 @@ void Keyboard::handleInterrupt( KeyboardOperation op, ProcessorState* proc ) {
 
         break;
     }
+}
+
 }

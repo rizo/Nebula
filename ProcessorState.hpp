@@ -7,9 +7,7 @@
 #include <memory>
 #include <stdexcept>
 
-#include <boost/format.hpp>
-
-using boost::format;
+namespace nebula {
 
 enum class Register {
     A, B, C,
@@ -21,7 +19,11 @@ enum class Special {
     Pc, Sp, Ex
 };
 
-constexpr Word STACK_BEGIN = 0xffff;
+namespace processor {
+
+const Word STACK_BEGIN = 0xffff;
+
+}
 
 namespace error {
 
@@ -29,7 +31,7 @@ class StackOverflow : public std::out_of_range {
 public:
     explicit StackOverflow() :
         std::out_of_range {
-            (format( "Stack overflow (size 0x04%x)" ) % STACK_BEGIN).str()
+            (format( "Stack overflow (size 0x04%x)" ) % processor::STACK_BEGIN).str()
         } {
     }
 };
@@ -38,7 +40,7 @@ class StackUnderflow : public std::out_of_range {
 public:
     explicit StackUnderflow() :
         std::out_of_range {
-            (format( "Stack underflow (size 0x04%x)" ) % STACK_BEGIN).str()
+            (format( "Stack underflow (size 0x04%x)" ) % processor::STACK_BEGIN).str()
         } {
     }
 };
@@ -53,7 +55,7 @@ public:
         _word { word } {
     }
 
-    inline Word word() const { return _word; }
+    inline Word word() const noexcept { return _word; }
 };
 
 }
@@ -61,7 +63,7 @@ public:
 // Forward declaration.
 class Instruction;
 
-class ProcessorState {
+class ProcessorState final {
     std::array<Word, 8> _registers;
     Word _pc;
     Word _sp;
@@ -74,37 +76,35 @@ class ProcessorState {
     std::shared_ptr<Memory> _memory = nullptr;
 
     using RegisterIndex = decltype( _registers )::size_type;
-    static inline RegisterIndex registerIndex( Register reg ) {
+    static inline RegisterIndex registerIndex( Register reg ) noexcept {
         return static_cast<RegisterIndex>( reg );
     }
 
 public:
-    ProcessorState() = delete;
-
     explicit ProcessorState( std::shared_ptr<Memory> memory ) :
         _registers { { 0, 0, 0, 0, 0, 0, 0, 0 } },
         _pc { 0 },
-        _sp { STACK_BEGIN },
+        _sp { processor::STACK_BEGIN },
         _ex { 0 },
         _clock { 0 },
         _memory { memory } {}
 
-    Word read( Register reg ) const;
-    Word read( Special spec ) const;
+    Word read( Register reg ) const noexcept;
+    Word read( Special spec ) const noexcept;
 
-    void write( Register reg, Word val );
-    void write( Special spec, Word val );
+    void write( Register reg, Word val ) noexcept;
+    void write( Special spec, Word val ) noexcept;
 
-    inline int clock() const { return _clock; }
-    inline void tickClock( int ticks ) { _clock += ticks; }
-    inline void clearClock() { _clock = 0; }
+    inline int clock() const noexcept { return _clock; }
+    inline void tickClock( int ticks ) noexcept { _clock += ticks; }
+    inline void clearClock() noexcept { _clock = 0; }
 
-    inline bool doSkip() const { return _doSkip; }
-    void setSkip( bool value ) { _doSkip = value; }
+    inline bool doSkip() const noexcept { return _doSkip; }
+    void setSkip( bool value ) noexcept { _doSkip = value; }
 
-    inline Memory& memory() { return *_memory; }
+    inline Memory& memory() noexcept { return *_memory; }
 
-    const Instruction* lastInstruction() const { return _lastInstruction.get(); }
+    const Instruction* lastInstruction() const noexcept { return _lastInstruction.get(); }
 
     void executeNext();
 };
@@ -114,7 +114,9 @@ public:
     virtual Word load( ProcessorState& proc ) = 0;
     virtual void store( ProcessorState& proc, Word value ) = 0;
     
-    virtual int size() const { return 0; }
+    virtual int size() const noexcept { return 0; }
+
+    virtual ~AddressingMode() = default;
 };
 
 class LongAddressingMode : public AddressingMode {
@@ -124,124 +126,113 @@ public:
 
     Word next( ProcessorState& proc );
 
-    virtual int size() const { return 1; }
+    virtual int size() const noexcept override { return 1; };
+
+    virtual ~LongAddressingMode() = default;
 };
 
 namespace mode {
 
-struct RegisterDirect : public AddressingMode {
+struct RegisterDirect final : public AddressingMode {
     Register reg;
 
     explicit RegisterDirect( Register reg ) : reg { reg } {}
-    RegisterDirect() = delete;
 
-    virtual Word load( ProcessorState& proc ) { return proc.read( reg ); }
-    virtual void store( ProcessorState& proc, Word value ) { proc.write( reg, value ); }
+    virtual Word load( ProcessorState& proc ) override { return proc.read( reg ); }
+    virtual void store( ProcessorState& proc, Word value ) override { proc.write( reg, value ); }
 };
 
-struct RegisterIndirect : public AddressingMode {
+struct RegisterIndirect final : public AddressingMode {
     Register reg;
 
     explicit RegisterIndirect( Register reg ) : reg { reg } {}
-    RegisterIndirect() = delete;
 
-    virtual Word load( ProcessorState& proc ) {
+    inline virtual Word load( ProcessorState& proc ) override {
         return proc.memory().read( proc.read( reg ) );
     }
 
-    virtual void store( ProcessorState& proc, Word value ) {
+    inline virtual void store( ProcessorState& proc, Word value ) override {
         proc.memory().write( proc.read( reg ), value );
     }
 };
 
-struct RegisterIndirectOffset : public LongAddressingMode {
+struct RegisterIndirectOffset final : public LongAddressingMode {
     Register reg;
 
     explicit RegisterIndirectOffset( Register reg ) :
         LongAddressingMode {},
         reg { reg } {}
 
-    RegisterIndirectOffset() = delete;
-
-    virtual Word load( ProcessorState& proc );
-    virtual void store( ProcessorState& proc, Word value );
+    virtual Word load( ProcessorState& proc ) override;
+    virtual void store( ProcessorState& proc, Word value ) override;
 };
 
-struct Push : public AddressingMode {
-    virtual Word load( ProcessorState& ) {
+struct Push final : public AddressingMode {
+    inline virtual Word load( ProcessorState& ) override {
         assert( ! "Attempt to load from a 'push' address!" );
         return 0;
     }
 
-    virtual void store( ProcessorState& proc, Word value ) {
-        auto sp = proc.read( Special::Sp );
-        proc.memory().write( sp - 1, value );
-        proc.write( Special::Sp, sp - 1 );
-    }
+    virtual void store( ProcessorState& proc, Word value ) override;
 };
 
-struct Pop : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) {
-        auto sp = proc.read( Special::Sp );
-        auto word = proc.memory().read( sp );
-        proc.write( Special::Sp, sp + 1 );
-        return word;
-    }
+struct Pop final : public AddressingMode {
+    virtual Word load( ProcessorState& proc ) override;
 
-    virtual void store( ProcessorState&, Word ) {
+    virtual void store( ProcessorState&, Word ) override {
         assert( ! "Attempt to store to a 'pop' address!" );
     }
 };
 
-struct Peek : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) {
+struct Peek final : public AddressingMode {
+    inline virtual Word load( ProcessorState& proc ) override {
         return proc.memory().read( proc.read( Special::Sp ) );
     }
 
-    virtual void store( ProcessorState& proc, Word value ) {
+    inline virtual void store( ProcessorState& proc, Word value ) override {
         proc.memory().write( proc.read( Special::Sp ), value );
     }
 };
 
-struct Pick : public LongAddressingMode {
+struct Pick final : public LongAddressingMode {
     explicit Pick() : LongAddressingMode {} {}
 
-    virtual Word load( ProcessorState& proc );
-    virtual void store( ProcessorState& proc, Word value );
+    virtual Word load( ProcessorState& proc ) override;
+    virtual void store( ProcessorState& proc, Word value ) override;
 };
 
-struct Pc : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) {
+struct Pc final : public AddressingMode {
+    virtual Word load( ProcessorState& proc ) override {
         return proc.read( Special::Pc );
     }
 
-    virtual void store( ProcessorState& proc, Word value ) {
+    virtual void store( ProcessorState& proc, Word value ) override {
         proc.write( Special::Pc, value );
     }
 };
 
-struct Indirect : public LongAddressingMode {
+struct Indirect final : public LongAddressingMode {
     explicit Indirect() : LongAddressingMode {} {}
 
-    virtual Word load( ProcessorState& proc );
-    virtual void store( ProcessorState& proc, Word value );
+    virtual Word load( ProcessorState& proc ) override;
+    virtual void store( ProcessorState& proc, Word value ) override;
 };
 
-struct Direct : public LongAddressingMode {
+struct Direct final : public LongAddressingMode {
     explicit Direct() : LongAddressingMode {} {}
 
-    virtual Word load( ProcessorState& proc );
-    virtual void store( ProcessorState& proc, Word value );
+    virtual Word load( ProcessorState& proc ) override;
+    virtual void store( ProcessorState& proc, Word value ) override;
 };
 
-struct FastDirect : public AddressingMode {
+struct FastDirect final : public AddressingMode {
     Word value;
 
     explicit FastDirect( Word value ) : value { value } {}
     FastDirect() = delete;
 
-    virtual Word load( ProcessorState& ) { return value; }
-    virtual void store( ProcessorState&, Word ) { /* Nothing. */ }
+    inline virtual Word load( ProcessorState& ) override { return value; }
+    inline virtual void store( ProcessorState&, Word ) override { /* Nothing. */ }
 };
 
 }
@@ -271,7 +262,7 @@ enum class SpecialOpcode {
 class Instruction {
 public:
     virtual void execute( ProcessorState& proc ) const = 0;
-    virtual int size() const = 0;
+    virtual int size() const noexcept= 0;
 };
 
 namespace instruction {
@@ -286,17 +277,15 @@ struct Unary : public Instruction {
         address { address } {
     }
 
-    Unary() = delete;
+    virtual void execute( ProcessorState& proc ) const override;
 
-    virtual void execute( ProcessorState& proc ) const;
-
-    virtual int size() const { return address->size(); }
+    inline virtual int size() const noexcept override { return address->size(); }
 };
 
 struct Binary : public Instruction {
     Opcode opcode;
-    std::shared_ptr<AddressingMode> addressB = nullptr;
-    std::shared_ptr<AddressingMode> addressA = nullptr;
+    std::shared_ptr<AddressingMode> addressB { nullptr };
+    std::shared_ptr<AddressingMode> addressA { nullptr };
 
     explicit Binary( Opcode opcode,
                      std::shared_ptr<AddressingMode> addressB,
@@ -306,11 +295,9 @@ struct Binary : public Instruction {
         addressA { addressA } {
     }
 
-    Binary() = delete;
-
-    virtual void execute( ProcessorState& proc ) const;
+    virtual void execute( ProcessorState& proc ) const override;
     
-    virtual int size() const { return addressA->size() + addressB->size(); }
+    inline virtual int size() const noexcept override { return addressA->size() + addressB->size(); }
 };
 
 }
@@ -327,3 +314,5 @@ optional<T> decode( const Word& ) {
 
 std::shared_ptr<AddressingMode> decodeAddress( AddressContext context, Word word );
 std::shared_ptr<Instruction> decodeInstruction( Word word );
+
+}

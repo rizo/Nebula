@@ -8,6 +8,8 @@
 #include <array>
 #include <chrono>
 
+namespace nebula {
+
 namespace sim {
 
 const int MONITOR_PIXELS_PER_DOT = 5;
@@ -100,7 +102,6 @@ class Monitor : public Simulation<MonitorState>, public Device {
     std::shared_ptr<Memory> _memory { nullptr };
 
     sdl::UniqueSurface _screen { nullptr };
-    // SDL_Surface* _screen { nullptr };
     
     std::unique_ptr<SDL_Rect> _dot;
     std::unique_ptr<SDL_Rect> _borderHorizontal;
@@ -108,10 +109,10 @@ class Monitor : public Simulation<MonitorState>, public Device {
 
     std::pair<Word, Word> getCharacter( Character ch );
 
-    Word getColor( std::uint8_t color );
-    Word getColor( ForegroundColor color ) { return getColor( color.value ); }
-    Word getColor( BackgroundColor color ) { return getColor( color.value ); }
-    Word getColor( BorderColor color ) { return getColor( color.value ); }
+    Word getColor( std::uint8_t color ) const;
+    inline Word getColor( ForegroundColor color ) const { return getColor( color.value ); }
+    inline Word getColor( BackgroundColor color ) const { return getColor( color.value ); }
+    inline Word getColor( BorderColor color ) const { return getColor( color.value ); }
 
     void drawBorder();
     void drawFromMemory();
@@ -119,39 +120,18 @@ class Monitor : public Simulation<MonitorState>, public Device {
     void drawStartUp();
 
     void fill( BackgroundColor bg );
-    void clear() { fill( BackgroundColor { 0 } ); }
-    void update() { SDL_Flip( _screen.get() ); }
+    inline void clear() { fill( BackgroundColor { 0 } ); }
+    inline void update() { SDL_Flip( _screen.get() ); }
 
     DoubleWord mapColor( Word color );
 
     void handleInterrupt( MonitorOperation op, ProcessorState* proc );
 public:
-    explicit Monitor( Computer& computer ) :
-        Simulation<MonitorState> {},
-        _computer( computer ),
-        _procInt { computer.nextInterrupt( this ) },
-        _memory { computer.memory() },
-        _dot { make_unique<SDL_Rect>() },
-        _borderHorizontal { make_unique<SDL_Rect>() },
-        _borderVertical { make_unique<SDL_Rect>() } {
+    explicit Monitor( Computer& computer );
 
-        _state.isBlinking.fill( false );
+    virtual std::unique_ptr<MonitorState> run() override;
 
-        _borderHorizontal->w = sim::MONITOR_PIXELS_PER_SCREEN_WIDTH;
-        _borderHorizontal->h = sim::MONITOR_PIXELS_PER_BORDER;
-
-        _borderVertical->w = sim::MONITOR_PIXELS_PER_BORDER;
-        _borderVertical->h = sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT;
-
-        _dot->x = 0;
-        _dot->y = 0;
-        _dot->w = sim::MONITOR_PIXELS_PER_DOT_WIDTH;
-        _dot->h = sim::MONITOR_PIXELS_PER_DOT_HEIGHT;
-    }
-
-    virtual std::unique_ptr<MonitorState> run();
-
-    virtual DeviceInfo info() const {
+    inline virtual DeviceInfo info() const noexcept override {
         return {
             device::Id { 0x7349f615 },
             device::Manufacturer { 0x1c6c8b36 },
@@ -159,3 +139,5 @@ public:
         };
     }
 };
+
+}

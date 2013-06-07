@@ -4,6 +4,8 @@
 
 #include <SDL/SDL.h>
 
+namespace nebula {
+
 namespace sdl {
 
 void initialize();
@@ -20,5 +22,7 @@ public:
 using UniqueSurface = std::unique_ptr<SDL_Surface, SurfaceDeleter>;
 
 extern UniqueSurface SCREEN;
+
+}
 
 }

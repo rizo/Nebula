@@ -5,7 +5,9 @@
 
 #include <gtest/gtest.h>
 
-constexpr int NUM_OPS = 100000;
+using namespace nebula;
+
+const int NUM_OPS = 100000;
 
 class MemoryTest : public ::testing::Test {
 protected:

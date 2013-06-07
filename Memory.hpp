@@ -7,36 +7,30 @@
 #include <stdexcept>
 #include <vector>
 
-#include <boost/format.hpp>
+namespace nebula {
 
-namespace memory {
-
-enum class Operation {
+enum class MemoryOperation {
     Read, Write
 };
 
-}
-
 namespace error {
 
-using boost::format;
-
 class InvalidMemoryLocation : public std::out_of_range {
-    memory::Operation _operation;
+    MemoryOperation _operation;
     Word _location;
 public:
-    explicit InvalidMemoryLocation( memory::Operation operation, Word location ) :
+    explicit InvalidMemoryLocation( MemoryOperation operation, Word location ) :
         std::out_of_range {
             (format( "Cannot %s at memory location 0x%04x" )
-                 % (operation == memory::Operation::Read ? "read" : "write")
+                 % (operation == MemoryOperation::Read ? "read" : "write")
                  % location ).str()
         },
         _operation { operation },
         _location { location } {
     }
 
-    inline memory::Operation operation() const { return _operation; }
-    inline Word location() const { return _location; }
+    inline MemoryOperation operation() const noexcept { return _operation; }
+    inline Word location() const noexcept{ return _location; }
 };
 
 class BadMemoryFile : public std::out_of_range {
@@ -54,7 +48,7 @@ public:
         },
         _path { path } {}
 
-    const std::string& path() const { return _path; }
+    const std::string& path() const noexcept { return _path; }
 };
 
 class MemoryFileTooBig : public std::out_of_range {
@@ -68,12 +62,12 @@ public:
         },
         _memorySize { memorySize } {}
 
-    int memorySize() const { return _memorySize; }
+    int memorySize() const noexcept { return _memorySize; }
 };
 
 }
 
-class Memory {
+class Memory final {
     std::vector<Word> _vec;
     std::mutex _mutex {};
 public:
@@ -87,3 +81,5 @@ public:
 
     int size();
 };
+
+}

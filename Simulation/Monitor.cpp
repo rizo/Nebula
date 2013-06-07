@@ -1,6 +1,31 @@
 #include "../Sdl.hpp"
 #include "Monitor.hpp"
 
+namespace nebula {
+
+Monitor::Monitor( Computer& computer ) :
+    Simulation<MonitorState> {},
+    _computer( computer ),
+    _procInt { computer.nextInterrupt( this ) },
+    _memory { computer.memory() },
+    _dot { make_unique<SDL_Rect>() },
+    _borderHorizontal { make_unique<SDL_Rect>() },
+    _borderVertical { make_unique<SDL_Rect>() } {
+
+    _state.isBlinking.fill( false );
+
+    _borderHorizontal->w = sim::MONITOR_PIXELS_PER_SCREEN_WIDTH;
+    _borderHorizontal->h = sim::MONITOR_PIXELS_PER_BORDER;
+
+    _borderVertical->w = sim::MONITOR_PIXELS_PER_BORDER;
+    _borderVertical->h = sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT;
+
+    _dot->x = 0;
+    _dot->y = 0;
+    _dot->w = sim::MONITOR_PIXELS_PER_DOT_WIDTH;
+    _dot->h = sim::MONITOR_PIXELS_PER_DOT_HEIGHT;
+}
+
 std::unique_ptr<MonitorState> Monitor::run() {
     setActive();
 
@@ -144,7 +169,7 @@ void Monitor::drawFromMemory() {
             auto loc = (y * sim::MONITOR_CELLS_PER_SCREEN_WIDTH) + x + _state.videoOffset;
             w = _memory->read( loc );
 
-            bool doBlink = static_cast<bool>( w & 0x0080 );
+            bool doBlink = (w & 0x0080) != 0;
             auto ch = static_cast<std::uint8_t>( w & 0x007f );
             auto fg = static_cast<std::uint8_t>( (w & 0xf000) >> 12 );
             auto bg = static_cast<std::uint8_t>( (w & 0x0f00) >> 8 );
@@ -247,7 +272,7 @@ std::pair<Word, Word> Monitor::getCharacter( Character ch ) {
     }
 }
 
-Word Monitor::getColor( std::uint8_t color ) {
+Word Monitor::getColor( std::uint8_t color ) const {
     if ( _state.paletteOffset == 0 ) {
         return sim::MONITOR_DEFAULT_PALETTE[color];
     } else {
@@ -291,4 +316,6 @@ void Monitor::drawCell( int x, int y,
     drawColumn( first & 0x00ff, 1 );
     drawColumn( (second & 0xff00) >> 8, 2 );
     drawColumn( second & 0x00ff, 3 );
+}
+
 }

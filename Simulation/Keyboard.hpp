@@ -6,6 +6,8 @@
 
 #include <atomic>
 
+namespace nebula {
+
 namespace sim {
 
 const std::chrono::milliseconds KEYBOARD_SLEEP_DURATION { 5 };
@@ -37,11 +39,11 @@ public:
         _key { other._key.load() },
         _hasKey { other._hasKey.load() } {}
 
-    bool hasKey() const { return _hasKey.load(); }
+    inline bool hasKey() const noexcept { return _hasKey.load(); }
 
-    void setKey( const SDL_keysym* ks );
+    void setKey( const SDL_keysym* ks ) noexcept;
 
-    optional<Word> key() const {
+    inline optional<Word> key() const noexcept {
         if ( hasKey() ) {
             return _key.load();
         } else {
@@ -49,16 +51,16 @@ public:
         }
     }
 
-    void clear() { _hasKey.store( false ); }
+    inline void clear() noexcept { _hasKey.store( false ); }
 
-    bool interruptSent() const { return _interruptSent; }
-    void setInterruptSent( bool value ) { _interruptSent = value; }
+    inline bool interruptSent() const noexcept { return _interruptSent; }
+    inline void setInterruptSent( bool value ) noexcept { _interruptSent = value; }
 
-    bool interruptsEnabled() const { return _interruptsEnabled; }
-    void setInterruptsEnabled( bool value ) { _interruptsEnabled = value; }
+    inline bool interruptsEnabled() const noexcept { return _interruptsEnabled; }
+    inline void setInterruptsEnabled( bool value ) noexcept { _interruptsEnabled = value; }
 
-    Word message() const { return _message; }
-    void setMessage( Word value ) { _message = value; }
+    inline Word message() const noexcept { return _message; }
+    inline void setMessage( Word value ) noexcept { _message = value; }
 };
 
 class Keyboard : public Simulation<KeyboardState>, public Device {
@@ -73,11 +75,11 @@ public:
         _computer( computer ),
         _procInt { computer.nextInterrupt( this ) } {}
 
-    virtual std::unique_ptr<KeyboardState> run();
+    virtual std::unique_ptr<KeyboardState> run() override;
 
-    KeyboardState& state() { return _state; }
+    inline KeyboardState& state() noexcept { return _state; }
 
-    virtual DeviceInfo info() const {
+    virtual DeviceInfo info() const noexcept override {
         return {
             device::Id { 0x30cf7406 },
             device::Manufacturer { 0 },
@@ -86,3 +88,4 @@ public:
     }
 };
 
+}

@@ -7,6 +7,8 @@
 #include <atomic>
 #include <chrono>
 
+namespace nebula {
+
 namespace sim {
 
 const std::chrono::microseconds PROCESSOR_TICK_DURATION { 10 };
@@ -27,8 +29,9 @@ public:
         _proc { make_unique<ProcessorState>( computer.memory() ) },
         _tickDuration { sim::PROCESSOR_TICK_DURATION } {}
 
-    Processor() = delete;
     Processor( const Processor& ) = delete;
 
-    virtual std::unique_ptr<ProcessorState> run();
+    virtual std::unique_ptr<ProcessorState> run() override;
 };
+
+}

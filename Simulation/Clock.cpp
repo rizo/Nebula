@@ -1,5 +1,7 @@
 #include "Clock.hpp"
 
+namespace nebula {
+
 std::unique_ptr<ClockState>
 Clock::run() {
     setActive();
@@ -93,4 +95,6 @@ void Clock::handleInterrupt( ClockOperation op, ProcessorState* proc ) {
 
         break;
     }
+}
+
 }

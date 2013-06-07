@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+using namespace nebula;
+
 int main( int, char* argv[] ) {
     google::InitGoogleLogging( argv[0] );
     sdl::initialize();

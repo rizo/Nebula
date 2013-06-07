@@ -1,6 +1,8 @@
 #include "Sdl.hpp"
 #include "Simulation/Monitor.hpp"
 
+namespace nebula {
+
 namespace sdl {
 
 UniqueSurface SCREEN { nullptr };
@@ -16,6 +18,8 @@ void initialize() {
                                      sim::MONITOR_PIXELS_PER_SCREEN_HEIGHT,
                                      16,
                                      SDL_HWSURFACE | SDL_DOUBLEBUF ) );
+}
+
 }
 
 }
