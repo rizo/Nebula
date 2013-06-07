@@ -8,11 +8,9 @@ std::unique_ptr<ProcessorState>
 Processor::run() {
     setActive();
 
-    LOG( PROC, info ) << "Processor simulation is active.";
+    LOG( PROC, info ) << "Simulation is active.";
 
     while ( isActive() ) {
-        // dumpToLog( *_proc );
-
         auto now = std::chrono::system_clock::now();
 
         _proc->executeNext();
@@ -31,15 +29,15 @@ Processor::run() {
         }
     }
 
-    LOG( PROC, info ) << "Processor simulation shutting down.";
+    LOG( PROC, info ) << "Shutting down.";
     return std::move( _proc );
 }
 
 void Processor::handleInterrupt() {
-    LOG( PROC, info ) << "Handling HW interrupt.";
-
     auto msg = _computer.queue().pop();
     auto push = mode::Push {};
+
+    LOG( PROC, info ) << format( "Handling HW interrupt of 0x%04x." ) % msg;
     
     _computer.setOnlyQueuing( true );
     push.store( *_proc, _proc->read( Special::Pc ) );

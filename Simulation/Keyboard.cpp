@@ -59,7 +59,7 @@ void KeyboardState::setKey( const SDL_keysym* ks ) noexcept {
 std::unique_ptr<KeyboardState> Keyboard::run() {
     setActive();
 
-    LOG( KEYBOARD, info ) << "Simulation active.";
+    LOG( KEYBOARD, info ) << "Simulation is active.";
 
     while ( isActive() ) {
         if ( _state.hasKey() &&
@@ -99,7 +99,7 @@ std::unique_ptr<KeyboardState> Keyboard::run() {
         std::this_thread::sleep_for( sim::KEYBOARD_SLEEP_DURATION );
     }
 
-    LOG( KEYBOARD, info ) << "shutting down.";
+    LOG( KEYBOARD, info ) << "Shutting down.";
     return make_unique<KeyboardState>( _state );
 }
 

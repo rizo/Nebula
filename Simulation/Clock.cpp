@@ -11,7 +11,7 @@ Clock::run() {
     while ( isActive() ) {
         if ( ! _state.isOn ) {
             // Do nothing until the clock is triggered by the processor.
-            LOG( CLOCK, info ) << "Off. waiting for interrupt.";
+            LOG( CLOCK, info ) << "Off. Waiting for interrupt.";
 
             _procInt->waitForTriggerOrDeath( *this );
         }
