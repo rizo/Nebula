@@ -443,18 +443,18 @@ void dumpToLog( ProcessorState& proc ) {
     const int STACK_SIZE = processor::STACK_BEGIN - proc.read( Special::Sp );
     const int DISPLAYED_STACK_SIZE = std::min( 5, STACK_SIZE );
 
-    auto stackCellString = [&stackContents, &proc] ( int index ) {
+    auto stackCell = [&stackContents, &proc] ( int index ) {
         return format( "0x%04x" ) % proc.memory().read( proc.read( Special::Sp ) + index );
         
     };
 
     for ( int i = 0; i < DISPLAYED_STACK_SIZE - 1; ++i ) {
-        stackContents << stackCellString( i );
+        stackContents << stackCell( i );
         stackContents << ",";
     }
 
     if ( DISPLAYED_STACK_SIZE > 0 ) {
-        stackContents << stackCellString( DISPLAYED_STACK_SIZE - 1 );
+        stackContents << stackCell( DISPLAYED_STACK_SIZE - 1 );
     }
 
     if ( DISPLAYED_STACK_SIZE < STACK_SIZE ) {
