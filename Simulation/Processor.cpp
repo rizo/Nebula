@@ -81,7 +81,7 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
             LOG( PROC, warning ) << "Ignoring incoming HW interrupts.";
             _computer.queue().setEnabled( false );
         } else {
-            LOG( PROC, info ) << "Enabling incoming HW interrupts.";
+            LOG( PROC, info ) << format( "Enabling incoming HW interrupts at 0x%04x" ) % value;
             _computer.queue().setEnabled( true );
         }
     } else if ( ins->opcode == SpecialOpcode::Rfi ) {
@@ -91,6 +91,11 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
         _computer.setOnlyQueuing( false );
     } else if ( ins->opcode == SpecialOpcode::Iaq ) {
         _computer.setOnlyQueuing( load() != 0 );
+    } else if ( ins->opcode == SpecialOpcode::Int ) {
+        LOG( PROC, info ) << "Triggering a SW interrupt.";
+
+        auto msg = load();
+        _computer.queue().push( msg );
     }
 }
 

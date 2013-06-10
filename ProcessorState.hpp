@@ -252,6 +252,7 @@ enum class Opcode {
 
 enum class SpecialOpcode {
     Jsr,
+    Int,
     Iag,
     Ias,
     Rfi,

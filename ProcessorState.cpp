@@ -110,6 +110,7 @@ void Unary::execute( ProcessorState& proc ) const {
     Word loc;
 
     switch ( opcode ) {
+    case SpecialOpcode::Int:
     case SpecialOpcode::Iag:
     case SpecialOpcode::Ias:
     case SpecialOpcode::Rfi:
@@ -240,6 +241,7 @@ template <>
 optional<SpecialOpcode> decode( const Word& w ) {
     switch ( w ) {
     case 0x01: return SpecialOpcode::Jsr;
+    case 0x08: return SpecialOpcode::Int;
     case 0x09: return SpecialOpcode::Iag;
     case 0x0a: return SpecialOpcode::Ias;
     case 0x0b: return SpecialOpcode::Rfi;
@@ -403,6 +405,9 @@ static std::shared_ptr<Instruction> fetchNextInstruction( ProcessorState& proc )
 }
 
 void ProcessorState::executeNext() {
+    // !!!
+    // dumpToLog( *this );
+
     auto ins = fetchNextInstruction( *this );
 
     if ( doSkip() ) {
