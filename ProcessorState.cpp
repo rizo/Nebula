@@ -1,6 +1,7 @@
 #include "ProcessorState.hpp"
 
 #include <functional>
+#include <sstream>
 
 #include <boost/phoenix/bind.hpp>
 #include <boost/phoenix/core.hpp>
@@ -439,14 +440,29 @@ void dumpToLog( ProcessorState& proc ) {
     LOG( PSTATE, info ) << format( "J    : 0x%04x" ) % proc.read( Register::J );
     LOG( PSTATE, info ) << format( "skip : %s" ) % proc.doSkip();
 
-    std::string stackContents { "" };
+    std::stringstream stackContents;
     const int STACK_SIZE = processor::STACK_BEGIN - proc.read( Special::Sp );
+    const int DISPLAYED_STACK_SIZE = std::min( 5, STACK_SIZE );
 
-    for ( int i = 0; i < STACK_SIZE; ++i ) {
-        stackContents += (format( "0x%04x, " ) % proc.memory().read( proc.read( Special::Sp ) + i )).str();
+    auto stackCellString = [&stackContents, &proc] ( int index ) {
+        return format( "0x%04x" ) % proc.memory().read( proc.read( Special::Sp ) + index );
+        
+    };
+
+    for ( int i = 0; i < DISPLAYED_STACK_SIZE - 1; ++i ) {
+        stackContents << stackCellString( i );
+        stackContents << ",";
     }
 
-    LOG( PSTATE, info ) << "stack: " << stackContents;
+    if ( DISPLAYED_STACK_SIZE > 0 ) {
+        stackContents << stackCellString( DISPLAYED_STACK_SIZE - 1 );
+    }
+
+    if ( DISPLAYED_STACK_SIZE < STACK_SIZE ) {
+        stackContents << ", ...";
+    }
+
+    LOG( PSTATE, info ) << "stack: " << stackContents.str();
     LOG( PSTATE, info ) << "\n";
 }
 
