@@ -329,7 +329,6 @@ decodeAddress( AddressContext context, Word word ) {
     // auto decodeEx = makeDecoder( 0x1d, address::ex );
     auto decodeIndirect = decoderByValue<mode::Indirect>( 0x1e );
     auto decodeDirect = decoderByValue<mode::Direct>( 0x1f );
-    // auto decodeDirect = makeDecoder( 0x1f, address::direct );
 
 #define TRY( f ) addr = f( word ); if ( addr ) return addr;
 
