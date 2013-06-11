@@ -2,7 +2,7 @@
 
 namespace nebula {
 
-void ProcessorInterrupt::trigger( std::unique_ptr<ProcessorState>&& proc ) {
+void ProcessorInterrupt::trigger( std::unique_ptr<ProcessorState> proc ) {
     _isActive.store( true );
     _proc = std::move( proc );
     _condition.notify_one();
@@ -78,7 +78,7 @@ DeviceInfo Computer::infoByIndex( std::size_t index ) {
         throw error::NoSuchDeviceIndex { index };
     }
 
-    return _devInfo[index];
+    return *_devInfo[index];
 }
 
 }

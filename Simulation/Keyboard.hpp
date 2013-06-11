@@ -82,7 +82,7 @@ public:
     inline KeyboardState& state() noexcept { return _state; }
 
     virtual DeviceInfo info() const noexcept override {
-        return {
+        return DeviceInfo {
             device::Id { 0x30cf7406 },
             device::Manufacturer { 0 },
             device::Version { 1 }

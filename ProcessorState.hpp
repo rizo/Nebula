@@ -104,7 +104,7 @@ public:
     inline bool doSkip() const noexcept { return _doSkip; }
     void setSkip( bool value ) noexcept { _doSkip = value; }
 
-    inline Memory& memory() noexcept { return *_memory; }
+    inline Memory* memory() noexcept { return _memory.get(); }
 
     const Instruction* lastInstruction() const noexcept { return _lastInstruction.get(); }
 
@@ -150,11 +150,11 @@ struct RegisterIndirect final : public AddressingMode {
     explicit RegisterIndirect( Register reg ) : reg { reg } {}
 
     inline virtual Word load( ProcessorState& proc ) override {
-        return proc.memory().read( proc.read( reg ) );
+        return proc.memory()->read( proc.read( reg ) );
     }
 
     inline virtual void store( ProcessorState& proc, Word value ) override {
-        proc.memory().write( proc.read( reg ), value );
+        proc.memory()->write( proc.read( reg ), value );
     }
 };
 
@@ -188,11 +188,11 @@ struct Pop final : public AddressingMode {
 
 struct Peek final : public AddressingMode {
     inline virtual Word load( ProcessorState& proc ) override {
-        return proc.memory().read( proc.read( Special::Sp ) );
+        return proc.memory()->read( proc.read( Special::Sp ) );
     }
 
     inline virtual void store( ProcessorState& proc, Word value ) override {
-        proc.memory().write( proc.read( Special::Sp ), value );
+        proc.memory()->write( proc.read( Special::Sp ), value );
     }
 };
 

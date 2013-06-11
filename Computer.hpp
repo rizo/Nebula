@@ -22,13 +22,20 @@ const std::size_t MAX_QUEUED_INTERRUPTS = 256;
 
 namespace device {
 
-struct Id { DoubleWord value; };
-struct Manufacturer { DoubleWord value; };
-struct Version { Word value; };
+SAFE_VALUE_WRAPPER( Id, DoubleWord );
+SAFE_VALUE_WRAPPER( Manufacturer, DoubleWord );
+SAFE_VALUE_WRAPPER( Version, Word );
 
 }
 
 struct DeviceInfo {
+    explicit DeviceInfo( device::Id id,
+                         device::Manufacturer manufacturer,
+                         device::Version version ) :
+        id { id },
+        manufacturer { manufacturer },
+        version { version } {}
+    
     device::Id id;
     device::Manufacturer manufacturer;
     device::Version version;
@@ -53,7 +60,7 @@ public:
     
     // Sender interface.
 
-    void trigger( std::unique_ptr<ProcessorState>&& proc );
+    void trigger( std::unique_ptr<ProcessorState> proc );
     std::unique_ptr<ProcessorState> waitForResponse();
 
     // Receiver interface.
@@ -131,7 +138,7 @@ public:
 
 class Computer final {
     std::array<std::shared_ptr<ProcessorInterrupt>, computer::MAX_DEVICES> _procInts;
-    std::array<DeviceInfo, computer::MAX_DEVICES> _devInfo;
+    std::array<optional<DeviceInfo>, computer::MAX_DEVICES> _devInfo;
     std::size_t _devIndex { 1 };
 
     InterruptQueue _intQ {};
@@ -144,6 +151,7 @@ public:
     explicit Computer( std::shared_ptr<Memory> memory ) :
         _memory { memory } {
 
+        _devInfo.fill( {} );
         _procInts.fill( nullptr );
     }
 

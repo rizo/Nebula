@@ -42,7 +42,7 @@ static Word fetchNextWord( ProcessorState& proc ) {
 
     auto pc = proc.read( Special::Pc );
     proc.write( Special::Pc, pc + 1 );
-    return proc.memory().read( pc );
+    return proc.memory()->read( pc );
 }
 
 Word LongAddressingMode::next( ProcessorState& proc ) {
@@ -56,22 +56,22 @@ Word LongAddressingMode::next( ProcessorState& proc ) {
 namespace mode {
 
 Word RegisterIndirectOffset::load( ProcessorState& proc ) {
-    return proc.memory().read( proc.read( reg ) + fetchNextWord( proc ) );
+    return proc.memory()->read( proc.read( reg ) + fetchNextWord( proc ) );
 }
 
 void RegisterIndirectOffset::store( ProcessorState& proc, Word value ) {
-    proc.memory().write( proc.read( reg ) + fetchNextWord( proc ), value );
+    proc.memory()->write( proc.read( reg ) + fetchNextWord( proc ), value );
 }
 
 void Push::store( ProcessorState& proc, Word value ) {
     auto sp = proc.read( Special::Sp );
-    proc.memory().write( sp - 1, value );
+    proc.memory()->write( sp - 1, value );
     proc.write( Special::Sp, sp - 1 );
 }
 
 Word Pop::load( ProcessorState& proc ) {
     auto sp = proc.read( Special::Sp );
-    auto word = proc.memory().read( sp );
+    auto word = proc.memory()->read( sp );
     proc.write( Special::Sp, sp + 1 );
 
     return word;
@@ -79,20 +79,20 @@ Word Pop::load( ProcessorState& proc ) {
 
 Word Pick::load( ProcessorState& proc ) {
     auto sp = proc.read( Special::Sp );
-    return proc.memory().read( sp + next( proc ) );
+    return proc.memory()->read( sp + next( proc ) );
 }
 
 void Pick::store( ProcessorState& proc, Word value ) {
     auto sp = proc.read( Special::Sp );
-    proc.memory().write( sp + next( proc ), value );
+    proc.memory()->write( sp + next( proc ), value );
 }
 
 Word Indirect::load( ProcessorState& proc ) {
-    return proc.memory().read( next( proc ) );
+    return proc.memory()->read( next( proc ) );
 }
 
 void Indirect::store( ProcessorState& proc, Word value ) {
-    proc.memory().write( next( proc ), value );
+    proc.memory()->write( next( proc ), value );
 }
 
 Word Direct::load( ProcessorState& proc ) {
@@ -444,7 +444,7 @@ void dumpToLog( ProcessorState& proc ) {
     const int DISPLAYED_STACK_SIZE = std::min( 5, STACK_SIZE );
 
     auto stackCell = [&stackContents, &proc] ( int index ) {
-        return format( "0x%04x" ) % proc.memory().read( proc.read( Special::Sp ) + index );
+        return format( "0x%04x" ) % proc.memory()->read( proc.read( Special::Sp ) + index );
         
     };
 

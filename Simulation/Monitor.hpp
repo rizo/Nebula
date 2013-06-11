@@ -130,7 +130,7 @@ public:
     virtual std::unique_ptr<MonitorState> run() override;
 
     inline virtual DeviceInfo info() const noexcept override {
-        return {
+        return DeviceInfo {
             device::Id { 0x7349f615 },
             device::Manufacturer { 0x1c6c8b36 },
             device::Version { 0x1802 }
