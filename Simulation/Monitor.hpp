@@ -109,10 +109,10 @@ class Monitor : public Simulation<MonitorState>, public Device {
 
     std::pair<Word, Word> getCharacter( Character ch );
 
-    Word getColor( std::uint8_t color ) const;
-    inline Word getColor( ForegroundColor color ) const { return getColor( color.value ); }
-    inline Word getColor( BackgroundColor color ) const { return getColor( color.value ); }
-    inline Word getColor( BorderColor color ) const { return getColor( color.value ); }
+    DoubleWord getColor( std::uint8_t color ) const;
+    inline DoubleWord getColor( ForegroundColor color ) const { return getColor( color.value ); }
+    inline DoubleWord getColor( BackgroundColor color ) const { return getColor( color.value ); }
+    inline DoubleWord getColor( BorderColor color ) const { return getColor( color.value ); }
 
     void drawBorder();
     void drawFromMemory();
@@ -122,8 +122,6 @@ class Monitor : public Simulation<MonitorState>, public Device {
     void fill( BackgroundColor bg );
     inline void clear() { fill( BackgroundColor { 0 } ); }
     inline void update() { SDL_Flip( _screen.get() ); }
-
-    DoubleWord mapColor( Word color );
 
     void handleInterrupt( MonitorOperation op, ProcessorState* proc );
 public:

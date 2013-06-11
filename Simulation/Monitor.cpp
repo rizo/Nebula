@@ -136,7 +136,7 @@ void Monitor::drawStartUp() {
 }
 
 void Monitor::drawBorder() {
-    auto color = mapColor( getColor( _state.borderColor ) );
+    auto color = getColor( _state.borderColor );
 
     // Top.
     _borderHorizontal->x = 0;
@@ -244,20 +244,8 @@ void Monitor::handleInterrupt( MonitorOperation op, ProcessorState* proc ) {
     }
 }
 
-DoubleWord Monitor::mapColor( Word color ) {
-    Word bluePart = color & 0x000f;
-    Word greenPart = (color & 0x00f0) >> 4;
-    Word redPart = (color & 0x0f00) >> 8;
-
-    Word blue = bluePart | (bluePart << 4);
-    Word green = greenPart | (greenPart << 4);
-    Word red = redPart | (redPart << 4);
-
-    return SDL_MapRGB( _screen->format, red, green, blue );
-}
-
 void Monitor::fill( BackgroundColor bg ) {
-    auto c = mapColor( getColor( bg ) );
+    auto c = getColor( bg );
     SDL_FillRect( _screen.get(), nullptr, c );
 }
 
@@ -274,12 +262,25 @@ std::pair<Word, Word> Monitor::getCharacter( Character ch ) {
     }
 }
 
-Word Monitor::getColor( std::uint8_t color ) const {
+DoubleWord Monitor::getColor( std::uint8_t colorOffset ) const {
+    Word color;
+
     if ( _state.paletteOffset == 0 ) {
-        return sim::MONITOR_DEFAULT_PALETTE[color];
+        color = sim::MONITOR_DEFAULT_PALETTE[colorOffset];
     } else {
-        return _memory->read( _state.paletteOffset + color );
+        color = _memory->read( _state.paletteOffset + colorOffset );
     }
+
+    // Convert to a color understandable by SDL.
+    Word bluePart = color & 0x000f;
+    Word greenPart = (color & 0x00f0) >> 4;
+    Word redPart = (color & 0x0f00) >> 8;
+
+    Word blue = bluePart | (bluePart << 4);
+    Word green = greenPart | (greenPart << 4);
+    Word red = redPart | (redPart << 4);
+
+    return SDL_MapRGB( _screen->format, red, green, blue );
 }
 
 void Monitor::drawCell( int x, int y,
@@ -289,8 +290,8 @@ void Monitor::drawCell( int x, int y,
     int cellX = x * sim::MONITOR_PIXELS_PER_CELL_WIDTH;
     int cellY = y * sim::MONITOR_PIXELS_PER_CELL_HEIGHT;
 
-    auto fgColor = mapColor( getColor( fg ) );
-    auto bgColor = mapColor( getColor( bg ) );
+    auto fgColor = getColor( fg );
+    auto bgColor = getColor( bg );
 
     auto drawDot = [&] ( int x, int y, bool isForeground) {
         _dot->x = sim::MONITOR_PIXELS_PER_BORDER + cellX + (x * sim::MONITOR_PIXELS_PER_DOT_WIDTH );
