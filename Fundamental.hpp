@@ -51,3 +51,9 @@ std::unique_ptr<T> make_unique( Args&&... args ) {
 }
 
 #define B_ BOOST_BINARY
+
+#define SAFE_VALUE_WRAPPER( name, type )                \
+    struct name {                                       \
+        explicit name (const type& v ) : value { v } {} \
+        type value;                                     \
+    }    

@@ -77,10 +77,10 @@ enum class MonitorOperation {
     DumpPalette
 };
 
-struct Character { std::uint8_t value; };
-struct BackgroundColor { std::uint8_t value; };
-struct ForegroundColor { std::uint8_t value; };
-struct BorderColor { std::uint8_t value; };
+SAFE_VALUE_WRAPPER( Character, std::uint8_t );
+SAFE_VALUE_WRAPPER( BackgroundColor, std::uint8_t );
+SAFE_VALUE_WRAPPER( ForegroundColor, std::uint8_t );
+SAFE_VALUE_WRAPPER( BorderColor, std::uint8_t );
 
 struct MonitorState {
     optional<std::chrono::microseconds> timeSinceConnected {};
