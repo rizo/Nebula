@@ -32,8 +32,8 @@ target_link_libraries (nebula
   ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable (runTests
-  tests/TestMemory.cpp
-  tests/TestProcessorState.cpp
+  Tests/TestMemory.cpp
+  Tests/TestProcessorState.cpp
   Memory.cpp
   ProcessorState.cpp)
 

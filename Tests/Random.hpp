@@ -1,5 +1,4 @@
-#ifndef __RANDOM_HPP__
-#define __RANDOM_HPP__
+#pragma once
 
 #include <iterator>
 #include <random>
@@ -52,5 +51,3 @@ DiscreteGenerator<RandomAccessIter> makeDiscreteGenerator( RandomAccessIter begi
                                                            RandomAccessIter end ) {
     return DiscreteGenerator<RandomAccessIter> { begin, end };
 }
-
-#endif // __RANDOM_HPP__
