@@ -159,6 +159,13 @@ void Binary::execute( ProcessorState& proc ) const {
         action( zd );
     };
 
+    auto applySigned = [&] ( std::function<SignedWord( SignedWord, SignedWord )> f ) {
+        auto yi = static_cast<SignedWord>( load( addressA ) );
+        auto xi = static_cast<SignedWord>( load( addressB ) );
+        auto zi = f( xi, yi );
+        store( addressB, static_cast<Word>( zi ) );
+    };
+
     auto skipUnless = [&] ( std::function<bool( DoubleWord, DoubleWord )> f ) {
         auto y = load( addressA );
         auto x = load( addressB );
@@ -166,12 +173,15 @@ void Binary::execute( ProcessorState& proc ) const {
         proc.setSkip( ! f( x, y ) );
     };
 
+    DoubleWord xd, yd, zd;
+    SignedDoubleWord xdi, ydi, zdi;
+
     switch ( opcode ) {
     case Opcode::Set:
         store( addressB, load( addressA ) );
         break;
     case Opcode::Add:
-        applyDouble( arg1 + arg2, [&proc]( DoubleWord z ) {
+        applyDouble( arg1 + arg2, [&proc] ( DoubleWord z ) {
                 if ( z > 0xffff ) {
                     proc.write( Special::Ex, 1 );
                 } else {
@@ -180,7 +190,7 @@ void Binary::execute( ProcessorState& proc ) const {
             });
         break;
     case Opcode::Sub:
-        applyDouble( arg1 - arg2, [&proc]( DoubleWord z ) {
+        applyDouble( arg1 - arg2, [&proc] ( DoubleWord z ) {
                 if ( z > 0xffff ) {
                     proc.write( Special::Ex, 0xffff );
                 } else {
@@ -188,8 +198,79 @@ void Binary::execute( ProcessorState& proc ) const {
                 }
             });
         break;
+    case Opcode::Mul:
+        applyDouble( arg1 * arg2, [&proc] ( DoubleWord z ) {
+                proc.write( Special::Ex, (z >> 16) & 0xffff );
+            });
+        break;
+    case Opcode::Mli:
+        applySigned( arg1 * arg2 );
+        break;
+    case Opcode::Div:
+        yd = DoubleWord { load( addressA ) };
+        xd = DoubleWord { load( addressB ) };
+        
+        if ( yd == 0 ) {
+            zd = 0;
+            proc.write( Special::Ex, 0 );
+        } else {
+            zd = xd / yd;
+            proc.write( Special::Ex, ((xd << 16) / yd) & 0xffff );
+        }
+
+        store( addressB, static_cast<Word>( zd ) );
+
+        break;
+    case Opcode::Dvi:
+        applySigned( [] ( SignedWord xi, SignedWord yi ) {
+                return yi != 0 ? xi / yi : 0;
+            });
+        break;
+    case Opcode::Mod:
+        apply( [] ( Word x, Word y ) {
+                return y != 0 ? x % y : 0;
+            });
+        break;
+    case Opcode::Mdi:
+        applySigned( [] ( SignedWord xi, SignedWord yi ) {
+                return yi != 0 ? xi % yi : 0;
+            });
+        break;
+    case Opcode::And:
+        apply( arg1 & arg2 );
+        break;
     case Opcode::Bor:
         apply( arg1 | arg2 );
+        break;
+    case Opcode::Xor:
+        apply( arg1 ^ arg2 );
+        break;
+    case Opcode::Shr:
+        yd = DoubleWord { load( addressA ) };
+        xd = DoubleWord { load( addressB ) };
+        zd = xd >> yd;
+
+        proc.write( Special::Ex, ((xd << 16) >> yd) & 0xffff );
+        store( addressB, static_cast<Word>( zd ) );
+
+        break;
+    case Opcode::Asr:
+        ydi = SignedDoubleWord { load( addressA ) };
+        xdi = SignedDoubleWord { load( addressB ) };
+        zdi = xdi >> ydi;
+        
+        proc.write( Special::Ex, ((xdi << 16) >> ydi) & 0xffff );
+        store( addressB, static_cast<Word>( zdi ) );
+
+        break;
+    case Opcode::Shl:
+        yd = DoubleWord { load( addressA ) };
+        xd = DoubleWord { load( addressB ) };
+        zd = xd << yd;
+        
+        proc.write( Special::Ex, ((xd << yd) >> 16) & 0xffff );
+        store( addressB, static_cast<Word>( zd ) );
+
         break;
     case Opcode::Ife:
         skipUnless( arg1 == arg2 );
@@ -229,7 +310,18 @@ optional<Opcode> decode( const Word& w ) {
     case 0x01: return Opcode::Set;
     case 0x02: return Opcode::Add;
     case 0x03: return Opcode::Sub;
+    case 0x04: return Opcode::Mul;
+    case 0x05: return Opcode::Mli;
+    case 0x06: return Opcode::Div;
+    case 0x07: return Opcode::Dvi;
+    case 0x08: return Opcode::Mod;
+    case 0x09: return Opcode::Mdi;
+    case 0x0a: return Opcode::And;
     case 0x0b: return Opcode::Bor;
+    case 0x0c: return Opcode::Xor;
+    case 0x0d: return Opcode::Shr;
+    case 0x0e: return Opcode::Asr;
+    case 0x0f: return Opcode::Shl;
     case 0x12: return Opcode::Ife;
     case 0x13: return Opcode::Ifn;
     case 0x14: return Opcode::Ifg;

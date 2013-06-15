@@ -60,7 +60,7 @@ int main( int, char* argv[] ) {
     clockStateF.get();
     monitorStateF.get();
     keyboardStateF.get();
-    auto state = procStateF.get();
 
+    auto state = procStateF.get();
     dumpToLog( *state );
 }

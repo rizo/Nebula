@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.8)
 project (Nebula)
 
 set (CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -pedantic -Wno-missing-braces -march=native -mtune=native")
+set (CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
 
 add_subdirectory (gtest-1.6.0)
 enable_testing ()
