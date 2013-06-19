@@ -54,11 +54,6 @@ Memory::fromFile( const std::string& filename, int size ) {
     auto end = std::istreambuf_iterator<char> {};
 
     std::vector<char> contents( begin, end );
-
-    if ( contents.size() > static_cast<unsigned>( size )) {
-        throw error::MemoryFileTooBig { size };
-    }
-
     std::vector<Word> result;
 
     bool isSuccessful = qi::parse(
@@ -73,6 +68,10 @@ Memory::fromFile( const std::string& filename, int size ) {
 
     auto mem = std::make_shared<Memory>( size );
     std::move( result.begin(), result.end(), mem->_vec.begin() );
+
+    if ( result.size() > static_cast<unsigned>( size )) {
+        throw error::MemoryFileTooBig { size };
+    }
 
     return mem;
 }
