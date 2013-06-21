@@ -2,6 +2,7 @@
 ;;;
 ;;; Routines for interfacing with harware.
 
+        .section "text"
 
 ;;; IN:
 ;;;     3 - First word of the device ID.
