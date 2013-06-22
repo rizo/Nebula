@@ -203,12 +203,22 @@ struct Pick final : public LongAddressingMode {
     virtual void store( ProcessorState& proc, Word value ) override;
 };
 
+struct Sp final : public AddressingMode {
+    virtual inline Word load( ProcessorState& proc ) override {
+        return proc.read( Special::Sp );
+    }
+
+    virtual inline void store( ProcessorState& proc, Word value ) override {
+        proc.write( Special::Sp, value );
+    }
+};
+
 struct Pc final : public AddressingMode {
-    virtual Word load( ProcessorState& proc ) override {
+    virtual inline Word load( ProcessorState& proc ) override {
         return proc.read( Special::Pc );
     }
 
-    virtual void store( ProcessorState& proc, Word value ) override {
+    virtual inline void store( ProcessorState& proc, Word value ) override {
         proc.write( Special::Pc, value );
     }
 };

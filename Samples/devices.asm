@@ -10,12 +10,9 @@
 ;;;     1 - Device revision.
 ;;; 
 ;;; OUT:
-;;;     X - The hardware index. This is 0 if the device cannot
+;;;     A - The hardware index. This is 0 if the device cannot
 ;;;         be found.
 find_device:
-        SET     PUSH, A
-        SET     PUSH, B
-        SET     PUSH, C
         SET     PUSH, I
         SET     PUSH, J
         
@@ -26,13 +23,13 @@ _loop:
         HWQ     J
         
         ;; Check the current device against the desired device.
-        IFN     A, PICK 8
+        IFN     A, PICK 5
         SET     PC, _no_match
         
-        IFN     B, PICK 7
+        IFN     B, PICK 4
         SET     PC, _no_match
         
-        IFN     C, PICK 6
+        IFN     C, PICK 3
         SET     PC, _no_match
 
         SET     PC, _success
@@ -46,47 +43,40 @@ _no_match:
         SET     PC, _loop
         
 _success:
-        SET     X, J
+        SET     A, J
         SET     PC, _done
 _failure:
-        SET     X, 0
+        SET     A, 0
 _done:
         SET     J, POP
         SET     I, POP
-        SET     C, POP
-        SET     B, POP
-        SET     A, POP
         
         SET     PC, POP
         
 ;;; IN:
 ;;;
 ;;; OUT:
-;;;     X - The hardware index of the lem1802, or 0 if is not
+;;;     A - The hardware index of the lem1802, or 0 if is not
 ;;;     connected.
 find_lem1802:
         SET     PUSH, 0xf615
         SET     PUSH, 0x7349
         SET     PUSH, 0x1802
         JSR     find_device
-        SET     0, POP
-        SET     0, POP
-        SET     0, POP
+        ADD     SP, 3
 
         SET     PC, POP
 
 ;;; IN:
 ;;;
 ;;; OUT:
-;;;     X - The hardware index of the keyboard, or 0 if is not
+;;;     A - The hardware index of the keyboard, or 0 if is not
 ;;;     connected.
 find_keyboard:
         SET     PUSH, 0x7406
         SET     PUSH, 0x30cf
         SET     PUSH, 1
         JSR     find_device
-        SET     0, POP
-        SET     0, POP
-        SET     0, POP
+        ADD     SP, 3
 
         SET     PC, POP

@@ -415,8 +415,8 @@ decodeAddress( AddressContext context, Word word ) {
     auto decodePush = decoderByValue<mode::Push>( 0x18 );
     auto decodePop = decoderByValue<mode::Pop>( 0x18 );
     auto decodePeek = decoderByValue<mode::Peek>( 0x19 );
-    // auto decodeSp = makeDecoder( 0x1b, address::sp );
     auto decodePick = decoderByValue<mode::Pick>( 0x1a );
+    auto decodeSp = decoderByValue<mode::Sp>( 0x1b );
     auto decodePc = decoderByValue<mode::Pc>( 0x1c );
     // auto decodeEx = makeDecoder( 0x1d, address::ex );
     auto decodeIndirect = decoderByValue<mode::Indirect>( 0x1e );
@@ -439,7 +439,7 @@ decodeAddress( AddressContext context, Word word ) {
     TRY( decodePush );
     TRY( decodePeek );
     TRY( decodePick );
-    // TRY( decodeSp );
+    TRY( decodeSp );
     TRY( decodePc );
     // TRY( decodeEx );
     TRY( decodeIndirect );
