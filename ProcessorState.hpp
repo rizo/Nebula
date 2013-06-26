@@ -224,6 +224,16 @@ struct Pc final : public AddressingMode {
     }
 };
 
+struct Ex final : public AddressingMode {
+    virtual inline Word load( ProcessorState& proc ) override {
+        return proc.read( Special::Ex );
+    }
+
+    virtual inline void store( ProcessorState& proc, Word value ) override {
+        proc.write( Special::Ex, value );
+    }
+};
+
 struct Indirect final : public LongAddressingMode {
     explicit Indirect() : LongAddressingMode {} {}
 
