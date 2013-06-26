@@ -60,6 +60,7 @@ const std::array<Word, 16> MONITOR_DEFAULT_PALETTE { {
     0x0fff
 } };
 
+// 60 FPS (approximately).
 const std::chrono::microseconds MONITOR_FRAME_DURATION { 16666 };
 
 const std::chrono::milliseconds MONITOR_BLINK_DURATION { 500 };
