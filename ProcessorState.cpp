@@ -168,11 +168,19 @@ void Binary::execute( ProcessorState& proc ) const {
         store( addressB, static_cast<Word>( zi ) );
     };
 
-    auto skipUnless = [&] ( std::function<bool( DoubleWord, DoubleWord )> f ) {
+    auto skipUnless = [&] ( std::function<bool( Word, Word )> f ) {
         auto y = load( addressA );
         auto x = load( addressB );
 
         proc.setSkip( ! f( x, y ) );
+    };
+
+    auto skipUnlessSigned = [&] ( std::function<bool( SignedWord, SignedWord )> f ) {
+        auto y = load( addressA );
+        auto x = load( addressB );
+
+        proc.setSkip( ! f( static_cast<SignedWord>( x ),
+                           static_cast<SignedWord>( y ) ) );
     };
 
     DoubleWord xd, yd, zd;
@@ -283,8 +291,14 @@ void Binary::execute( ProcessorState& proc ) const {
     case Opcode::Ifg:
         skipUnless( arg1 > arg2 );
         break;
+    case Opcode::Ifa:
+        skipUnlessSigned( arg1 > arg2 );
+        break;
     case Opcode::Ifl:
         skipUnless( arg1 < arg2 );
+        break;
+    case Opcode::Ifu:
+        skipUnlessSigned( arg1 < arg2 );
         break;
     }
 

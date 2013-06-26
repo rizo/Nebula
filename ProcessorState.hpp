@@ -252,7 +252,6 @@ struct FastDirect final : public AddressingMode {
     Word value;
 
     explicit FastDirect( Word value ) : value { value } {}
-    FastDirect() = delete;
 
     inline virtual Word load( ProcessorState& ) override { return value; }
     inline virtual void store( ProcessorState&, Word ) override { /* Nothing. */ }
@@ -272,7 +271,9 @@ enum class Opcode {
     Ife,
     Ifn,
     Ifg,
-    Ifl
+    Ifa,
+    Ifl,
+    Ifu
 };
 
 const std::map<Opcode, int> OPCODE_CYCLES {
@@ -294,7 +295,9 @@ const std::map<Opcode, int> OPCODE_CYCLES {
     { Opcode::Ife, 2 },
     { Opcode::Ifn, 2 },
     { Opcode::Ifg, 2 },
-    { Opcode::Ifl, 2 }
+    { Opcode::Ifa, 2 },
+    { Opcode::Ifl, 2 },
+    { Opcode::Ifu, 2 }
 };
 
 enum class SpecialOpcode {
