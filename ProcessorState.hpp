@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <stdexcept>
 
@@ -264,6 +265,28 @@ enum class Opcode {
     Ifl
 };
 
+const std::map<Opcode, int> OPCODE_CYCLES {
+    { Opcode::Set, 1 },
+    { Opcode::Add, 2 },
+    { Opcode::Sub, 2 },
+    { Opcode::Mul, 2 },
+    { Opcode::Mli, 2 },
+    { Opcode::Div, 3 },
+    { Opcode::Dvi, 3 },
+    { Opcode::Mod, 3 },
+    { Opcode::Mdi, 3 },
+    { Opcode::And, 1 },
+    { Opcode::Bor, 1 },
+    { Opcode::Xor, 1 },
+    { Opcode::Shr, 1 },
+    { Opcode::Asr, 1 },
+    { Opcode::Shl, 1 },
+    { Opcode::Ife, 2 },
+    { Opcode::Ifn, 2 },
+    { Opcode::Ifg, 2 },
+    { Opcode::Ifl, 2 }
+};
+
 enum class SpecialOpcode {
     Jsr,
     Int,
@@ -274,6 +297,18 @@ enum class SpecialOpcode {
     Hwn,
     Hwq,
     Hwi
+};
+
+const std::map<SpecialOpcode, int> SPECIAL_OPCODE_CYCLES {
+    { SpecialOpcode::Jsr, 3 },
+    { SpecialOpcode::Int, 4 },
+    { SpecialOpcode::Iag, 1 },
+    { SpecialOpcode::Ias, 1 },
+    { SpecialOpcode::Rfi, 3 },
+    { SpecialOpcode::Iaq, 2 },
+    { SpecialOpcode::Hwn, 2 },
+    { SpecialOpcode::Hwq, 4 },
+    { SpecialOpcode::Hwi, 4 }
 };
 
 class Instruction {
@@ -320,6 +355,7 @@ struct Binary : public Instruction {
 }
 
 void advance( ProcessorState& proc, int numWords );
+
 void dumpToLog( ProcessorState& proc );
 
 enum class AddressContext { A, B };

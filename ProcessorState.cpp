@@ -129,6 +129,8 @@ void Unary::execute( ProcessorState& proc ) const {
     default:
         assert( ! "Unary instruction is unsupported!" );
     }
+
+    proc.tickClock( SPECIAL_OPCODE_CYCLES.at( opcode ) );
 }
 
 void Binary::execute( ProcessorState& proc ) const {
@@ -285,6 +287,9 @@ void Binary::execute( ProcessorState& proc ) const {
         skipUnless( arg1 < arg2 );
         break;
     }
+
+    // Tick the clock the appropriate number of times.
+    proc.tickClock( OPCODE_CYCLES.at( opcode ) );
 }
 
 }
