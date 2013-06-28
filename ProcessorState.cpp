@@ -172,15 +172,27 @@ void Binary::execute( ProcessorState& proc ) const {
         auto y = load( addressA );
         auto x = load( addressB );
 
-        proc.setSkip( ! f( x, y ) );
+        bool skip = ! f( x, y );
+        
+        if ( skip ) {
+            proc.tickClock( 1 );
+        }
+        
+        proc.setSkip( skip );
     };
 
     auto skipUnlessSigned = [&] ( std::function<bool( SignedWord, SignedWord )> f ) {
         auto y = load( addressA );
         auto x = load( addressB );
 
-        proc.setSkip( ! f( static_cast<SignedWord>( x ),
-                           static_cast<SignedWord>( y ) ) );
+        bool skip = ! f( static_cast<SignedWord>( x ),
+                         static_cast<SignedWord>( y ) );
+
+        if ( skip ) {
+            proc.tickClock( 1 );
+        }
+
+        proc.setSkip( skip );
     };
 
     DoubleWord xd, yd, zd;
@@ -282,6 +294,12 @@ void Binary::execute( ProcessorState& proc ) const {
         store( addressB, static_cast<Word>( zd ) );
 
         break;
+    case Opcode::Ifb:
+        skipUnless( (arg1 & arg2) != 0 );
+        break;
+    case Opcode::Ifc:
+        skipUnless( (arg1 & arg2) == 0 );
+        break;
     case Opcode::Ife:
         skipUnless( arg1 == arg2 );
         break;
@@ -341,10 +359,14 @@ optional<Opcode> decode( const Word& w ) {
     case 0x0d: return Opcode::Shr;
     case 0x0e: return Opcode::Asr;
     case 0x0f: return Opcode::Shl;
+    case 0x10: return Opcode::Ifb;
+    case 0x11: return Opcode::Ifc;
     case 0x12: return Opcode::Ife;
     case 0x13: return Opcode::Ifn;
     case 0x14: return Opcode::Ifg;
+    case 0x15: return Opcode::Ifa;
     case 0x16: return Opcode::Ifl;
+    case 0x17: return Opcode::Ifu;
     default: return {};
     }
 }
@@ -523,7 +545,14 @@ void ProcessorState::executeNext() {
 
     if ( doSkip() ) {
         advance( *this, ins->size() );
-        setSkip( false );
+
+        // If it's a conditional instruction, then continue skipping at the cost of
+        // of one cycle.
+        if ( ins->isConditional() ) {
+            tickClock( 1 );
+        } else {
+            setSkip( false );
+        }
     } else {
         ins->execute( *this );
         _lastInstruction = ins;

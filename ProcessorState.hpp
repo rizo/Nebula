@@ -268,6 +268,8 @@ enum class Opcode {
     Mod, Mdi,
     And, Bor, Xor,
     Shr, Asr, Shl,
+    Ifb,
+    Ifc,
     Ife,
     Ifn,
     Ifg,
@@ -292,6 +294,8 @@ const std::map<Opcode, int> OPCODE_CYCLES {
     { Opcode::Shr, 1 },
     { Opcode::Asr, 1 },
     { Opcode::Shl, 1 },
+    { Opcode::Ifb, 2 },
+    { Opcode::Ifc, 2 },
     { Opcode::Ife, 2 },
     { Opcode::Ifn, 2 },
     { Opcode::Ifg, 2 },
@@ -327,7 +331,8 @@ const std::map<SpecialOpcode, int> SPECIAL_OPCODE_CYCLES {
 class Instruction {
 public:
     virtual void execute( ProcessorState& proc ) const = 0;
-    virtual int size() const noexcept= 0;
+    virtual int size() const noexcept = 0;
+    virtual bool isConditional() const noexcept = 0;
 };
 
 namespace instruction {
@@ -345,6 +350,8 @@ struct Unary : public Instruction {
     virtual void execute( ProcessorState& proc ) const override;
 
     inline virtual int size() const noexcept override { return address->size(); }
+
+    inline virtual bool isConditional() const noexcept override { return false; }
 };
 
 struct Binary : public Instruction {
@@ -363,6 +370,22 @@ struct Binary : public Instruction {
     virtual void execute( ProcessorState& proc ) const override;
     
     inline virtual int size() const noexcept override { return addressA->size() + addressB->size(); }
+
+    inline virtual bool isConditional() const noexcept override {
+        switch ( opcode ) {
+        case Opcode::Ifb:
+        case Opcode::Ifc:
+        case Opcode::Ife:
+        case Opcode::Ifn:
+        case Opcode::Ifg:
+        case Opcode::Ifa:
+        case Opcode::Ifl:
+        case Opcode::Ifu:
+            return true;
+        default:
+            return false;
+        }
+    }
 };
 
 }
