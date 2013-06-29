@@ -21,18 +21,14 @@ find_device:
         
 _loop:
         HWQ     J
-        
-        ;; Check the current device against the desired device.
-        IFN     A, PICK 5
-        SET     PC, _no_match
-        
-        IFN     B, PICK 4
-        SET     PC, _no_match
-        
-        IFN     C, PICK 3
-        SET     PC, _no_match
 
+        ;; Check the current device against the desired device.
+
+        IFE     A, PICK 5
+        IFE     B, PICK 4
+        IFE     C, PICK 3
         SET     PC, _success
+        SET     PC, _no_match
         
 _no_match:      
         ADD     J, 1
