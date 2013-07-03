@@ -275,7 +275,8 @@ enum class Opcode {
     Ifg,
     Ifa,
     Ifl,
-    Ifu
+    Ifu,
+    Adx, Sbx,
 };
 
 const std::map<Opcode, int> OPCODE_CYCLES {
@@ -301,7 +302,9 @@ const std::map<Opcode, int> OPCODE_CYCLES {
     { Opcode::Ifg, 2 },
     { Opcode::Ifa, 2 },
     { Opcode::Ifl, 2 },
-    { Opcode::Ifu, 2 }
+    { Opcode::Ifu, 2 },
+    { Opcode::Adx, 3 },
+    { Opcode::Sbx, 3 },
 };
 
 enum class SpecialOpcode {

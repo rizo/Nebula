@@ -318,6 +318,20 @@ void Binary::execute( ProcessorState& proc ) const {
     case Opcode::Ifu:
         skipUnlessSigned( arg1 < arg2 );
         break;
+    case Opcode::Adx:
+        applyDouble( [&proc] ( DoubleWord x, DoubleWord y ) {
+                return x + y + proc.read( Special::Ex );
+            }, [&proc] ( DoubleWord z ) {
+                proc.write( Special::Ex, z > 0xffff ? 1 : 0 );
+            } );
+        break;
+    case Opcode::Sbx:
+        applyDouble( [&proc] ( DoubleWord x, DoubleWord y ) {
+                return x - y + proc.read( Special::Ex );
+            }, [&proc] ( DoubleWord z ) {
+                proc.write( Special::Ex, z > 0xffff ? 1 : 0 );
+            } );
+        break;
     }
 
     // Tick the clock the appropriate number of times.
@@ -367,6 +381,8 @@ optional<Opcode> decode( const Word& w ) {
     case 0x15: return Opcode::Ifa;
     case 0x16: return Opcode::Ifl;
     case 0x17: return Opcode::Ifu;
+    case 0x1a: return Opcode::Adx;
+    case 0x1b: return Opcode::Sbx;
     default: return {};
     }
 }
