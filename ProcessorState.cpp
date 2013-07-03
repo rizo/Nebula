@@ -332,6 +332,16 @@ void Binary::execute( ProcessorState& proc ) const {
                 proc.write( Special::Ex, z > 0xffff ? 1 : 0 );
             } );
         break;
+    case Opcode::Sti:
+        store( addressB, load( addressA ) );
+        proc.write( Register::I, proc.read( Register::I ) + 1 );
+        proc.write( Register::J, proc.read( Register::J ) + 1 );
+        break;
+    case Opcode::Std:
+        store( addressB, load( addressA ) );
+        proc.write( Register::I, proc.read( Register::I ) - 1 );
+        proc.write( Register::J, proc.read( Register::J ) - 1 );
+        break;
     }
 
     // Tick the clock the appropriate number of times.
@@ -383,6 +393,8 @@ optional<Opcode> decode( const Word& w ) {
     case 0x17: return Opcode::Ifu;
     case 0x1a: return Opcode::Adx;
     case 0x1b: return Opcode::Sbx;
+    case 0x1e: return Opcode::Sti;
+    case 0x1f: return Opcode::Std;
     default: return {};
     }
 }
