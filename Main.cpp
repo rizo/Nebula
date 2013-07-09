@@ -1,3 +1,19 @@
+// Main.cpp
+//
+// Copyright 2013 Jesse Haber-Kucharsky
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "Computer.hpp"
 #include "Sdl.hpp"
 #include "Simulation/Clock.hpp"
@@ -21,6 +37,7 @@ int main( int argc, char* argv[] ) {
     visible.add_options()
         ( "help,h", "Produce this message." )
         ( "little-endian,e", "Assume little endian memory encoding." )
+        ( "verbose,v", "Output verbose logging information to the console." )
         ;
 
     po::options_description hidden;
@@ -47,13 +64,17 @@ int main( int argc, char* argv[] ) {
     }
 
     if ( vm.count( "help" ) || ! vm.count( "memory-file" ) ) {
-        std::cout << "nebula [options] memory-file" << std::endl;
+        std::cout << "This is Nebula, the DCPU-16 emulator." << std::endl;
+        std::cout << "Copyright 2013 Jesse Haber-Kucharsky" << std::endl;
+        std::cout << std::endl;
+        std::cout << "Usage: nebula [OPTIONS] memory-file" << std::endl;
         std::cout << std::endl;
         std::cout << visible << std::endl;
         return EXIT_SUCCESS;
     }
 
-    logging::initialize( true, logging::Severity::info );
+    logging::initialize( vm.count( "verbose" ) != 0,
+                         logging::Severity::info );
     sdl::initialize();
 
 
