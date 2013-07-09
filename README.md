@@ -26,6 +26,9 @@ accomplished by limiting dependencies to cross-platform libraries including:
 
 To build Nebula, CMake (>= 2.8) is required.
 
+Nebula is released under the terms of [version 2.0 of the
+Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+
 ## Implementation Notes
 
 Nebula uses the concurrency features of C++11 to simulate each
