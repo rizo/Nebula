@@ -4,30 +4,24 @@
 
 ;;;
 ;;; Constants
-
-        .def video_addr 0x9000
-        .def data_addr 0x50
         .def font_style 0xf000  ; White FG, black BG.
         .def num_characters 128
         
-;;; 
-;;; Data
-
-        .org data_addr
+        .section "data"
+video:
+        .reserve 384
 
 lem1802_index:
         .reserve 1
         
-        .include "devices.asm"
 ;;; 
 ;;; Program
-
-        .org 0x0
+        .section "text"
 
         JSR     find_lem1802
-        IFE     X, 0
+        IFE     A, 0
         SET     PC, done        ; Failed to find the LEM1802.
-        SET     [lem1802_index], X
+        SET     [lem1802_index], A
         
         JSR     display
 done:   
@@ -42,7 +36,7 @@ _loop:
 
         SET     Z, font_style
         BOR     Z, I
-        SET     [video_addr + I], Z
+        SET     [video + I], Z
 
         ADD     I, 1
         SET     PC, _loop
@@ -50,6 +44,8 @@ _loop:
 _done:
         ;; Set video RAM address.
         SET     A, 0
-        SET     B, video_addr
+        SET     B, video
         HWI     [lem1802_index]
         SET     PC, POP
+
+        .include "devices.asm"
