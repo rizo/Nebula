@@ -7,7 +7,7 @@ set (CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
 add_subdirectory (gtest-1.6.0)
 enable_testing ()
 
-find_package (Boost REQUIRED COMPONENTS log log_setup thread system)
+find_package (Boost REQUIRED COMPONENTS log log_setup thread system program_options)
 find_package (Threads REQUIRED)
 find_package (SDL REQUIRED)
 
