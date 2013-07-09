@@ -15,7 +15,7 @@ int main( int, char* argv[] ) {
     logging::initialize( true, logging::Severity::info );
     sdl::initialize();
 
-    auto memory = Memory::fromFile( argv[1], 0x10000 );
+    auto memory = Memory::fromFile( argv[1], 0x10000, ByteOrder::BigEndian );
     Computer computer { memory };
 
     Processor proc { computer };

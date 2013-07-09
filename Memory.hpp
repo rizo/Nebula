@@ -67,11 +67,16 @@ public:
 
 }
 
+enum class ByteOrder {
+    BigEndian,
+    LittleEndian
+};
+
 class Memory final {
     std::vector<Word> _vec;
     std::mutex _mutex {};
 public:
-    static std::shared_ptr<Memory> fromFile( const std::string& filename, int size );
+    static std::shared_ptr<Memory> fromFile( const std::string& filename, int size, ByteOrder order );
 
     explicit Memory( int size ) :
         _vec { std::vector<Word>( size ) } {}

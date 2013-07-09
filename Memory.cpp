@@ -38,7 +38,7 @@ int Memory::size() {
 }
 
 std::shared_ptr<Memory>
-Memory::fromFile( const std::string& filename, int size ) {
+Memory::fromFile( const std::string& filename, int size, ByteOrder order ) {
     namespace qi = boost::spirit::qi;
 
     std::ifstream file {
@@ -56,11 +56,20 @@ Memory::fromFile( const std::string& filename, int size ) {
     std::vector<char> contents( begin, end );
     std::vector<Word> result;
 
-    bool isSuccessful = qi::parse(
-        contents.begin(),
-        contents.end(),
-        +qi::big_word,
-        result );
+    bool isSuccessful { false };
+
+    switch ( order ) {
+    case ByteOrder::BigEndian:
+        isSuccessful = qi::parse( contents.begin(), contents.end(),
+                                  +qi::big_word,
+                                  result );
+        break;
+    case ByteOrder::LittleEndian:
+        isSuccessful = qi::parse( contents.begin(), contents.end(),
+                                  +qi::little_word,
+                                  result );
+        break;
+    }
 
     if ( ! isSuccessful ) {
         throw error::BadMemoryFile {};
