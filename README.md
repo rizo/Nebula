@@ -1,0 +1,35 @@
+Nebula
+======
+
+Nebula is an emulator for the DCPU-16 processor.
+
+Nebula supports the full specification of the DCPU-16 based on [version 1.7 of the specification](http://dcpu.com/dcpu-16/). Nebula also supports the following hardware peripherals:
+
+* The generic clock.
+* The LEM1802 monitor.
+* The generic keyboard.
+
+## Use and Supported Platforms
+
+Nebula is written to the C++11 standard, which is only supported by
+the latest versions of the GCC and Clang compilers at the time of this
+writing.
+
+Aside from incompatibilities with modern C++11 language and library
+features, Nebula should be entirely platform independent. This is
+accomplished by limiting dependencies to cross-platform libraries including:
+
+* Boost (>= 1.53)
+* Boost-Log (from SVN, but which is included in Boost-1.54)
+* SDL (>= 1.2)
+* Google-Test (1.6.0, bundled)
+
+To build Nebula, CMake (>= 2.8) is required.
+
+## Implementation Notes
+
+Nebula uses the concurrency features of C++11 to simulate each
+peripheral device. Each peripheral is therefore able to operate
+independently at its own clock frequency. The peripherals communicate
+with the processor asynchronously via interrupts only.
+
