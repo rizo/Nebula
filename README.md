@@ -19,9 +19,8 @@ Aside from incompatibilities with modern C++11 language and library
 features, Nebula should be entirely platform independent. This is
 accomplished by limiting dependencies to cross-platform libraries including:
 
-* Boost (>= 1.53)
-* Boost-Log (from SVN, but which is included in Boost-1.54)
-* SDL (>= 1.2)
+* Boost (>= 1.54)
+* SDL (== 1.2)
 * Google-Test (1.6.0, bundled)
 
 To build Nebula, CMake (>= 2.8) is required.
