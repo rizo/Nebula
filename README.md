@@ -21,7 +21,7 @@ accomplished by limiting dependencies to cross-platform libraries including:
 
 * Boost (>= 1.54)
 * SDL (== 1.2)
-* Google-Test (1.6.0, bundled)
+* Google-Test (bundled)
 
 To build Nebula, CMake (>= 2.8) is required.
 
