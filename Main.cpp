@@ -124,10 +124,15 @@ int main( int argc, char* argv[] ) {
     monitor.stop();
     keyboard.stop();
 
+    // It is important to get this processor state first, in case it
+    // has thrown an exception. If it has, then getting the state of
+    // any of the peripherals can be stalled while waiting for a
+    // response from the non-running processor and the program itself
+    // will be unresponsive.
+    auto state = procStateF.get();
     clockStateF.get();
     monitorStateF.get();
     keyboardStateF.get();
 
-    auto state = procStateF.get();
     dumpToLog( *state );
 }
