@@ -22,6 +22,7 @@ add_executable (nebula
   Computer.cpp
   Sdl.cpp
   Simulation/Clock.cpp
+  Simulation/FloppyDrive.cpp
   Simulation/Processor.cpp
   Simulation/Monitor.cpp
   Simulation/Keyboard.cpp

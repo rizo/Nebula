@@ -17,6 +17,7 @@
 #include "Computer.hpp"
 #include "Sdl.hpp"
 #include "Simulation/Clock.hpp"
+#include "Simulation/FloppyDrive.hpp"
 #include "Simulation/Keyboard.hpp"
 #include "Simulation/Processor.hpp"
 #include "Simulation/Monitor.hpp"
@@ -89,6 +90,7 @@ int main( int argc, char* argv[] ) {
     Clock clock { computer };
     Monitor monitor { computer };
     Keyboard keyboard { computer };
+    FloppyDrive floppy { computer };
 
     auto procStateF = sim::launch( proc );
     LOG( MAIN, info ) << "Launched the processor!";
@@ -101,6 +103,9 @@ int main( int argc, char* argv[] ) {
 
     auto keyboardStateF = sim::launch( keyboard );
     LOG( MAIN, info ) << "Launched the keyboard!";
+
+    auto floppyStateF = sim::launch( floppy );
+    LOG( MAIN, info ) << "Launched the floppy drive!";
 
     SDL_Event event;
     while ( true ) {
@@ -120,6 +125,7 @@ int main( int argc, char* argv[] ) {
     }
 
     proc.stop();
+    floppy.stop();
     clock.stop();
     monitor.stop();
     keyboard.stop();
@@ -133,6 +139,7 @@ int main( int argc, char* argv[] ) {
     clockStateF.get();
     monitorStateF.get();
     keyboardStateF.get();
+    floppyStateF.get();
 
     dumpToLog( *state );
 }

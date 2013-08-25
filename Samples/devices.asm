@@ -76,3 +76,17 @@ find_keyboard:
         ADD     SP, 3
 
         SET     PC, POP
+
+;;; IN:
+;;;
+;;; OUT:
+;;;     A - The hardware index of the M35FD, or 0 if it is not
+;;;     not connected.
+find_m35fd:
+        SET     PUSH, 0x24c5
+        SET     PUSH, 0x4fd5
+        SET     PUSH, 0xb
+        JSR     find_device
+        ADD     SP, 3
+
+        SET     PC, POP
