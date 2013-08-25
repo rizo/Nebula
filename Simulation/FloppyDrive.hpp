@@ -13,11 +13,16 @@ const int FLOPPY_WORDS_PER_SECTOR = 512;
 const int FLOPPY_SECTORS_PER_TRACK = 18;
 const int FLOPPY_TRACKS_PER_DISK = 80;
 
+const int FLOPPY_SECTORS_PER_DISK = FLOPPY_TRACKS_PER_DISK * FLOPPY_SECTORS_PER_TRACK;
+
 const std::chrono::microseconds FLOPPY_TRACK_SEEK_DURATION { 2400 };
 const std::chrono::microseconds FLOPPY_WORD_ACCESS_DURATION { 33 };
 
 // FloppyDrive runs at roughly 10 kHz.
 const std::chrono::microseconds FLOPPY_SLEEP_DURATION { 100 };
+
+// The probability that a given sector is broken.
+const double FLOPPY_SECTOR_ERROR_PROBABILITY = 0.5 / 100.0;
 
 }
 
@@ -48,10 +53,9 @@ struct FloppyDriveState {
     FloppyDriveErrorCode errorCode { FloppyDriveErrorCode::None };
     bool interruptsEnabled { false };
     Word message { 0 };
+    std::bitset<sim::FLOPPY_SECTORS_PER_DISK> sectorErrors {};
 
     explicit FloppyDriveState();
-
-    Sector& getSector( Word index );
 };
 
 enum class FloppyDriveOperation {
@@ -74,6 +78,7 @@ class FloppyDrive : public Simulation<FloppyDriveState>, public Device {
     bool _isWriting { false };
     std::future<std::pair<Word, Sector>> _writeF;
 
+    Sector& getSector( Word index );
     void sendInterruptIfEnabled();
     void handleInterrupt( FloppyDriveOperation op, ProcessorState* proc );
 public:

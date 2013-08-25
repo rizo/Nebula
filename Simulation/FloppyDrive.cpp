@@ -1,24 +1,24 @@
 #include "FloppyDrive.hpp"
 
 #include <algorithm>
+#include <random>
 
 DEFINE_LOGGER( FLOPPY, "Floppy" )
 
 namespace nebula {
 
-Sector& FloppyDriveState::getSector( Word index ) {
-    int trackIndex = index / sim::FLOPPY_SECTORS_PER_TRACK;
-    int relativeSectorIndex = index % sim::FLOPPY_SECTORS_PER_TRACK;
-
-    std::this_thread::sleep_for( sim::FLOPPY_TRACK_SEEK_DURATION * trackIndex );
-    
-    return disk[trackIndex][relativeSectorIndex];
-}
-
 FloppyDriveState::FloppyDriveState() :
     disk( Disk( sim::FLOPPY_TRACKS_PER_DISK,
                  Track( sim::FLOPPY_SECTORS_PER_TRACK,
                         Sector( sim::FLOPPY_WORDS_PER_SECTOR, 0 ) ) ) ) {
+
+    std::random_device rd;
+    std::mt19937 gen { rd() };
+    std::uniform_real_distribution<> dist( 0, 1 );
+    
+    for ( int i = 0; i < sim::FLOPPY_SECTORS_PER_DISK; ++i ) {
+        sectorErrors[i] = dist( gen ) <= sim::FLOPPY_SECTOR_ERROR_PROBABILITY;
+    }
 }
 
 FloppyDrive::FloppyDrive( Computer& computer ) :
@@ -26,6 +26,24 @@ FloppyDrive::FloppyDrive( Computer& computer ) :
     _computer( computer ),
     _procInt { computer.nextInterrupt( this ) },
     _memory { computer.memory() } {
+}
+
+Sector& FloppyDrive::getSector( Word index ) {
+    int trackIndex = index / sim::FLOPPY_SECTORS_PER_TRACK;
+    int relativeSectorIndex = index % sim::FLOPPY_SECTORS_PER_TRACK;
+
+    Sector& sector = _state.disk[trackIndex][relativeSectorIndex];
+    std::this_thread::sleep_for( sim::FLOPPY_TRACK_SEEK_DURATION * trackIndex );
+
+    if ( _state.sectorErrors[index] ) {
+        _state.errorCode = FloppyDriveErrorCode::BadSector;
+        sendInterruptIfEnabled();
+
+        // Zero out the sector.
+        std::fill( std::begin( sector ), std::end( sector ), 0 );
+    }
+
+    return sector;
 }
 
 std::unique_ptr<FloppyDriveState> FloppyDrive::run() {
@@ -48,7 +66,7 @@ std::unique_ptr<FloppyDriveState> FloppyDrive::run() {
                 LOG( FLOPPY, info ) << "Writing has completed.";
 
                 auto result = _writeF.get();
-                _state.getSector( result.first ) = result.second;
+                getSector( result.first ) = result.second;
                 _state.stateCode = FloppyDriveStateCode::Ready;
                 _isWriting = false;
                 sendInterruptIfEnabled();
@@ -128,7 +146,7 @@ void FloppyDrive::handleInterrupt( FloppyDriveOperation op, ProcessorState* proc
 
             _state.stateCode = FloppyDriveStateCode::Busy;
 
-            Sector sector = _state.getSector( x );
+            Sector sector = getSector( x );
             auto loc = y;
             auto mem = _memory;
 
