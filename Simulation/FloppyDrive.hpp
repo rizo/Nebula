@@ -19,9 +19,9 @@ const std::chrono::microseconds FLOPPY_SLEEP_DURATION { 100 };
 
 }
 
-using Sector = std::array<Word, sim::FLOPPY_WORDS_PER_SECTOR>;
-using Track = std::array<Sector, sim::FLOPPY_SECTORS_PER_TRACK>;
-using Disk = std::array<Track, sim::FLOPPY_TRACKS_PER_DISK>;
+using Sector = std::vector<Word>;
+using Track = std::vector<Sector>;
+using Disk = std::vector<Track>;
 
 enum class FloppyDriveStateCode : Word {
     NoMedia = 0,
@@ -44,6 +44,8 @@ struct FloppyDriveState {
     Disk disk;
     FloppyDriveStateCode stateCode { FloppyDriveStateCode::Ready };
     FloppyDriveErrorCode errorCode { FloppyDriveErrorCode::None };
+    bool interruptsEnabled { false };
+    Word interruptMessage { 0 };
 
     explicit FloppyDriveState();
 
@@ -63,11 +65,15 @@ class FloppyDrive : public Simulation<FloppyDriveState>, public Device {
     FloppyDriveState _state;
     std::shared_ptr<Memory> _memory { nullptr };
 
-    std::future<void> _resultF;
+    // The results of an asynchronous read or write operation.
+    bool _isReading { false };
+    std::future<void> _readF;
 
-    void readToMemory( const Sector& sector, Word loc );
-    void writeFromMemory( Sector& sector, Word loc );
+    bool _isWriting { false };
+    std::future<std::pair<Word, Sector>> _writeF;
 
+
+    void sendInterruptIfEnabled();
     void handleInterrupt( FloppyDriveOperation op, ProcessorState* proc );
 public:
     explicit FloppyDrive( Computer& computer );
