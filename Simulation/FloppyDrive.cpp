@@ -90,7 +90,7 @@ std::unique_ptr<FloppyDriveState> FloppyDrive::run() {
 
 void FloppyDrive::sendInterruptIfEnabled() {
     if ( _state.interruptsEnabled ) {
-        _computer.queue().push( _state.interruptMessage );
+        _computer.queue().push( _state.message );
     }
 }
 
@@ -111,7 +111,7 @@ void FloppyDrive::handleInterrupt( FloppyDriveOperation op, ProcessorState* proc
 
         if ( x != 0 ) {
             _state.interruptsEnabled = true;
-            _state.interruptMessage = x;
+            _state.message = x;
         } else {
             _state.interruptsEnabled = false;
         }

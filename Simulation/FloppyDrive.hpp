@@ -3,6 +3,8 @@
 #include "../Computer.hpp"
 #include "../Simulation.hpp"
 
+#include <bitset>
+
 namespace nebula {
 
 namespace sim {
@@ -45,7 +47,7 @@ struct FloppyDriveState {
     FloppyDriveStateCode stateCode { FloppyDriveStateCode::Ready };
     FloppyDriveErrorCode errorCode { FloppyDriveErrorCode::None };
     bool interruptsEnabled { false };
-    Word interruptMessage { 0 };
+    Word message { 0 };
 
     explicit FloppyDriveState();
 
@@ -71,7 +73,6 @@ class FloppyDrive : public Simulation<FloppyDriveState>, public Device {
 
     bool _isWriting { false };
     std::future<std::pair<Word, Sector>> _writeF;
-
 
     void sendInterruptIfEnabled();
     void handleInterrupt( FloppyDriveOperation op, ProcessorState* proc );
