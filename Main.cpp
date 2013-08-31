@@ -39,6 +39,7 @@ int main( int argc, char* argv[] ) {
         ( "help,h", "Produce this message." )
         ( "little-endian,e", "Assume little endian memory encoding." )
         ( "verbose,v", "Output verbose logging information to the console." )
+        ( "floppy,f", "Insert a floppy disk into the drive before the simulation starts." )
         ;
 
     po::options_description hidden;
@@ -91,7 +92,9 @@ int main( int argc, char* argv[] ) {
     Keyboard keyboard { computer };
     FloppyDrive floppy { computer };
 
-    floppy.insertDisk( false );
+    if ( vm.count( "floppy" ) ) {
+        floppy.insertDisk( false );
+    }
 
     Processor proc { computer };
 
