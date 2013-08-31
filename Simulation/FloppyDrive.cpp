@@ -33,6 +33,11 @@ FloppyDrive::FloppyDrive( Computer& computer ) :
 void FloppyDrive::insertDisk( bool isWriteProtected ) {
     LOG( FLOPPY, info ) << "Disk inserted with WP " << (isWriteProtected ? "enabled" : "disabled");
 
+    // Only a single disk can be present in the drive at one time.
+    if ( _state.disk ) {
+        return;
+    }
+
     _state.disk = Disk( sim::FLOPPY_TRACKS_PER_DISK,
                         Track( sim::FLOPPY_SECTORS_PER_TRACK,
                                Sector( sim::FLOPPY_WORDS_PER_SECTOR, 0 ) ) );
