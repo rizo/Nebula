@@ -119,6 +119,20 @@ int main( int argc, char* argv[] ) {
             if ( event.type == SDL_QUIT ) {
                 break;
             } else if ( event.type == SDL_KEYDOWN ) {
+                switch ( event.key.keysym.sym ) {
+                case SDLK_F10:
+                    floppy.insertDisk( true );
+                    break;
+                case SDLK_F11:
+                    floppy.insertDisk( false );
+                    break;
+                case SDLK_F12:
+                    floppy.ejectDisk();
+                    break;
+                default:
+                    break;
+                }
+
                 keyboard.state().setKey( &event.key.keysym );
             }
         }
