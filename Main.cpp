@@ -86,11 +86,14 @@ int main( int argc, char* argv[] ) {
                                     byteOrder );
     Computer computer { memory };
 
-    Processor proc { computer };
     Clock clock { computer };
     Monitor monitor { computer };
     Keyboard keyboard { computer };
     FloppyDrive floppy { computer };
+
+    floppy.insertDisk( false );
+
+    Processor proc { computer };
 
     auto procStateF = sim::launch( proc );
     LOG( MAIN, info ) << "Launched the processor!";

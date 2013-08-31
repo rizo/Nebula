@@ -64,8 +64,9 @@ enum class FloppyDriveErrorCode : Word {
 };
 
 struct FloppyDriveState {
-    Disk disk;
-    FloppyDriveStateCode stateCode { FloppyDriveStateCode::Ready };
+    optional<Disk> disk {};
+    optional<bool> isWriteProtected { false };
+    FloppyDriveStateCode stateCode { FloppyDriveStateCode::NoMedia };
     FloppyDriveErrorCode errorCode { FloppyDriveErrorCode::None };
 
     bool interruptsEnabled { false };
@@ -73,7 +74,7 @@ struct FloppyDriveState {
 
     std::bitset<sim::FLOPPY_SECTORS_PER_DISK> sectorErrors {};
 
-    explicit FloppyDriveState();
+    explicit FloppyDriveState() = default;
 };
 
 enum class FloppyDriveOperation {
@@ -101,6 +102,9 @@ class FloppyDrive : public Simulation<FloppyDriveState>, public Device {
     void handleInterrupt( FloppyDriveOperation op, ProcessorState* proc );
 public:
     explicit FloppyDrive( Computer& computer );
+
+    void insertDisk( bool isWriteProtected );
+    void ejectDisk();
 
     virtual std::unique_ptr<FloppyDriveState> run() override;
     

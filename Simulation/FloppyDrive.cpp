@@ -23,20 +23,6 @@ DEFINE_LOGGER( FLOPPY, "Floppy" )
 
 namespace nebula {
 
-FloppyDriveState::FloppyDriveState() :
-    disk( Disk( sim::FLOPPY_TRACKS_PER_DISK,
-                 Track( sim::FLOPPY_SECTORS_PER_TRACK,
-                        Sector( sim::FLOPPY_WORDS_PER_SECTOR, 0 ) ) ) ) {
-
-    std::random_device rd;
-    std::mt19937 gen { rd() };
-    std::uniform_real_distribution<> dist( 0, 1 );
-    
-    for ( int i = 0; i < sim::FLOPPY_SECTORS_PER_DISK; ++i ) {
-        sectorErrors[i] = dist( gen ) <= sim::FLOPPY_SECTOR_ERROR_PROBABILITY;
-    }
-}
-
 FloppyDrive::FloppyDrive( Computer& computer ) :
     Simulation<FloppyDriveState> {},
     _computer( computer ),
@@ -44,11 +30,42 @@ FloppyDrive::FloppyDrive( Computer& computer ) :
     _memory { computer.memory() } {
 }
 
+void FloppyDrive::insertDisk( bool isWriteProtected ) {
+    LOG( FLOPPY, info ) << "Disk inserted with WP " << (isWriteProtected ? "enabled" : "disabled");
+
+    _state.disk = Disk( sim::FLOPPY_TRACKS_PER_DISK,
+                        Track( sim::FLOPPY_SECTORS_PER_TRACK,
+                               Sector( sim::FLOPPY_WORDS_PER_SECTOR, 0 ) ) );
+
+    std::random_device rd;
+    std::mt19937 gen { rd() };
+    std::uniform_real_distribution<> dist( 0, 1 );
+    
+    for ( int i = 0; i < sim::FLOPPY_SECTORS_PER_DISK; ++i ) {
+        _state.sectorErrors[i] = dist( gen ) <= sim::FLOPPY_SECTOR_ERROR_PROBABILITY;
+    }
+
+    _state.isWriteProtected = isWriteProtected;
+    
+    if ( isWriteProtected ) {
+        _state.stateCode = FloppyDriveStateCode::ReadyWP;
+    } else {
+        _state.stateCode = FloppyDriveStateCode::Ready;
+    }
+}
+
+void FloppyDrive::ejectDisk() {
+    LOG( FLOPPY, info ) << "Disk ejected";
+
+    _state.disk.reset();
+    _state.isWriteProtected.reset();
+}
+
 Sector& FloppyDrive::getSector( Word index ) {
     int trackIndex = index / sim::FLOPPY_SECTORS_PER_TRACK;
     int relativeSectorIndex = index % sim::FLOPPY_SECTORS_PER_TRACK;
 
-    Sector& sector = _state.disk[trackIndex][relativeSectorIndex];
+    Sector& sector = (*(_state.disk))[trackIndex][relativeSectorIndex];
     std::this_thread::sleep_for( sim::FLOPPY_TRACK_SEEK_DURATION * trackIndex );
 
     if ( _state.sectorErrors[index] ) {
@@ -68,6 +85,10 @@ std::unique_ptr<FloppyDriveState> FloppyDrive::run() {
     LOG( FLOPPY, info ) << "Simulation is active.";
 
     while ( isActive() ) {
+        if ( (_isReading || _isWriting) && (! _state.disk) ) {
+            _state.errorCode = FloppyDriveErrorCode::Eject;
+        }
+
         if ( _isReading && sim::isReady( _readF ) ) {
             LOG( FLOPPY, info ) << "Reading has completed.";
             
@@ -174,11 +195,20 @@ void FloppyDrive::handleInterrupt( FloppyDriveOperation op, ProcessorState* proc
             _isReading = true;
         } else {
             proc->write( Register::B, 0xdead );
-            _state.errorCode = FloppyDriveErrorCode::Busy;
+
+            switch ( _state.stateCode ) {
+            case FloppyDriveStateCode::Busy:
+                _state.errorCode = FloppyDriveErrorCode::Busy;
+                break;
+            case FloppyDriveStateCode::NoMedia:
+                _state.errorCode = FloppyDriveErrorCode::NoMedia;
+                break;
+            default:
+                break;
+            }
         }
 
         break;
-
     case FloppyDriveOperation::Write:
         LOG( FLOPPY, info ) << "'Write'";
 
@@ -207,6 +237,20 @@ void FloppyDrive::handleInterrupt( FloppyDriveOperation op, ProcessorState* proc
             _isWriting = true;
         } else {
             proc->write( Register::B, 0xdead );
+            switch ( _state.stateCode ) {
+            case FloppyDriveStateCode::Busy:
+                _state.errorCode = FloppyDriveErrorCode::Busy;
+                break;
+            case FloppyDriveStateCode::NoMedia:
+                _state.errorCode = FloppyDriveErrorCode::NoMedia;
+                break;
+            case FloppyDriveStateCode::ReadyWP:
+                _state.errorCode = FloppyDriveErrorCode::Protected;
+                break;
+            default:
+                break;
+            }
+
             _state.errorCode = FloppyDriveErrorCode::Busy;
         }
 
