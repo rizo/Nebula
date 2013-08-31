@@ -31,11 +31,12 @@ FloppyDrive::FloppyDrive( Computer& computer ) :
 }
 
 void FloppyDrive::insertDisk( bool isWriteProtected ) {
-    LOG( FLOPPY, info ) << "Disk inserted with WP " << (isWriteProtected ? "enabled" : "disabled");
-
     // Only a single disk can be present in the drive at one time.
     if ( _state.disk ) {
+        LOG( FLOPPY, warning ) << "There's already a disk in the drive.";
         return;
+    } else {
+        LOG( FLOPPY, info ) << "Disk inserted with WP " << (isWriteProtected ? "enabled." : "disabled.");
     }
 
     _state.disk = Disk( sim::FLOPPY_TRACKS_PER_DISK,
@@ -60,10 +61,14 @@ void FloppyDrive::insertDisk( bool isWriteProtected ) {
 }
 
 void FloppyDrive::ejectDisk() {
-    LOG( FLOPPY, info ) << "Disk ejected";
+    if ( ! _state.disk ) {
+        LOG( FLOPPY, warning ) << "No disk to eject!";
+    } else {
+        LOG( FLOPPY, info ) << "Disk ejected.";
 
-    _state.disk.reset();
-    _state.isWriteProtected.reset();
+        _state.disk.reset();
+        _state.isWriteProtected.reset();
+    }
 }
 
 Sector& FloppyDrive::getSector( Word index ) {
