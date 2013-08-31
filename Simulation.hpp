@@ -55,8 +55,8 @@ launch( Simulation<StateType>& sim ) {
                        [&sim] { return sim.run(); } );
 }
 
-template <typename StateType>
-bool isReady( std::future<std::unique_ptr<StateType>>& f ) {
+template <typename T>
+bool isReady( std::future<T>& f ) {
     return f.wait_for( std::chrono::seconds { 0 } ) == std::future_status::ready;
 }
 
