@@ -68,25 +68,21 @@ std::unique_ptr<FloppyDriveState> FloppyDrive::run() {
     LOG( FLOPPY, info ) << "Simulation is active.";
 
     while ( isActive() ) {
-        if ( _isReading ) {
-            if ( _readF.wait_for( std::chrono::seconds { 0 } ) == std::future_status::ready ) {
-                LOG( FLOPPY, info ) << "Reading has completed.";
-                
-                _readF.get();
-                _state.stateCode = FloppyDriveStateCode::Ready;
-                _isReading = false;
-                sendInterruptIfEnabled();
-            }
-        } else if ( _isWriting ) {
-            if ( _writeF.wait_for( std::chrono::seconds { 0 } ) == std::future_status::ready ) {
-                LOG( FLOPPY, info ) << "Writing has completed.";
-
-                auto result = _writeF.get();
-                getSector( result.first ) = result.second;
-                _state.stateCode = FloppyDriveStateCode::Ready;
-                _isWriting = false;
-                sendInterruptIfEnabled();
-            }
+        if ( _isReading && sim::isReady( _readF ) ) {
+            LOG( FLOPPY, info ) << "Reading has completed.";
+            
+            _readF.get();
+            _state.stateCode = FloppyDriveStateCode::Ready;
+            _isReading = false;
+            sendInterruptIfEnabled();
+        } else if ( _isWriting && sim::isReady( _writeF ) ) {
+            LOG( FLOPPY, info ) << "Writing has completed.";
+            
+            auto result = _writeF.get();
+            getSector( result.first ) = result.second;
+            _state.stateCode = FloppyDriveStateCode::Ready;
+            _isWriting = false;
+            sendInterruptIfEnabled();
         }
 
         if ( _procInt->isActive() ) {
