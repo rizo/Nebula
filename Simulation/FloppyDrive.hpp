@@ -67,8 +67,10 @@ struct FloppyDriveState {
     Disk disk;
     FloppyDriveStateCode stateCode { FloppyDriveStateCode::Ready };
     FloppyDriveErrorCode errorCode { FloppyDriveErrorCode::None };
+
     bool interruptsEnabled { false };
     Word message { 0 };
+
     std::bitset<sim::FLOPPY_SECTORS_PER_DISK> sectorErrors {};
 
     explicit FloppyDriveState();
