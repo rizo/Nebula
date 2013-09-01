@@ -8,6 +8,10 @@ Nebula supports the full specification of the DCPU-16 based on [version 1.7 of t
 * The generic clock.
 * The LEM1802 monitor.
 * The generic keyboard.
+* The M35FD floppy drive
+  * Press `F10` to insert a write-protected floppy disk.
+  * Press `F11` to insert a normal floppy disk.
+  * Press `F12` to eject the disk.
 
 ## Use and Supported Platforms
 
