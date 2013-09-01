@@ -77,6 +77,7 @@ int main( int argc, char* argv[] ) {
 
     logging::initialize( vm.count( "verbose" ) != 0,
                          logging::Severity::info );
+
     sdl::initialize();
 
 
