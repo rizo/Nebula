@@ -19,11 +19,11 @@
 #include "ProcessorState.hpp"
 #include "Simulation.hpp"
 
-#include <array>
 #include <atomic>
 #include <condition_variable>
 #include <queue>
 #include <stdexcept>
+#include <vector>
 
 namespace nebula {
 
@@ -153,8 +153,11 @@ public:
 }
 
 class Computer final {
-    std::array<std::shared_ptr<ProcessorInterrupt>, computer::MAX_DEVICES> _procInts;
-    std::array<optional<DeviceInfo>, computer::MAX_DEVICES> _devInfo;
+    using InterruptTable = std::vector<std::shared_ptr<ProcessorInterrupt>>;
+    using DeviceTable = std::vector<optional<DeviceInfo>>;
+
+    InterruptTable _procInts;
+    DeviceTable _devInfo;
     std::size_t _devIndex { 1 };
 
     InterruptQueue _intQ {};
@@ -165,10 +168,9 @@ class Computer final {
     std::shared_ptr<Memory> _memory { nullptr };
 public:
     explicit Computer( std::shared_ptr<Memory> memory ) :
+        _procInts { InterruptTable( computer::MAX_DEVICES, nullptr ) },
+        _devInfo { DeviceTable( computer::MAX_DEVICES, boost::none ) },
         _memory { memory } {
-
-        _devInfo.fill( {} );
-        _procInts.fill( nullptr );
     }
 
     inline std::shared_ptr<Memory> memory() noexcept { return _memory; }
