@@ -194,7 +194,7 @@ void Binary::execute( ProcessorState& proc ) const {
             proc.tickClock( 1 );
         }
         
-        proc.setSkip( skip );
+        proc.doSkip = skip;
     };
 
     auto skipUnlessSigned = [&] ( std::function<bool( SignedWord, SignedWord )> f ) {
@@ -208,7 +208,7 @@ void Binary::execute( ProcessorState& proc ) const {
             proc.tickClock( 1 );
         }
 
-        proc.setSkip( skip );
+        proc.doSkip = skip;
     };
 
     DoubleWord xd, yd, zd;
@@ -587,7 +587,7 @@ void ProcessorState::executeNext() {
 
     auto ins = fetchNextInstruction( *this );
 
-    if ( doSkip() ) {
+    if ( doSkip ) {
         advance( *this, ins->size() );
 
         // If it's a conditional instruction, then continue skipping at the cost of
@@ -595,7 +595,7 @@ void ProcessorState::executeNext() {
         if ( ins->isConditional() ) {
             tickClock( 1 );
         } else {
-            setSkip( false );
+            doSkip = false;
         }
     } else {
         ins->execute( *this );
@@ -621,7 +621,7 @@ void dumpToLog( ProcessorState& proc ) {
     LOG( PSTATE, info ) << format( "Z     : 0x%04x" ) % proc.read( Register::Z );
     LOG( PSTATE, info ) << format( "I     : 0x%04x" ) % proc.read( Register::I );
     LOG( PSTATE, info ) << format( "J     : 0x%04x" ) % proc.read( Register::J );
-    LOG( PSTATE, info ) << format( "skip  : %s" ) % proc.doSkip();
+    LOG( PSTATE, info ) << format( "skip  : %s" ) % proc.doSkip;
 
     std::stringstream stackContents;
     const int STACK_SIZE = processor::STACK_BEGIN - proc.read( Special::Sp );

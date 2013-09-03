@@ -90,7 +90,6 @@ class ProcessorState final {
 
     int _clock;
     std::shared_ptr<Instruction> _lastInstruction { nullptr };
-    bool _doSkip { false };
 
     std::shared_ptr<Memory> _memory = nullptr;
 
@@ -108,6 +107,8 @@ public:
         _clock { 0 },
         _memory { memory } {}
 
+    bool doSkip { false };
+
     Word read( Register reg ) const noexcept;
     Word read( Special spec ) const noexcept;
 
@@ -117,9 +118,6 @@ public:
     inline int clock() const noexcept { return _clock; }
     inline void tickClock( int ticks ) noexcept { _clock += ticks; }
     inline void clearClock() noexcept { _clock = 0; }
-
-    inline bool doSkip() const noexcept { return _doSkip; }
-    void setSkip( bool value ) noexcept { _doSkip = value; }
 
     inline Memory* memory() noexcept { return _memory.get(); }
 
