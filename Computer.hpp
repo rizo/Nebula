@@ -161,9 +161,6 @@ class Computer final {
     std::size_t _devIndex { 1 };
 
     InterruptQueue _intQ {};
-    bool _onlyQueuing { false };
-
-    Word _ia { 0 };
 
     std::shared_ptr<Memory> _memory { nullptr };
 public:
@@ -172,6 +169,9 @@ public:
         _devInfo { DeviceTable( computer::MAX_DEVICES, boost::none ) },
         _memory { memory } {
     }
+
+    bool onlyQueuing { false };
+    Word ia { 0 };
 
     inline std::shared_ptr<Memory> memory() noexcept { return _memory; }
 
@@ -182,12 +182,6 @@ public:
     inline std::size_t numDevices() const noexcept { return _devIndex; }
 
     inline InterruptQueue& queue() noexcept { return _intQ; }
-
-    inline void setOnlyQueuing( bool val ) noexcept { _onlyQueuing = val; }
-    inline bool onlyQueuing() const noexcept { return _onlyQueuing; }
-
-    inline Word ia() const noexcept { return _ia; }
-    inline void setIa( Word location ) noexcept { _ia = location; }
 };
 
 }

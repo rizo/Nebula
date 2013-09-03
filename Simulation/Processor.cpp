@@ -39,8 +39,8 @@ Processor::run() {
         _proc->clearClock();
 
         if ( _computer.queue().hasInterrupt() &&
-             _computer.ia() != 0 &&
-             ! _computer.onlyQueuing() ) {
+             _computer.ia != 0 &&
+             ! _computer.onlyQueuing ) {
             handleInterrupt();
         }
     }
@@ -55,10 +55,10 @@ void Processor::handleInterrupt() {
 
     LOG( PROC, info ) << format( "Handling HW interrupt of 0x%04x." ) % msg;
     
-    _computer.setOnlyQueuing( true );
+    _computer.onlyQueuing = true;
     push.store( *_proc, _proc->read( Special::Pc ) );
     push.store( *_proc, _proc->read( Register::A ) );
-    _proc->write( Special::Pc, _computer.ia() );
+    _proc->write( Special::Pc, _computer.ia );
     _proc->write( Register::A, msg );
 }
 
@@ -88,10 +88,10 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
 
         _proc->write( Register::C, info.version.value );
     } else if ( ins->opcode == SpecialOpcode::Iag ) {
-        store( _computer.ia() );
+        store( _computer.ia );
     } else if ( ins->opcode == SpecialOpcode::Ias ) {
         auto value = load();
-        _computer.setIa( value );
+        _computer.ia = value;
 
         if ( value == 0 ) {
             LOG( PROC, warning ) << "Ignoring incoming HW interrupts.";
@@ -104,9 +104,9 @@ void Processor::executeSpecial( const instruction::Unary* ins ) {
         auto pop = mode::Pop {};
         _proc->write( Register::A, pop.load( *_proc ) );
         _proc->write( Special::Pc, pop.load( *_proc ) );
-        _computer.setOnlyQueuing( false );
+        _computer.onlyQueuing = false;
     } else if ( ins->opcode == SpecialOpcode::Iaq ) {
-        _computer.setOnlyQueuing( load() != 0 );
+        _computer.onlyQueuing = (load() != 0);
     } else if ( ins->opcode == SpecialOpcode::Int ) {
         LOG( PROC, info ) << "Triggering a SW interrupt.";
 
