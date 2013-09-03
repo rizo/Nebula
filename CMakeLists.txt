@@ -45,3 +45,5 @@ target_link_libraries (runTests
   gtest
   gtest_main)
   
+install (TARGETS nebula
+  RUNTIME DESTINATION bin)
