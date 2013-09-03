@@ -68,7 +68,7 @@ void KeyboardState::setKey( const SDL_keysym* ks ) noexcept {
 
         _key.store( k );
         _hasKey.store( true );
-        _interruptSent = false;
+        interruptSent = false;
     }
 }
 
@@ -79,11 +79,11 @@ std::unique_ptr<KeyboardState> Keyboard::run() {
 
     while ( isActive() ) {
         if ( _state.hasKey() &&
-             _state.interruptsEnabled() &&
-             ! _state.interruptSent() ) {
+             _state.interruptsEnabled &&
+             ! _state.interruptSent ) {
 
-            _computer.queue().push( _state.message() );
-            _state.setInterruptSent( true );
+            _computer.queue().push( _state.message );
+            _state.interruptSent = true;
         }
 
         if ( _procInt->isActive() ) {
@@ -155,10 +155,10 @@ void Keyboard::handleInterrupt( KeyboardOperation op, ProcessorState* proc ) {
         b = proc->read( Register::B );
 
         if ( b != 0 ) {
-            _state.setInterruptsEnabled( true );
-            _state.setMessage( b );
+            _state.interruptsEnabled = true;
+            _state.message = b;
         } else {
-            _state.setInterruptsEnabled( false );
+            _state.interruptsEnabled = false;
         }
 
         break;

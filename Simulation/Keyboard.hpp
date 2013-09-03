@@ -42,20 +42,18 @@ enum class KeyboardOperation {
 class KeyboardState {
     std::atomic<Word> _key;
     std::atomic<bool> _hasKey;
-    bool _interruptSent;
-    bool _interruptsEnabled;
-    Word _message;
 public:
     explicit KeyboardState() :
         _key { 0 },
-        _hasKey { false },
-        _interruptSent { false },
-        _interruptsEnabled { false },
-        _message { 0 } {}
+        _hasKey { false } {}
 
     explicit KeyboardState( const KeyboardState& other ) :
         _key { other._key.load() },
         _hasKey { other._hasKey.load() } {}
+
+    bool interruptSent { false };
+    bool interruptsEnabled { false };
+    Word message { 0 };
 
     inline bool hasKey() const noexcept { return _hasKey.load(); }
 
@@ -70,15 +68,6 @@ public:
     }
 
     inline void clear() noexcept { _hasKey.store( false ); }
-
-    inline bool interruptSent() const noexcept { return _interruptSent; }
-    inline void setInterruptSent( bool value ) noexcept { _interruptSent = value; }
-
-    inline bool interruptsEnabled() const noexcept { return _interruptsEnabled; }
-    inline void setInterruptsEnabled( bool value ) noexcept { _interruptsEnabled = value; }
-
-    inline Word message() const noexcept { return _message; }
-    inline void setMessage( Word value ) noexcept { _message = value; }
 };
 
 class Keyboard : public Simulation<KeyboardState>, public Device {
