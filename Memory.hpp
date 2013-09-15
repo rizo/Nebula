@@ -68,6 +68,16 @@ public:
     const std::string& path() const noexcept { return _path; }
 };
 
+class UnwritableMemoryFile : public std::runtime_error {
+    std::string _path;
+public:
+    explicit UnwritableMemoryFile( const std::string& path ) :
+        std::runtime_error {
+            (format( "Unable to write memory dump to file '%s'" ) % path).str()
+        },
+        _path { path } {}
+};
+
 class MemoryFileTooBig : public std::out_of_range {
     int _memorySize;
 public:
@@ -97,6 +107,10 @@ class Memory final {
     std::mutex _mutex {};
 public:
     static std::shared_ptr<Memory> fromFile( const std::string& filename, int size, ByteOrder order );
+
+    static void dumpToFile( const std::string& filename,
+                            std::shared_ptr<Memory> mem,
+                            ByteOrder order );
 
     explicit Memory( int size ) :
         _vec { std::vector<Word>( size ) } {}

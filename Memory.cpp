@@ -22,6 +22,7 @@
 #include <thread>
 
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/karma.hpp>
 
 namespace nebula {
 
@@ -55,6 +56,31 @@ void Memory::write( Word offset, Word value ) {
 int Memory::size() {
     std::lock_guard<std::mutex> lock { _mutex };
     return _vec.size();
+}
+
+void Memory::dumpToFile( const std::string& filename,
+                         std::shared_ptr<Memory> mem,
+                         ByteOrder order ) {
+    namespace karma = boost::spirit::karma;
+
+    std::ofstream file {
+        filename,
+        std::ios::out | std::ios::binary
+    };
+
+    if ( ! file.is_open() ) {
+        throw error::UnwritableMemoryFile { filename };
+    }
+
+    for ( const auto& w : mem->_vec ) {
+        if ( order == ByteOrder::BigEndian ) {
+            file << karma::format( karma::big_word, w );
+        } else {
+            file << karma::format( karma::little_word, w );
+        }
+    }
+
+    file.close();
 }
 
 std::shared_ptr<Memory>
