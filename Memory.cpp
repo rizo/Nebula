@@ -125,12 +125,12 @@ Memory::fromFile( const std::string& filename, int size, ByteOrder order ) {
         throw error::BadMemoryFile {};
     }
 
-    auto mem = std::make_shared<Memory>( size );
-    std::move( result.begin(), result.end(), mem->_vec.begin() );
-
     if ( result.size() > static_cast<unsigned>( size )) {
         throw error::MemoryFileTooBig { size };
     }
+
+    auto mem = std::make_shared<Memory>( size );
+    std::move( result.begin(), result.end(), mem->_vec.begin() );
 
     LOG( MEMORY, info ) << format( "Read memory successfully from '%s'" ) % filename;
 
