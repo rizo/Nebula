@@ -16,6 +16,8 @@
 
 #include "Memory.hpp"
 
+DEFINE_LOGGER( MEMORY, "Memory" )
+
 #include <algorithm>
 #include <iterator>
 #include <fstream>
@@ -79,6 +81,8 @@ void Memory::dumpToFile( const std::string& filename,
             file << karma::format( karma::little_word, w );
         }
     }
+
+    LOG( MEMORY, info ) << format( "Wrote memory dump to '%s'" ) % filename;
 
     file.close();
 }
