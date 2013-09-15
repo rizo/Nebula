@@ -132,6 +132,8 @@ Memory::fromFile( const std::string& filename, int size, ByteOrder order ) {
         throw error::MemoryFileTooBig { size };
     }
 
+    LOG( MEMORY, info ) << format( "Read memory successfully from '%s'" ) % filename;
+
     return mem;
 }
 
