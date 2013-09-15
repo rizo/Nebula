@@ -40,6 +40,7 @@ int main( int argc, char* argv[] ) {
         ( "little-endian,e", "Assume little endian memory encoding." )
         ( "verbose,v", "Output verbose logging information to the console." )
         ( "floppy,f", "Insert a floppy disk into the drive before the simulation starts." )
+        ( "dump,d", po::value<std::string>(), "Dump the state of memory at the conclusion of execution to the named file." )
         ;
 
     po::options_description hidden;
@@ -150,6 +151,10 @@ int main( int argc, char* argv[] ) {
     clock.stop();
     monitor.stop();
     keyboard.stop();
+
+    if ( vm.count( "dump" ) ) {
+        Memory::dumpToFile( vm["dump"].as<std::string>(), memory, byteOrder );
+    }
 
     // It is important to get this processor state first, in case it
     // has thrown an exception. If it has, then getting the state of
