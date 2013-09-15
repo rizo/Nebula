@@ -13,6 +13,12 @@ Nebula supports the full specification of the DCPU-16 based on [version 1.7 of t
   * Press `F11` to insert a normal floppy disk.
   * Press `F12` to eject the disk.
 
+## Screenshots
+
+![Monitor start-up image](https://raw.github.com/hakuch/Nebula/master/Screenshots/startup.png)
+
+![Showing some text](https://raw.github.com/hakuch/Nebula/master/Screenshots/text.png)
+
 ## Use and Supported Platforms
 
 Nebula is written to the C++11 standard, which is only supported by
