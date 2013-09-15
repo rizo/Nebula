@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <iterator>
 #include <fstream>
+#include <thread>
 
 #include <boost/spirit/include/qi.hpp>
 
@@ -33,6 +34,8 @@ Word Memory::read( Word offset ) {
     }
     
     std::lock_guard<std::mutex> lock { _mutex };
+
+    std::this_thread::sleep_for( MEMORY_READ_DURATION );
     return _vec[offset];
 }
 
@@ -45,6 +48,7 @@ void Memory::write( Word offset, Word value ) {
     }
 
     std::lock_guard<std::mutex> lock { _mutex };
+    std::this_thread::sleep_for( MEMORY_WRITE_DURATION );
     _vec[offset] = value;
 }
 
