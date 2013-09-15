@@ -18,6 +18,7 @@
 
 #include "Fundamental.hpp"
 
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
@@ -87,6 +88,9 @@ enum class ByteOrder {
     BigEndian,
     LittleEndian
 };
+
+const std::chrono::microseconds MEMORY_READ_DURATION { 5 };
+const std::chrono::microseconds MEMORY_WRITE_DURATION { 10 };
 
 class Memory final {
     std::vector<Word> _vec;
