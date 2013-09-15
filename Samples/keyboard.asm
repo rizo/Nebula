@@ -5,9 +5,9 @@
 ;;;
 ;;; Constants
 
-        .def empty_style 0
-        .def font_style 0xf000   ; White FG, black BG.
-        .def cursor_style 0x0f20 ; Black FG, white FG.
+        .#def empty_style 0
+        .#def font_style 0xf000   ; White FG, black BG.
+        .#def cursor_style 0x0f20 ; Black FG, white FG.
 
         .section "data"
 
@@ -50,7 +50,7 @@ done:   SET     PC, done
 
 display_cursor:
         SET     A, [character_pos]
-        SET     [video + A], cursor_style
+        SET     [A + video], cursor_style
 
         SET     PC, POP
 
@@ -68,10 +68,10 @@ display_character:
         IFE     B, 0
         SET     PC, _done
 
-        SET     [video + B], empty_style
+        SET     [B + video], empty_style
         SUB     [character_pos], 1
         SUB     B, 1
-        SET     [video + B], font_style
+        SET     [B + video], font_style
         SET     PC, _done
 
 _display:
@@ -83,7 +83,7 @@ _display:
         
         SET     A, font_style
         BOR     A, PICK 1
-        SET     [video + B], A
+        SET     [B + video], A
         ADD     [character_pos], 1
 
 _done:
@@ -105,4 +105,4 @@ handle_keyboard:
         
         RFI     0
 
-        .include "devices.asm"
+        .#include "devices.asm"
