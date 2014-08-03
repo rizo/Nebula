@@ -1,3 +1,11 @@
+Important Note
+==============
+
+The development of Nebula is continuing as part of the
+[Dcpu16Universe](https://github.com/hakuch/Dcpu16Universe) project, where it is
+bundled with the Pulsar suite of programs for DCPU16 assembly. [Go there
+now](https://github.com/hakuch/Dcpu16Universe/tree/master/nebula).
+
 Nebula
 ======
 
