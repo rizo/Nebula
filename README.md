@@ -1,3 +1,8 @@
+*Important note*
+================
+
+I’m re-writing Nebula in OCaml to simplify the implementation and make it easier to develop. Work is being done in the `ocaml` branch of the Git repository.
+
 What is Nebula?
 ===============
 

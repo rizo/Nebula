@@ -2,6 +2,11 @@
 % Jesse Haber-Kucharsky
 % July 2014
 
+# *Important note*
+
+I'm re-writing Nebula in OCaml to simplify the implementation and make it easier
+to develop. Work is being done in the `ocaml` branch of the Git repository.
+
 # What is Nebula? #
 
 ![The simulated LEM1802 monitor.](doc/fig/monitor.png)\ ![The simulated vector display.](doc/fig/vector-display.png)
