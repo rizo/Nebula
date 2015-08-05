@@ -1,5 +1,7 @@
-What is Nebula?
-===============
+
+
+WHAT IS NEBULA?
+
 
 [The simulated LEM1802 monitor.] [The simulated vector display.]
 
@@ -11,8 +13,8 @@ hardware devices.
 The source code Nebula is licensed under the terms of the Apache License
 Version 2.0.
 
+
 Still Confused?
----------------
 
 The DCPU16 is a computer that exists only as specifications from an
 ill-fated video game. The DCPU16 is supposed to be similar to computer
@@ -20,7 +22,7 @@ systems of the past -- or simple micro-controllers of the present. It
 has a processor with some memory, a small instruction set, and a host of
 standard hardware peripherals including a small monitor, a keyboard, and
 a clock. Also included is a more fantastical peripheral (after all, it
-is from a video game): a holographic three-dimensional display.
+_is_ from a video game): a holographic three-dimensional display.
 
 Nebula is a computer program that runs a simulated version of the DCPU16
 on your own computer. Nebula can execute arbitrary DCPU16 assembly
@@ -28,20 +30,22 @@ programs (with the help of the Pulsar series of programs) and interact
 with the hardware in fun ways. It's a great learning experience about a
 bygone era of computing.
 
+
 Why Nebula?
------------
 
 Nebula aims to closely follow the DCPU16 specification and to do so with
 good engineering and design principals. Nebula is easy to use and
 well-documented.
 
-Using Nebula
-============
+
+
+USING NEBULA
+
 
 This section details how to get Nebula up and running.
 
+
 Installing
-----------
 
 The process of installing Nebula is complicated by the necessity that it
 be compiled from its source code. There's no reason why Nebula cannot be
@@ -49,12 +53,10 @@ packaged as something like a RPM or MSI, but doing so is not a priority
 right now.
 
 The easiest way to get the Nebula sources is to clone the entire
-Dcpu16Universe (or dcpu16-universe, depending on your sensibilities)
+Dcpu16Universe (or _dcpu16-universe_, depending on your sensibilities)
 project with Git.
 
-``` {.bash}
-    $ git clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe
-```
+        $ git clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe
 
 The Nebula emulator exists in /src/nebula, where / denotes the root
 directory of the source tree.
@@ -108,95 +110,94 @@ Nebula also optionally relies on the following Ubunut 14.04 packages:
     $HOME/src/dcpu16-universe, then / in this document refers to
     $HOME/src/dcpu16-universe.
 
-    ``` {.bash}
-        $ mkdir build
-    ```
+            $ mkdir build
 
 2.  Generate a platform-specific building mechanism. Nebula builds
     nicely with Ninja, which is a modern alternative to Makefiles. Here,
     Nebula will be built with the Clang compiler.
 
-    ``` {.bash}
-        $ cd build
-        $ CC=clang CXX=clang++ cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
-    ```
+            $ cd build
+            $ CC=clang CXX=clang++ cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
 
 3.  Now that the build files have been generated, actually build Ninja.
 
-    ``` {.bash}
-        $ ninja
-    ```
+            $ ninja
 
     One goal of Nebula is that there are no compilation warnings, so
     please create an issue this is not true for you.
 
+
 Starting Nebula
----------------
 
 Nebula is launched from a command line shell (such as Bash) since this
 is the means through which Nebula receives user commands.
 
 Synopsis
 
-nebula [OPTIONS] <MEMORY-FILE>
+nebula [_OPTIONS_] <_MEMORY-FILE_>
 
 Description
 
-Start up Nebula by loading the file indicated by the path MEMORY-FILE
+Start up Nebula by loading the file indicated by the path _MEMORY-FILE_
 into the memory of the DCPU16. Upon being launched, a graphical window
 will open for the two-dimensional monitor and the holographic vector
 display.
 
 Options
 
--a, --halt-first : Rather than starting to execute instructions from the
-memory of the DCPU16, Nebula will start up with an interactive prompt.
-From this prompt, it is possible to observe the state of the processor,
-step through the program in memory, and set break points.
+-a, --halt-first
+    Rather than starting to execute instructions from the memory of the
+    DCPU16, Nebula will start up with an interactive prompt. From this
+    prompt, it is possible to observe the state of the processor, step
+    through the program in memory, and set break points.
 
--d, --dump DUMP-PATH : At the conclusion of program execution -- if
-Nebula is terminated manually, for instance -- dump a data image file to
-disk with the name DUMP-PATH containing the state of the DCPU16's memory
-at the time of termination.
+-d, --dump _DUMP-PATH_
+    At the conclusion of program execution -- if Nebula is terminated
+    manually, for instance -- dump a data image file to disk with the
+    name _DUMP-PATH_ containing the state of the DCPU16's memory at the
+    time of termination.
 
--e, --little-endian : Assume that the image file that is read by Nebula
-is encoded in the little Endian format. By default, Nebula assumes that
-data images are encoded as big Endian.
+-e, --little-endian
+    Assume that the image file that is read by Nebula is encoded in the
+    little Endian format. By default, Nebula assumes that data images
+    are encoded as big Endian.
 
--h, --help : Show a short summary of Nebula's usage and options.
+-h, --help
+    Show a short summary of Nebula's usage and options.
 
--p, --period DURATION : Specify the clock period of Nebula in
-nanoseconds. Nebula tries to be cycle-accurate. This option allows
-Nebula to simulate different execution speeds. If this option is not
-provided, then the processor will run at with a 10 us period (a 100 kHz
-frequency).
+-p, --period _DURATION_
+    Specify the clock period of Nebula in nanoseconds. Nebula tries to
+    be cycle-accurate. This option allows Nebula to simulate different
+    execution speeds. If this option is not provided, then the processor
+    will run at with a 10 us period (a 100 kHz frequency).
 
 For example,
 
-``` {.bash}
-    $ nebula -p 1000 a.bin
-```
+        $ nebula -p 1000 a.bin
 
 will result in a processor with a clock period of 1 microsecond, which
 translates to a clock frequency of 1 MHz.
 
--v,--verbose= LOG-PATH : Enable logging during execution and output to
-the file with path LOG-PATH. Messages are logged with different levels
-of severity, and by default only informational messages and those with
-higher severity are printed. It is possible to change this, but only by
-editing the source code of Nebula and recompiling it. The ability to
-change the logging filters at run-time is a planned feature of Nebula.
+-v,--verbose= _LOG-PATH_
+    Enable logging during execution and output to the file with path
+    _LOG-PATH_. Messages are logged with different levels of severity,
+    and by default only informational messages and those with higher
+    severity are printed. It is possible to change this, but only by
+    editing the source code of Nebula and recompiling it. The ability to
+    change the logging filters at run-time is a planned feature
+    of Nebula.
 
-How Nebula is Designed
-======================
+
+
+HOW NEBULA IS DESIGNED
+
 
 Thoughts on Design
-------------------
 
 In general, when designing software, I think about a hypothetical
 outside observer and what they might think of my source code upon
 viewing it. It is my greatest hope that their first reaction is
-something along the lines of "this code is nice."
+something along the lines of "this code is _nice_."
 
 What does "nice" in the context of engineering or programming mean
 exactly? It means many different things to many different people. To
@@ -206,45 +207,46 @@ performance.
 My definition of nice code is simple: code exhibiting clarity and
 thoughtfulness.
 
-By clarity, I mean that a third-party could navigate around the code
+By _clarity_, I mean that a third-party could navigate around the code
 with reasonable understanding without the assistance of its original
 author. No questions like "What the hell does that do?" or even better
-"Why the hell does that work?" should arise.
+"_Why_ the hell does that work?" should arise.
 
-By thoughtfulness, I mean that the underlying abstractions of a design
+By _thoughtfulness_, I mean that the underlying abstractions of a design
 are simple enough to be clear but flexible and powerful enough to allow
 for further abstractions to be built on them. In other words, a good
 design acts as a strong foundation for further growth.
 
-I argue that clear and thoughtful code is easy to add features to and
-easy to analyze and make high-performing.
+_I argue that clear and thoughtful code is easy to add features to and
+easy to analyze and make high-performing_.
 
-Have I achieved these things with Nebula? Certainly not, and I don't
+Have I achieved these things with Nebula? Certainly NOT, and I don't
 think any person really could. These are instead ideals to strive
 towards and be mindful of.
 
+
 Style
------
 
 Keeping the aforementioned principals in mind, Nebula's code tends to
 have the following characteristics:
 
--   Verbose logging. Nebula's logging is disabled by default, but most
+-   _Verbose logging_. Nebula's logging is disabled by default, but most
     everything it does it logged with clear context.
 
--   Descriptive identifier names. Okay, let's be honest: sometimes
+-   _Descriptive identifier names_. Okay, let's be honest: sometimes
     Nebula's code hings on the verbose (but so do I).
 
--   Minimization of mutable state. Lots of mutable state is difficult to
-    reason about. Prefer copying to mutation. Prefer immutable objects.
+-   _Minimization of mutable state_. Lots of mutable state is difficult
+    to reason about. Prefer copying to mutation. Prefer
+    immutable objects.
 
--   A functional style. I can't help it: I've been bitten by the Haskell
-    bug.
+-   _A functional style_. I can't help it: I've been bitten by the
+    Haskell bug.
 
--   Correctness enforced through type-safety and dimensional analysis.
+-   _Correctness_ enforced through type-safety and dimensional analysis.
+
 
 Architecture and Technology
----------------------------
 
 Big Idea
 
@@ -308,18 +310,16 @@ primitive types. This can help prevent errors in argument order when a
 function requires multiple parameters of the same type. For instance,
 Nebula defines
 
-``` {.cpp}
-    struct Blue { explicit Blue(std::uint8_t value) { ... } };
-    struct Blue { explicit Blue(std::uint8_t value) { ... } };
-    struct Blue { explicit Blue(std::uint8_t value) { ... } };
+        struct Blue { explicit Blue(std::uint8_t value) { ... } };
+        struct Blue { explicit Blue(std::uint8_t value) { ... } };
+        struct Blue { explicit Blue(std::uint8_t value) { ... } };
 
-    struct Color {
-        explicit Color(Red red, Green green, Blue blue) { ... }
-    };
-```
+        struct Color {
+            explicit Color(Red red, Green green, Blue blue) { ... }
+        };
+
 
 Source Code Organization
-------------------------
 
         ├── cmake             - Files for CMake
         │   └── modules         - Find*.cmake files for dependencies.

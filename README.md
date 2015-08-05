@@ -31,7 +31,7 @@ The process of installing Nebula is complicated by the necessity that it be comp
 
 The easiest way to get the Nebula sources is to clone the entire Dcpu16Universe (or *dcpu16-universe*, depending on your sensibilities) project with Git.
 
-``` {.bash}
+``` bash
     $ git clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe
 ```
 
@@ -70,20 +70,20 @@ Nebula also optionally relies on the following Ubunut 14.04 packages:
 
     Recall that `/` refers to the root directory of the Dcpu16Universe source tree. If your version of Dcpu16Universe lives in `$HOME/src/dcpu16-universe`, then `/` in this document refers to `$HOME/src/dcpu16-universe`.
 
-    ``` {.bash}
+    ``` bash
         $ mkdir build
     ```
 
 2.  Generate a platform-specific building mechanism. Nebula builds nicely with [Ninja](http://martine.github.io/ninja/), which is a modern alternative to Makefiles. Here, Nebula will be built with the Clang compiler.
 
-    ``` {.bash}
+    ``` bash
         $ cd build
         $ CC=clang CXX=clang++ cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
     ```
 
 3.  Now that the build files have been generated, actually build Ninja.
 
-    ``` {.bash}
+    ``` bash
         $ ninja
     ```
 
@@ -96,7 +96,7 @@ Nebula is launched from a command line shell (such as Bash) since this is the me
 
 ### Synopsis
 
-nebula [*OPTIONS*] \<*MEMORY-FILE*\>
+nebula \[*OPTIONS*\] &lt;*MEMORY-FILE*&gt;
 
 ### Description
 
@@ -104,25 +104,31 @@ Start up Nebula by loading the file indicated by the path *MEMORY-FILE* into the
 
 ### Options
 
-`-a`, `--halt-first` : Rather than starting to execute instructions from the memory of the DCPU16, Nebula will start up with an interactive prompt. From this prompt, it is possible to observe the state of the processor, step through the program in memory, and set break points.
+`-a`, `--halt-first`  
+Rather than starting to execute instructions from the memory of the DCPU16, Nebula will start up with an interactive prompt. From this prompt, it is possible to observe the state of the processor, step through the program in memory, and set break points.
 
-`-d`, `--dump` *DUMP-PATH* : At the conclusion of program execution – if Nebula is terminated manually, for instance – dump a data image file to disk with the name *DUMP-PATH* containing the state of the DCPU16’s memory at the time of termination.
+`-d`, `--dump` *DUMP-PATH*  
+At the conclusion of program execution – if Nebula is terminated manually, for instance – dump a data image file to disk with the name *DUMP-PATH* containing the state of the DCPU16’s memory at the time of termination.
 
-`-e`, `--little-endian` : Assume that the image file that is read by Nebula is encoded in the little Endian format. By default, Nebula assumes that data images are encoded as big Endian.
+`-e`, `--little-endian`  
+Assume that the image file that is read by Nebula is encoded in the little Endian format. By default, Nebula assumes that data images are encoded as big Endian.
 
-`-h`, `--help` : Show a short summary of Nebula’s usage and options.
+`-h`, `--help`  
+Show a short summary of Nebula’s usage and options.
 
-`-p`, `--period` *DURATION* : Specify the clock period of Nebula in nanoseconds. Nebula tries to be cycle-accurate. This option allows Nebula to simulate different execution speeds. If this option is not provided, then the processor will run at with a 10 us period (a 100 kHz frequency).
+`-p`, `--period` *DURATION*  
+Specify the clock period of Nebula in nanoseconds. Nebula tries to be cycle-accurate. This option allows Nebula to simulate different execution speeds. If this option is not provided, then the processor will run at with a 10 us period (a 100 kHz frequency).
 
 For example,
 
-``` {.bash}
+``` bash
     $ nebula -p 1000 a.bin
 ```
 
 will result in a processor with a clock period of 1 microsecond, which translates to a clock frequency of 1 MHz.
 
-`-v`,`--verbose=` *LOG-PATH* : Enable logging during execution and output to the file with path *LOG-PATH*. Messages are logged with different levels of severity, and by default only informational messages and those with higher severity are printed. It is possible to change this, but only by editing the source code of Nebula and recompiling it. The ability to change the logging filters at run-time is a planned feature of Nebula.
+`-v`,`--verbose=` *LOG-PATH*  
+Enable logging during execution and output to the file with path *LOG-PATH*. Messages are logged with different levels of severity, and by default only informational messages and those with higher severity are printed. It is possible to change this, but only by editing the source code of Nebula and recompiling it. The ability to change the logging filters at run-time is a planned feature of Nebula.
 
 How Nebula is Designed
 ======================
@@ -168,11 +174,11 @@ One major difference between Nebula and other similar programs is the underlying
 
 Suppose that a program is emulating a processor (the “CPU”) and two devices: “DevA” and “DevB”. For the sake of example, suppose the devices have the following simulated clock periods:
 
-|Device|Clock Period (second)|
-|------|---------------------|
-|CPU|1|
-|DevA|3|
-|DevB|5|
+| Device | Clock Period (second) |
+|--------|-----------------------|
+| CPU    | 1                     |
+| DevA   | 3                     |
+| DevB   | 5                     |
 
 A simple emulator might run on a single thread, executing an instruction every iteration and simulating a single clock period.
 
@@ -198,7 +204,7 @@ Nebula is somewhat of an experiment in using dimensional analysis for correctnes
 
 Nebula also uses a trick that involves creating type wrappers for primitive types. This can help prevent errors in argument order when a function requires multiple parameters of the same type. For instance, Nebula defines
 
-``` {.cpp}
+``` cpp
     struct Blue { explicit Blue(std::uint8_t value) { ... } };
     struct Blue { explicit Blue(std::uint8_t value) { ... } };
     struct Blue { explicit Blue(std::uint8_t value) { ... } };

@@ -8,23 +8,41 @@
   <title>Nebula: The DCPU16 Emulator</title>
   <style type="text/css">code{white-space: pre;}</style>
   <style type="text/css">
+div.sourceCode { overflow-x: auto; }
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
 table.sourceCode { width: 100%; line-height: 100%; }
 td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
 td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; }
-code > span.dt { color: #902000; }
-code > span.dv { color: #40a070; }
-code > span.bn { color: #40a070; }
-code > span.fl { color: #40a070; }
-code > span.ch { color: #4070a0; }
-code > span.st { color: #4070a0; }
-code > span.co { color: #60a0b0; font-style: italic; }
-code > span.ot { color: #007020; }
-code > span.al { color: #ff0000; font-weight: bold; }
-code > span.fu { color: #06287e; }
-code > span.er { color: #ff0000; font-weight: bold; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
   </style>
   <link rel="stylesheet" href="../doc/dcpu16-universe.css" type="text/css" />
 </head>
@@ -75,7 +93,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <h2 id="installing">Installing</h2>
 <p>The process of installing Nebula is complicated by the necessity that it be compiled from its source code. There’s no reason why Nebula cannot be packaged as something like a RPM or MSI, but doing so is not a priority right now.</p>
 <p>The easiest way to get the Nebula sources is to clone the entire Dcpu16Universe (or <em>dcpu16-universe</em>, depending on your sensibilities) project with Git.</p>
-<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">git</span> clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe</code></pre>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">git</span> clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe</code></pre></div>
 <p>The Nebula emulator exists in <code>/src/nebula</code>, where <code>/</code> denotes the root directory of the source tree.</p>
 <h3 id="source-dependencies-and-supported-platforms">Source Dependencies and Supported Platforms</h3>
 <p>Nebula is completely platform independent. It is carefully written to use only platform-neutral features of C++ and makes use of libraries which are themselves cross-platform.</p>
@@ -105,12 +123,12 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <ol style="list-style-type: decimal">
 <li><p>Create an out-of-source directory for the compiled sources. These out-of-source builds are encouraged by CMake. You may wish to create a <code>build</code> directory in <code>/nebula</code>.</p>
 <p>Recall that <code>/</code> refers to the root directory of the Dcpu16Universe source tree. If your version of Dcpu16Universe lives in <code>$HOME/src/dcpu16-universe</code>, then <code>/</code> in this document refers to <code>$HOME/src/dcpu16-universe</code>.</p>
-<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">mkdir</span> build</code></pre></li>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">mkdir</span> build</code></pre></div></li>
 <li><p>Generate a platform-specific building mechanism. Nebula builds nicely with <a href="http://martine.github.io/ninja/">Ninja</a>, which is a modern alternative to Makefiles. Here, Nebula will be built with the Clang compiler.</p>
-<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">cd</span> build
-    $ <span class="ot">CC=</span>clang <span class="ot">CXX=</span>clang++ <span class="kw">cmake</span> -DCMAKE_BUILD_TYPE=Release -G Ninja ..</code></pre></li>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">cd</span> build
+    $ <span class="ot">CC=</span>clang <span class="ot">CXX=</span>clang++ <span class="kw">cmake</span> -DCMAKE_BUILD_TYPE=Release -G Ninja ..</code></pre></div></li>
 <li><p>Now that the build files have been generated, actually build Ninja.</p>
-<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">ninja</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">ninja</span></code></pre></div>
 <p>One goal of Nebula is that there are no compilation warnings, so please create an issue this is not true for you.</p></li>
 </ol>
 <h2 id="starting-nebula">Starting Nebula</h2>
@@ -120,15 +138,31 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <h3 id="description">Description</h3>
 <p>Start up Nebula by loading the file indicated by the path <em>MEMORY-FILE</em> into the memory of the DCPU16. Upon being launched, a graphical window will open for the two-dimensional monitor and the holographic vector display.</p>
 <h3 id="options">Options</h3>
-<p><code>-a</code>, <code>--halt-first</code> : Rather than starting to execute instructions from the memory of the DCPU16, Nebula will start up with an interactive prompt. From this prompt, it is possible to observe the state of the processor, step through the program in memory, and set break points.</p>
-<p><code>-d</code>, <code>--dump</code> <em>DUMP-PATH</em> : At the conclusion of program execution – if Nebula is terminated manually, for instance – dump a data image file to disk with the name <em>DUMP-PATH</em> containing the state of the DCPU16’s memory at the time of termination.</p>
-<p><code>-e</code>, <code>--little-endian</code> : Assume that the image file that is read by Nebula is encoded in the little Endian format. By default, Nebula assumes that data images are encoded as big Endian.</p>
-<p><code>-h</code>, <code>--help</code> : Show a short summary of Nebula’s usage and options.</p>
-<p><code>-p</code>, <code>--period</code> <em>DURATION</em> : Specify the clock period of Nebula in nanoseconds. Nebula tries to be cycle-accurate. This option allows Nebula to simulate different execution speeds. If this option is not provided, then the processor will run at with a 10 us period (a 100 kHz frequency).</p>
+<dl>
+<dt><code>-a</code>, <code>--halt-first</code></dt>
+<dd>Rather than starting to execute instructions from the memory of the DCPU16, Nebula will start up with an interactive prompt. From this prompt, it is possible to observe the state of the processor, step through the program in memory, and set break points.
+</dd>
+<dt><code>-d</code>, <code>--dump</code> <em>DUMP-PATH</em></dt>
+<dd>At the conclusion of program execution – if Nebula is terminated manually, for instance – dump a data image file to disk with the name <em>DUMP-PATH</em> containing the state of the DCPU16’s memory at the time of termination.
+</dd>
+<dt><code>-e</code>, <code>--little-endian</code></dt>
+<dd>Assume that the image file that is read by Nebula is encoded in the little Endian format. By default, Nebula assumes that data images are encoded as big Endian.
+</dd>
+<dt><code>-h</code>, <code>--help</code></dt>
+<dd>Show a short summary of Nebula’s usage and options.
+</dd>
+<dt><code>-p</code>, <code>--period</code> <em>DURATION</em></dt>
+<dd>Specify the clock period of Nebula in nanoseconds. Nebula tries to be cycle-accurate. This option allows Nebula to simulate different execution speeds. If this option is not provided, then the processor will run at with a 10 us period (a 100 kHz frequency).
+</dd>
+</dl>
 <p>For example,</p>
-<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">nebula</span> -p 1000 a.bin</code></pre>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">nebula</span> -p 1000 a.bin</code></pre></div>
 <p>will result in a processor with a clock period of 1 microsecond, which translates to a clock frequency of 1 MHz.</p>
-<p><code>-v</code>,<code>--verbose=</code> <em>LOG-PATH</em> : Enable logging during execution and output to the file with path <em>LOG-PATH</em>. Messages are logged with different levels of severity, and by default only informational messages and those with higher severity are printed. It is possible to change this, but only by editing the source code of Nebula and recompiling it. The ability to change the logging filters at run-time is a planned feature of Nebula.</p>
+<dl>
+<dt><code>-v</code>,<code>--verbose=</code> <em>LOG-PATH</em></dt>
+<dd>Enable logging during execution and output to the file with path <em>LOG-PATH</em>. Messages are logged with different levels of severity, and by default only informational messages and those with higher severity are printed. It is possible to change this, but only by editing the source code of Nebula and recompiling it. The ability to change the logging filters at run-time is a planned feature of Nebula.
+</dd>
+</dl>
 <h1 id="how-nebula-is-designed">How Nebula is Designed</h1>
 <h2 id="thoughts-on-design">Thoughts on Design</h2>
 <p>In general, when designing software, I think about a hypothetical outside observer and what they might think of my source code upon viewing it. It is my greatest hope that their first reaction is something along the lines of “this code is <em>nice</em>.”</p>
@@ -185,13 +219,13 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <p>Nebula prefers to abstract over libraries where possible (OpenGL is a notable exception). It has its own simple API for I/O events and 2D graphics built on top of SDL2.</p>
 <p>Nebula is somewhat of an experiment in using dimensional analysis for correctness in programs via Boost.Units. Pixels of the virtual monitor have a distinct unit compared to “real” pixels on your screen. A byte of information has a different unit than a nibble.</p>
 <p>Nebula also uses a trick that involves creating type wrappers for primitive types. This can help prevent errors in argument order when a function requires multiple parameters of the same type. For instance, Nebula defines</p>
-<pre class="sourceCode cpp"><code class="sourceCode cpp">    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::<span class="dt">uint8_t</span> value) { ... } };
-    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::<span class="dt">uint8_t</span> value) { ... } };
-    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::<span class="dt">uint8_t</span> value) { ... } };
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::uint8_t value) { ... } };
+    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::uint8_t value) { ... } };
+    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::uint8_t value) { ... } };
 
     <span class="kw">struct</span> Color {
         <span class="kw">explicit</span> Color(Red red, Green green, Blue blue) { ... }
-    };</code></pre>
+    };</code></pre></div>
 <h2 id="source-code-organization">Source Code Organization</h2>
 <pre><code>    ├── cmake             - Files for CMake
     │   └── modules         - Find*.cmake files for dependencies.
