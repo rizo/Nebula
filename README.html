@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Jesse Haber-Kucharsky" />
+  <title>Nebula: The DCPU16 Emulator</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../doc/dcpu16-universe.css" type="text/css" />
+</head>
+<body>
+<div id="header">
+<h1 class="title">Nebula: The DCPU16 Emulator</h1>
+<h2 class="author">Jesse Haber-Kucharsky</h2>
+<h3 class="date">July 2014</h3>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="#what-is-nebula">What is Nebula?</a><ul>
+<li><a href="#still-confused">Still Confused?</a></li>
+<li><a href="#why-nebula">Why Nebula?</a></li>
+</ul></li>
+<li><a href="#using-nebula">Using Nebula</a><ul>
+<li><a href="#installing">Installing</a><ul>
+<li><a href="#source-dependencies-and-supported-platforms">Source Dependencies and Supported Platforms</a></li>
+</ul></li>
+<li><a href="#starting-nebula">Starting Nebula</a><ul>
+<li><a href="#synopsis">Synopsis</a></li>
+<li><a href="#description">Description</a></li>
+<li><a href="#options">Options</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#how-nebula-is-designed">How Nebula is Designed</a><ul>
+<li><a href="#thoughts-on-design">Thoughts on Design</a></li>
+<li><a href="#style">Style</a></li>
+<li><a href="#architecture-and-technology">Architecture and Technology</a><ul>
+<li><a href="#big-idea">Big Idea</a></li>
+<li><a href="#little-things">Little Things</a></li>
+</ul></li>
+<li><a href="#source-code-organization">Source Code Organization</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id="what-is-nebula">What is Nebula?</h1>
+<p><img src="doc/fig/monitor.png" alt="The simulated LEM1802 monitor." /> <img src="doc/fig/vector-display.png" alt="The simulated vector display." /></p>
+<p>Nebula is the fast, multi-threaded, full-featured emulator for the DCPU16 computer platform. It runs natively on multiple platforms and supports the full DCPU16 version 1.7 specification and most of the hardware devices.</p>
+<p>The source code Nebula is licensed under the terms of the <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License Version 2.0</a>.</p>
+<h2 id="still-confused">Still Confused?</h2>
+<p>The <a href="http://en.wikipedia.org/wiki/0x10c">DCPU16</a> is a computer that exists only as specifications from an ill-fated video game. The DCPU16 is supposed to be similar to computer systems of the past – or simple micro-controllers of the present. It has a processor with some memory, a small instruction set, and a host of standard hardware peripherals including a small monitor, a keyboard, and a clock. Also included is a more fantastical peripheral (after all, it <em>is</em> from a video game): a holographic three-dimensional display.</p>
+<p>Nebula is a computer program that runs a simulated version of the DCPU16 on your own computer. Nebula can execute arbitrary DCPU16 assembly programs (with the help of the Pulsar series of programs) and interact with the hardware in fun ways. It’s a great learning experience about a bygone era of computing.</p>
+<h2 id="why-nebula">Why Nebula?</h2>
+<p>Nebula aims to closely follow the DCPU16 specification and to do so with good engineering and design principals. Nebula is easy to use and well-documented.</p>
+<h1 id="using-nebula">Using Nebula</h1>
+<p>This section details how to get Nebula up and running.</p>
+<h2 id="installing">Installing</h2>
+<p>The process of installing Nebula is complicated by the necessity that it be compiled from its source code. There’s no reason why Nebula cannot be packaged as something like a RPM or MSI, but doing so is not a priority right now.</p>
+<p>The easiest way to get the Nebula sources is to clone the entire Dcpu16Universe (or <em>dcpu16-universe</em>, depending on your sensibilities) project with Git.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">git</span> clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe</code></pre>
+<p>The Nebula emulator exists in <code>/src/nebula</code>, where <code>/</code> denotes the root directory of the source tree.</p>
+<h3 id="source-dependencies-and-supported-platforms">Source Dependencies and Supported Platforms</h3>
+<p>Nebula is completely platform independent. It is carefully written to use only platform-neutral features of C++ and makes use of libraries which are themselves cross-platform.</p>
+<p>Nebula uses many features from the most recent version of the C++ language standard, C++11. While GCC close to version 4.8 and Clang close to version 3.3 have no issue compiling Nebula, Microsoft’s Visual C++ compiler still struggles with some of the language features. Hopefully this will change in the near future.</p>
+<p>Nebula depends on the following libraries and/or platforms, with specific versions where indicated:</p>
+<ul>
+<li><a href="http://www.boost.org/">Boost</a></li>
+<li><a href="https://www.libsdl.org/download-2.0.php">SDL2</a>.</li>
+<li><a href="http://glm.g-truc.net/0.9.5/index.html">OpenGL Mathematics (GLM)</a>.</li>
+<li><a href="http://glew.sourceforge.net/">GLEW</a>.</li>
+<li><a href="http://www.opengl.org/">OpenGL</a>. Nebula requires OpenGL at least version 2.1 and GLSL at least version 1.20.</li>
+</ul>
+<p>Nebula requires <a href="http://www.cmake.org/">CMake</a> to build. Nebula on Unix-y platforms like OS X and any Linux distribution should build without issue if the dependencies are installed.</p>
+<p>On Ubuntu 14.04, Nebula’s dependencies can be found in the following packages:</p>
+<ul>
+<li><code>libboost-all-dev</code></li>
+<li><code>libsdl2-dev</code></li>
+<li><code>libglm-dev</code></li>
+<li><code>libglew-dev</code></li>
+<li><code>cmake</code></li>
+</ul>
+<p>Nebula also optionally relies on the following Ubunut 14.04 packages:</p>
+<ul>
+<li><code>ninja-build</code></li>
+<li><code>clang</code></li>
+</ul>
+<ol style="list-style-type: decimal">
+<li><p>Create an out-of-source directory for the compiled sources. These out-of-source builds are encouraged by CMake. You may wish to create a <code>build</code> directory in <code>/nebula</code>.</p>
+<p>Recall that <code>/</code> refers to the root directory of the Dcpu16Universe source tree. If your version of Dcpu16Universe lives in <code>$HOME/src/dcpu16-universe</code>, then <code>/</code> in this document refers to <code>$HOME/src/dcpu16-universe</code>.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">mkdir</span> build</code></pre></li>
+<li><p>Generate a platform-specific building mechanism. Nebula builds nicely with <a href="http://martine.github.io/ninja/">Ninja</a>, which is a modern alternative to Makefiles. Here, Nebula will be built with the Clang compiler.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">cd</span> build
+    $ <span class="ot">CC=</span>clang <span class="ot">CXX=</span>clang++ <span class="kw">cmake</span> -DCMAKE_BUILD_TYPE=Release -G Ninja ..</code></pre></li>
+<li><p>Now that the build files have been generated, actually build Ninja.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">ninja</span></code></pre>
+<p>One goal of Nebula is that there are no compilation warnings, so please create an issue this is not true for you.</p></li>
+</ol>
+<h2 id="starting-nebula">Starting Nebula</h2>
+<p>Nebula is launched from a command line shell (such as Bash) since this is the means through which Nebula receives user commands.</p>
+<h3 id="synopsis">Synopsis</h3>
+<p>nebula [<em>OPTIONS</em>] &lt;<em>MEMORY-FILE</em>&gt;</p>
+<h3 id="description">Description</h3>
+<p>Start up Nebula by loading the file indicated by the path <em>MEMORY-FILE</em> into the memory of the DCPU16. Upon being launched, a graphical window will open for the two-dimensional monitor and the holographic vector display.</p>
+<h3 id="options">Options</h3>
+<p><code>-a</code>, <code>--halt-first</code> : Rather than starting to execute instructions from the memory of the DCPU16, Nebula will start up with an interactive prompt. From this prompt, it is possible to observe the state of the processor, step through the program in memory, and set break points.</p>
+<p><code>-d</code>, <code>--dump</code> <em>DUMP-PATH</em> : At the conclusion of program execution – if Nebula is terminated manually, for instance – dump a data image file to disk with the name <em>DUMP-PATH</em> containing the state of the DCPU16’s memory at the time of termination.</p>
+<p><code>-e</code>, <code>--little-endian</code> : Assume that the image file that is read by Nebula is encoded in the little Endian format. By default, Nebula assumes that data images are encoded as big Endian.</p>
+<p><code>-h</code>, <code>--help</code> : Show a short summary of Nebula’s usage and options.</p>
+<p><code>-p</code>, <code>--period</code> <em>DURATION</em> : Specify the clock period of Nebula in nanoseconds. Nebula tries to be cycle-accurate. This option allows Nebula to simulate different execution speeds. If this option is not provided, then the processor will run at with a 10 us period (a 100 kHz frequency).</p>
+<p>For example,</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">nebula</span> -p 1000 a.bin</code></pre>
+<p>will result in a processor with a clock period of 1 microsecond, which translates to a clock frequency of 1 MHz.</p>
+<p><code>-v</code>,<code>--verbose=</code> <em>LOG-PATH</em> : Enable logging during execution and output to the file with path <em>LOG-PATH</em>. Messages are logged with different levels of severity, and by default only informational messages and those with higher severity are printed. It is possible to change this, but only by editing the source code of Nebula and recompiling it. The ability to change the logging filters at run-time is a planned feature of Nebula.</p>
+<h1 id="how-nebula-is-designed">How Nebula is Designed</h1>
+<h2 id="thoughts-on-design">Thoughts on Design</h2>
+<p>In general, when designing software, I think about a hypothetical outside observer and what they might think of my source code upon viewing it. It is my greatest hope that their first reaction is something along the lines of “this code is <em>nice</em>.”</p>
+<p>What does “nice” in the context of engineering or programming mean exactly? It means many different things to many different people. To some people, it means lots of different features. To others, high performance.</p>
+<p>My definition of nice code is simple: code exhibiting clarity and thoughtfulness.</p>
+<p>By <em>clarity</em>, I mean that a third-party could navigate around the code with reasonable understanding without the assistance of its original author. No questions like “What the hell does that do?” or even better “<em>Why</em> the hell does that work?” should arise.</p>
+<p>By <em>thoughtfulness</em>, I mean that the underlying abstractions of a design are simple enough to be clear but flexible and powerful enough to allow for further abstractions to be built on them. In other words, a good design acts as a strong foundation for further growth.</p>
+<p><em>I argue that clear and thoughtful code is easy to add features to and easy to analyze and make high-performing</em>.</p>
+<p>Have I achieved these things with Nebula? Certainly <strong>not</strong>, and I don’t think any person really could. These are instead ideals to strive towards and be mindful of.</p>
+<h2 id="style">Style</h2>
+<p>Keeping the aforementioned principals in mind, Nebula’s code tends to have the following characteristics:</p>
+<ul>
+<li><p><em>Verbose logging</em>. Nebula’s logging is disabled by default, but most everything it does it logged with clear context.</p></li>
+<li><p><em>Descriptive identifier names</em>. Okay, let’s be honest: sometimes Nebula’s code hings on the verbose (but so do I).</p></li>
+<li><p><em>Minimization of mutable state</em>. Lots of mutable state is difficult to reason about. Prefer copying to mutation. Prefer immutable objects.</p></li>
+<li><p><em>A functional style</em>. I can’t help it: I’ve been bitten by the Haskell bug.</p></li>
+<li><p><em>Correctness</em> enforced through type-safety and dimensional analysis.</p></li>
+</ul>
+<h2 id="architecture-and-technology">Architecture and Technology</h2>
+<h3 id="big-idea">Big Idea</h3>
+<p>One major difference between Nebula and other similar programs is the underlying architecture.</p>
+<p>Suppose that a program is emulating a processor (the “CPU”) and two devices: “DevA” and “DevB”. For the sake of example, suppose the devices have the following simulated clock periods:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Device</th>
+<th align="left">Clock Period (second)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CPU</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">DevA</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">DevB</td>
+<td align="left">5</td>
+</tr>
+</tbody>
+</table>
+<p>A simple emulator might run on a single thread, executing an instruction every iteration and simulating a single clock period.</p>
+<p>Every three clock periods, the emulator will switch to DevA and simulate whatever it does. This may include checking if it’s received any interrupts, firing its own interrupts, or reading from and writing to memory.</p>
+<p>Similarly, the CPU will switch to DevB every five clock periods.</p>
+<p>This is simple, but doesn’t accurately model the reality that these hardware devices are running independently at their own clock speeds. In the simple model, the emulator cannot continue to execute instructions while the keyboard handles the new key code in its buffer, but this is in fact what happens.</p>
+<p>In Nebula, the processor, every hardware device, and the main I/O loop all run in their own thread. The processor communicates with hardware devices exclusively through interrupts (yielding control of its state in the process) and all devices share a common bus to memory.</p>
+<p>This is slightly harder to get right, but it’s also a lot more fun when it works.</p>
+<h3 id="little-things">Little Things</h3>
+<p>Nebula is written in C++11, and where possible, makes use of several C++11 features such as anonymous functions (“lambdas”), native threads, and atomic variables.</p>
+<p>Nebula also makes extensive use of the Boost libraries, particularly the Boost.Option type and some helpers such as Boost.Format.</p>
+<p>Nebula prefers to abstract over libraries where possible (OpenGL is a notable exception). It has its own simple API for I/O events and 2D graphics built on top of SDL2.</p>
+<p>Nebula is somewhat of an experiment in using dimensional analysis for correctness in programs via Boost.Units. Pixels of the virtual monitor have a distinct unit compared to “real” pixels on your screen. A byte of information has a different unit than a nibble.</p>
+<p>Nebula also uses a trick that involves creating type wrappers for primitive types. This can help prevent errors in argument order when a function requires multiple parameters of the same type. For instance, Nebula defines</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp">    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::<span class="dt">uint8_t</span> value) { ... } };
+    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::<span class="dt">uint8_t</span> value) { ... } };
+    <span class="kw">struct</span> Blue { <span class="kw">explicit</span> Blue(std::<span class="dt">uint8_t</span> value) { ... } };
+
+    <span class="kw">struct</span> Color {
+        <span class="kw">explicit</span> Color(Red red, Green green, Blue blue) { ... }
+    };</code></pre>
+<h2 id="source-code-organization">Source Code Organization</h2>
+<pre><code>    ├── cmake             - Files for CMake
+    │   └── modules         - Find*.cmake files for dependencies.
+    ├── doc               - Out-of-source documentation and manuals.
+    ├── src               - Source code.
+    │   ├── device          - Virtual hardware devices.
+    │   └── platform        - Processor and platform.
+    └── src-doc           - Destination for in-source documentation (Doxygen).</code></pre>
+<p>Nebula is organized into two main modules:</p>
+<ul>
+<li>The main platform, which includes the processor and the underlying emulator components.</li>
+<li>The hardware devices such as the keyboard and monitor.</li>
+</ul>
+<!-- For spell-check.
+LocalWords:  DCPU Kucharsky natively MSI Dcpu dcpu GCC SDL OpenGL GLM dev cd
+LocalWords:  GLEW GLSL CMake libboost libsdl libglm libglew cmake mkdir Haskell
+LocalWords:  Makefiles CXX DCMAKE DevA DevB API newtype cpp struct src Doxygen
+LocalWords:  LEM multi endian
+-->
+</body>
+</html>

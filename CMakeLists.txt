@@ -1,49 +1,104 @@
+## /nebula/CMakeLists.txt
+## Copyright 2014 Jesse Haber-Kucharsky
+##
+## Released under the terms of the Apache License Version 2.0
+## See /nebula/LICENSE or http://www.apache.org/licenses/
+
 cmake_minimum_required (VERSION 2.8)
-project (Nebula)
+project (nebula)
 
-set (CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -pedantic -Wno-missing-braces -march=native -mtune=native")
-set (CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
+set (CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
-add_subdirectory (gtest-1.6.0)
-enable_testing ()
+if (UNIX)  
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -pedantic -Werror")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic -Werror")
+endif (UNIX)
 
-find_package (Boost REQUIRED COMPONENTS log log_setup thread system program_options)
+add_definitions (
+  -DGLM_FORCE_RADIANS
+  -DBOOST_ALL_DYN_LINK
+  -DBOOST_SPIRIT_USE_PHOENIX_V3=1)
+
+find_package (Boost REQUIRED
+  COMPONENTS log log_setup thread system program_options)
+# For consistency.
+set (BOOST_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+set (BOOST_LIBRARIES ${Boost_LIBRARIES}) 
+
 find_package (Threads REQUIRED)
-find_package (SDL REQUIRED)
 
-add_definitions (-DBOOST_ALL_DYN_LINK)
+find_package (Sdl2 REQUIRED)
 
-include_directories (${gtest_SOURCE_DIR}/include)
+find_package (Glew REQUIRED)
+
+find_package (OpenGL REQUIRED)
+
+find_package (Glm REQUIRED)
+
+include_directories (SYSTEM
+  ${BOOST_INCLUDE_DIRS}
+  ${SDL2_INCLUDE_DIRS}
+  ${GLEW_INCLUDE_DIRS}
+  ${OPENGL_INCLUDE_DIRS}
+  ${GLM_INCLUDE_DIRS})
+
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+set (PLATFORM_SOURCE
+  src/platform/address.cpp
+  src/platform/audio.cpp
+  src/platform/computer.cpp
+  src/platform/decode.cpp
+  src/platform/event.cpp
+  src/platform/execution-manager.cpp
+  src/platform/graphics.cpp
+  src/platform/instruction.cpp
+  src/platform/interactive.cpp
+  src/platform/interrupt.cpp
+  src/platform/memory.cpp
+  src/platform/prelude.cpp
+  src/platform/processor-state.cpp)
+
+set (DEVICE_SOURCE
+  src/device/clock.cpp
+  src/device/keyboard.cpp
+  src/device/monitor.cpp
+  src/device/synthesizer.cpp
+  src/device/vector-display.cpp)
+
+set (MAIN_SOURCE
+  src/main.cpp)
 
 add_executable (nebula
-  Fundamental.cpp
-  Memory.cpp
-  ProcessorState.cpp
-  Computer.cpp
-  Sdl.cpp
-  Simulation/Clock.cpp
-  Simulation/FloppyDrive.cpp
-  Simulation/Processor.cpp
-  Simulation/Monitor.cpp
-  Simulation/Keyboard.cpp
-  Main.cpp)
+  ${DEVICE_SOURCE}
+  ${PLATFORM_SOURCE}
+  ${MAIN_SOURCE})
 
 target_link_libraries (nebula
-  ${SDL_LIBRARY}
-  ${Boost_LIBRARIES}
-  ${CMAKE_THREAD_LIBS_INIT})
-
-add_executable (runTests
-  Tests/TestMemory.cpp
-  Tests/TestProcessorState.cpp
-  Memory.cpp
-  ProcessorState.cpp)
-
-target_link_libraries (runTests
   ${CMAKE_THREAD_LIBS_INIT}
-  ${Boost_LIBRARIES}
-  gtest
-  gtest_main)
-  
+  ${BOOST_LIBRARIES}
+  ${SDL2_LIBRARIES}
+  ${GLEW_LIBRARIES}
+  ${OPENGL_LIBRARIES})
+
 install (TARGETS nebula
   RUNTIME DESTINATION bin)
+
+##
+## Experiments
+##
+
+add_executable (exp-sound
+  ${PLATFORM_SOURCE}
+  src/experimental/sound.cpp)
+
+target_link_libraries (exp-sound
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${BOOST_LIBRARIES}
+  ${SDL2_LIBRARIES}
+  ${GLEW_LIBRARIES}
+  ${OPENGL_LIBRARIES})
