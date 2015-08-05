@@ -29,13 +29,11 @@ Installing
 
 The process of installing Nebula is complicated by the necessity that it be compiled from its source code. There’s no reason why Nebula cannot be packaged as something like a RPM or MSI, but doing so is not a priority right now.
 
-The easiest way to get the Nebula sources is to clone the entire Dcpu16Universe (or *dcpu16-universe*, depending on your sensibilities) project with Git.
+To get the Nebula source code, clone it from GitHub:
 
 ``` bash
-    $ git clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe
+    $ git clone https://github.com/hakuch/Nebula.git nebula
 ```
-
-The Nebula emulator exists in `/src/nebula`, where `/` denotes the root directory of the source tree.
 
 ### Source Dependencies and Supported Platforms
 

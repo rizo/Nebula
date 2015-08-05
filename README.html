@@ -92,9 +92,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>This section details how to get Nebula up and running.</p>
 <h2 id="installing">Installing</h2>
 <p>The process of installing Nebula is complicated by the necessity that it be compiled from its source code. There’s no reason why Nebula cannot be packaged as something like a RPM or MSI, but doing so is not a priority right now.</p>
-<p>The easiest way to get the Nebula sources is to clone the entire Dcpu16Universe (or <em>dcpu16-universe</em>, depending on your sensibilities) project with Git.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">git</span> clone https://github.com/hakuch/Dcpu16Universe dcpu16-universe</code></pre></div>
-<p>The Nebula emulator exists in <code>/src/nebula</code>, where <code>/</code> denotes the root directory of the source tree.</p>
+<p>To get the Nebula source code, clone it from GitHub:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">    $ <span class="kw">git</span> clone https://github.com/hakuch/Nebula.git nebula</code></pre></div>
 <h3 id="source-dependencies-and-supported-platforms">Source Dependencies and Supported Platforms</h3>
 <p>Nebula is completely platform independent. It is carefully written to use only platform-neutral features of C++ and makes use of libraries which are themselves cross-platform.</p>
 <p>Nebula uses many features from the most recent version of the C++ language standard, C++11. While GCC close to version 4.8 and Clang close to version 3.3 have no issue compiling Nebula, Microsoft’s Visual C++ compiler still struggles with some of the language features. Hopefully this will change in the near future.</p>
