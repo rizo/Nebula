@@ -1,0 +1,4 @@
+REC
+S .
+B ../_build/test
+PKG oUnit

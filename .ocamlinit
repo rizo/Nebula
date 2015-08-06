@@ -1,0 +1,10 @@
+#utop_prompt_simple ;;
+
+#directory "src" ;;
+#directory "_build/src" ;;
+
+#load "nebula.cma" ;;
+
+#install_printer Word.pp ;;
+
+open Prelude ;;

@@ -1,0 +1,3 @@
+bin: [
+  "nebula_main.native" {"nebula"}
+]

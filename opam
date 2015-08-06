@@ -1,0 +1,18 @@
+opam-version: "1.2"
+name: "nebula"
+version: "0.1.0"
+maintainer: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
+authors: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
+homepage: "https://github.com:hakuch/Nebula"
+license: "Apache 2.0"
+dev-repo: "git@github.com:hakuch/Nebula"
+build: [
+  [make]
+]
+depends: [
+  "ctypes"
+  "ctypes-foreign"
+  "ocamlfind" {build}
+  "ounit" {test}
+  "ppx_deriving"
+]
