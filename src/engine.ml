@@ -1,4 +1,4 @@
- open Prelude
+open Prelude
 
 exception Bad_decoding of word * Computer.t
 
