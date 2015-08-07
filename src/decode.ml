@@ -23,6 +23,15 @@ let code w =
   | 0x01 -> Some Set
   | _ -> None
 
+(** Decode a special opcode. *)
+let special_code w =
+  let open Special_code in
+  match Word.to_int w with
+  | 0x01 -> Some Jsr
+  | 0x08 -> Some Int
+  | 0x0a -> Some Ias
+  | _ -> None
+
 (** Decode a register. *)
 let register w =
   match Word.to_int w with
@@ -73,4 +82,12 @@ let instruction w =
     Some (Instruction.Binary (c, b, a))
   in
 
-  binary w
+  let unary w =
+    special_code Word.((w land word 0x3e0) lsr 5) >>= fun c ->
+    address A Word.((w land word 0xfc00) lsr 10) >>= fun a ->
+    Some (Instruction.Unary (c, a))
+  in
+
+  match binary w with
+  | Some ins -> Some ins
+  | None -> unary w

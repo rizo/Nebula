@@ -5,7 +5,7 @@ maintainer: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
 authors: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
 homepage: "https://github.com:hakuch/Nebula"
 license: "Apache 2.0"
-dev-repo: "git@github.com:hakuch/Nebula"
+dev-repo: "git@github.com:hakuch/Nebula.git"
 build: [
   [make]
 ]

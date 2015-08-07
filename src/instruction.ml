@@ -46,3 +46,16 @@ and execute_unary code address_a =
             trigger (Interrupt.Trigger.Software a) interrupt_ctrl
         }
     end
+
+  | Ias ->
+    let open Interrupt_control in
+    state_a >>= fun a ->
+    Computer_state.write_special Special.IA a >>= fun () ->
+    if a != word 0 then
+      modify begin function
+          { interrupt_ctrl; _ } as c ->
+          { c with
+            interrupt_ctrl = enable_queuing interrupt_ctrl }
+      end
+    else
+      unit ()
