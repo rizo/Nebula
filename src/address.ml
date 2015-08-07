@@ -25,16 +25,20 @@ let get = function
   | Reg_direct r -> read_register r
   | Reg_indirect r -> read_register r >>= read_memory
   | Reg_indirect_offset r ->
-    next_word >>= fun n ->
-    read_register r >>= fun v ->
-    read_memory Word.(n + v)
+    begin
+      next_word >>= fun n ->
+      read_register r >>= fun v ->
+      read_memory Word.(n + v)
+    end
   | Push -> raise Invalid_operation
   | Pop -> pop
   | Peek -> read_special SP >>= read_memory
   | Pick ->
-    next_word >>= fun n ->
-    read_special SP >>= fun sp ->
-    read_memory Word.(n + sp)
+    begin
+      next_word >>= fun n ->
+      read_special SP >>= fun sp ->
+      read_memory Word.(n + sp)
+    end
   | SP -> read_special SP
   | PC -> read_special PC
   | EX -> read_special EX
@@ -46,16 +50,20 @@ let set value = function
   | Reg_direct r -> write_register r value
   | Reg_indirect r -> read_register r >>= fun offset -> write_memory offset value
   | Reg_indirect_offset r ->
-    next_word >>= fun n ->
-    read_register r >>= fun v ->
-    write_memory Word.(n + v) value
+    begin
+      next_word >>= fun n ->
+      read_register r >>= fun v ->
+      write_memory Word.(n + v) value
+    end
   | Push -> push value
   | Pop -> raise Invalid_operation
   | Peek -> read_special SP >>= fun sp -> write_memory sp value
   | Pick ->
-    next_word >>= fun n ->
-    read_special SP >>= fun sp ->
-    write_memory Word.(sp + n) value
+    begin
+      next_word >>= fun n ->
+      read_special SP >>= fun sp ->
+      write_memory Word.(sp + n) value
+    end
   | SP -> write_special SP value
   | PC -> write_special PC value
   | EX -> write_special EX value

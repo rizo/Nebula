@@ -5,11 +5,9 @@ type t =
   | Unary of Special_code.t * Address.t
 
 let rec execute = function
-  | Binary (code, address_b, address_a) ->
-    Computer_state.of_program (execute_binary code address_b address_a)
-
-  | Unary (code, address_a) ->
-    execute_unary code address_a
+  | Binary (code, address_b, address_a) -> Computer_state.of_program
+                                             (execute_binary code address_b address_a)
+  | Unary (code, address_a) -> execute_unary code address_a
 
 and execute_binary code address_b address_a =
   let open Code in
@@ -29,33 +27,35 @@ and execute_unary code address_a =
 
   match code with
   | Jsr ->
-    state_a >>= fun a ->
-    of_program begin
-      let open Program.Monad in
-      read_special Special.PC >>= push >>= fun () ->
-      write_special Special.PC a
+    begin
+      state_a >>= fun a ->
+      of_program begin
+        let open Program.Monad in
+        read_special Special.PC >>= push >>= fun () ->
+        write_special Special.PC a
+      end
     end
-
   | Int ->
-    let open Interrupt_control in
-    state_a >>= fun a ->
-    modify begin function
-        { interrupt_ctrl; _ } as c ->
-        { c with
-          interrupt_ctrl =
-            trigger (Interrupt.Trigger.Software a) interrupt_ctrl
-        }
-    end
-
-  | Ias ->
-    let open Interrupt_control in
-    state_a >>= fun a ->
-    Computer_state.write_special Special.IA a >>= fun () ->
-    if a != word 0 then
+    begin
+      let open Interrupt_control in
+      state_a >>= fun a ->
       modify begin function
           { interrupt_ctrl; _ } as c ->
           { c with
-            interrupt_ctrl = enable_queuing interrupt_ctrl }
+            interrupt_ctrl =
+              trigger (Interrupt.Trigger.Software a) interrupt_ctrl
+          }
       end
-    else
-      unit ()
+    end
+  | Ias ->
+    begin
+      let open Interrupt_control in
+      state_a >>= fun a ->
+      Computer_state.write_special Special.IA a >>= fun () ->
+      modify begin function
+          { interrupt_ctrl; _ } as c ->
+          { c with
+            interrupt_ctrl =
+              (if a = word 0 then disable_queuing else enable_queuing) interrupt_ctrl }
+      end
+    end

@@ -16,6 +16,10 @@ module Monad_instance : Monad_class.S with type 'a t = 'a t
 
 module Monad : module type of Monad_class.Extend(Monad_instance)
 
+module Functor_instance : module type of Functor_class.Of_monad(Monad_instance)
+
+module Functor : module type of Functor_class.Extend(Functor_instance)
+
 (** {2 Basic input and output} *)
 
 val put_string : string -> unit t
@@ -55,6 +59,9 @@ val unsafe_perform : 'a t -> 'a
 val main : 'a t -> unit
 
 (** {2 Misc. system functions} *)
+
+(** Accurate system time with better than one second resolution. *)
+val now : float t
 
 (** Terminate execute of the program with the designated error code. *)
 val terminate : int -> unit t

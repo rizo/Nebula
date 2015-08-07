@@ -2,8 +2,11 @@ Address
 Applicative_class
 Computer
 Computer_state
+Clock
 Cpu
 Decode
+Device
+Device_set
 Either
 Engine
 Free
@@ -12,6 +15,7 @@ Instruction
 Interrupt
 Interrupt_control
 IO
+Manifest
 Mem
 Monad_class
 Option

@@ -9,6 +9,7 @@ type t = {
   memory : Mem.t;
   cpu : Cpu.t;
   interrupt_ctrl : Interrupt_control.t;
+  manifest : Manifest.t;
 }
 
 (** The default computer state, with everything initially in its "empty"

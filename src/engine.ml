@@ -31,14 +31,17 @@ let step t =
     | Some (trigger, interrupt_ctrl) ->
       match trigger with
       | Interrupt.Trigger.Software message ->
-        let interrupt_ctrl =
-          Interrupt_control.receive (Interrupt.Message message) interrupt_ctrl
-        in
-        { t with interrupt_ctrl }
-
+        begin
+          let interrupt_ctrl =
+            Interrupt_control.receive (Interrupt.Message message) interrupt_ctrl
+          in
+          { t with interrupt_ctrl }
+        end
       | Interrupt.Trigger.Hardware index ->
-        print_endline ("Sending HW interrupt to " ^ (Word.show index));
-        t
+        begin
+          print_endline ("Sending HW interrupt to " ^ (Word.show index));
+          t
+        end
   in
 
   let t =
@@ -60,5 +63,16 @@ let step t =
   | Program.Stack_underflow -> raise (Stack_underflow t)
   | Program.Stack_overflow -> raise (Stack_overflow t)
 
-let rec launch t =
-  launch (step t)
+let talk_to_devices s t =
+  let open IO.Monad in
+  Clock.visit t s.Device_set.clock >>= fun (c, clock) ->
+  IO.unit (Device_set.{ clock }, c)
+
+let rec launch s t =
+  let open IO.Monad in
+  talk_to_devices s t >>= fun (s, t) ->
+  try
+    let next = step t in
+    launch s next
+  with
+  | error -> IO.unit error

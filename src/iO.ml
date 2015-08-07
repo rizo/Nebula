@@ -7,6 +7,10 @@ end
 
 include Free.Make(Block)
 
+module Functor_instance = Functor_class.Of_monad(Monad_instance)
+
+module Functor = Functor_class.Extend(Functor_instance)
+
 let unit a =
   lift (fun _ -> a)
 
@@ -25,3 +29,6 @@ let main t =
 
 let terminate status =
   lift (fun _ -> exit status)
+
+let now =
+  lift Unix.gettimeofday
