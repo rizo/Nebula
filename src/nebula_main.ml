@@ -12,28 +12,22 @@ let show_error_and_exit ?computer message =
 
   IO.terminate 1
 
-let clock_instance clock =
-  (module struct
-    module Device = Clock
-
-     let this = clock
-   end : Device.Instance)
-
 let () =
   IO.main begin
     let open Computer in
-    let open Device_set in
 
     Mem.of_file "a.bin" >>= function
     | Left (`Bad_memory_file message) -> show_error_and_exit ("Reading memory file: " ^ message)
     | Right memory ->
       begin
-        Device_set.make >>= fun devices ->
+        Clock.make >>= fun clock ->
+
         let manifest =
           Manifest.empty
-          |> Manifest.register (clock_instance devices.clock)
+          |> Manifest.register (module Clock) clock
+          |> Manifest.register (module Clock) clock
         in
-        Engine.launch devices { Computer.default with memory; manifest } >>= fun error ->
+        Engine.launch { Computer.default with memory; manifest } >>= fun error ->
 
         match error with
         | Engine.Bad_decoding (w, computer) ->
@@ -43,6 +37,12 @@ let () =
           end
         | Engine.Stack_overflow computer -> show_error_and_exit "Stack overflow." ~computer
         | Engine.Stack_underflow computer -> show_error_and_exit "Stack underflow" ~computer
+        | Engine.No_such_device (index, computer) ->
+          begin
+            show_error_and_exit
+              (sprintf "Index %s is not associated with a device." (Word.show index))
+              ~computer
+          end
         | _ -> show_error_and_exit
                  (sprintf "Unexpected failure: %s" (Printexc.to_string error))
       end

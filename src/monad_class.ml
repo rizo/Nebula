@@ -18,6 +18,8 @@ module type EXTENSION = sig
   val sequence : 'a t list -> 'a list t
 
   val sequence_unit : 'a t list -> unit t
+
+  val fold : ('b -> 'a -> 'b t) -> 'b -> 'a list -> 'b t
 end
 
 module Extend(M : S) : (EXTENSION with type 'a t := 'a M.t) = struct
@@ -40,4 +42,12 @@ module Extend(M : S) : (EXTENSION with type 'a t := 'a M.t) = struct
 
   let sequence_unit mas =
     sequence mas >>= fun _ -> M.pure (lazy ())
+
+  let fold f z al =
+    List.fold_right
+      (fun a mb ->
+         mb >>= fun b ->
+         f b a)
+      al
+      (M.pure (lazy z))
 end

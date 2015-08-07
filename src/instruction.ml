@@ -59,3 +59,15 @@ and execute_unary code address_a =
               (if a = word 0 then disable_queuing else enable_queuing) interrupt_ctrl }
       end
     end
+  | Hwi ->
+    begin
+      let open Interrupt_control in
+      state_a >>= fun a ->
+      modify begin function
+          { interrupt_ctrl; _ } as c ->
+          { c with
+            interrupt_ctrl =
+              trigger (Interrupt.Trigger.Hardware a) interrupt_ctrl
+          }
+      end
+    end

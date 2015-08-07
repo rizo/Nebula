@@ -30,6 +30,7 @@ let special_code w =
   | 0x01 -> Some Jsr
   | 0x08 -> Some Int
   | 0x0a -> Some Ias
+  | 0x12 -> Some Hwi
   | _ -> None
 
 (** Decode a register. *)

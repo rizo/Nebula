@@ -9,19 +9,18 @@ let make =
   IO.now |> IO.Functor.map (fun time -> { last_interrupt_time = time })
 
 let clock_period =
-  3.0
+  10.0
 
-let visit c t =
+let on_visit t =
   IO.now |> IO.Functor.map (fun time ->
       let since_last_interrupt = time -. t.last_interrupt_time in
       if since_last_interrupt >= clock_period then
-        (Computer.{
-            c with
-            interrupt_ctrl =
-              Interrupt_control.receive (Interrupt.Message (word 7)) c.interrupt_ctrl
-          },
-         { last_interrupt_time = time })
-      else (c, t))
+        ({ last_interrupt_time = time }, Some (Interrupt.Message (word 7)))
+      else
+        (t, None))
+
+let on_interrupt message t =
+  Program.Return t
 
 let info =
   Device.Info.{
