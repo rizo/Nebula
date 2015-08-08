@@ -8,8 +8,6 @@ val empty : t
 
 val register : (module Device.S with type t = 'a) -> 'a -> t -> t
 
-(* val register : (module Device.Instance) -> t -> t *)
-
 val update : (module Device.Instance) -> t -> t
 
 val all : t -> (module Device.Instance) list

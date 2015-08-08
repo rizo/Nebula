@@ -26,6 +26,7 @@ let () =
           Manifest.empty
           |> Manifest.register (module Clock) clock
           |> Manifest.register (module Clock) clock
+          |> Manifest.register (module Clock) clock
         in
         Engine.launch { Computer.default with memory; manifest } >>= fun error ->
 

@@ -12,4 +12,8 @@ module Make : functor (F : Functor_class.S) -> sig
   module Monad_instance : (Monad_class.S with type 'a t = 'a t)
 
   module Monad : module type of Monad_class.Extend(Monad_instance)
+
+  module Functor_instance : module type of Functor_class.Of_monad(Monad_instance)
+
+  module Functor : module type of Functor_class.Extend(Functor_instance)
 end

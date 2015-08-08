@@ -1,26 +1,59 @@
-open IO.Monad
 open Prelude
 
 type t = {
-  last_interrupt_time : float;
+  on : bool;
+  divider : word;
+  elapsed_ticks : word;
+  last_tick_time : float;
+  interrupt_message : word option;
 }
 
-let make =
-  IO.now |> IO.Functor.map (fun time -> { last_interrupt_time = time })
+let base_clock_period =
+  1.0 /. 60.0
 
-let clock_period =
-  10.0
+let make =
+  let open IO.Monad in
+  IO.now |> IO.Functor.map (fun time -> {
+        on = true;
+        divider = word 1;
+        elapsed_ticks = word 0;
+        last_tick_time = time;
+        interrupt_message = None;
+      })
 
 let on_visit t =
-  IO.now |> IO.Functor.map (fun time ->
-      let since_last_interrupt = time -. t.last_interrupt_time in
-      if since_last_interrupt >= clock_period then
-        ({ last_interrupt_time = time }, Some (Interrupt.Message (word 7)))
-      else
-        (t, None))
+  let open IO.Monad in
+  let open IO.Functor in
+  if not t.on then IO.unit (t, None)
+  else
+    IO.now |> map (fun time ->
+        let since_last_tick = time -. t.last_tick_time in
+        let effective_period = float (Word.to_int t.divider) *. base_clock_period in
+
+        if since_last_tick >= effective_period then
+          ({ t with
+             last_tick_time = time;
+             elapsed_ticks = Word.(t.elapsed_ticks + word 1);
+           },
+           t.interrupt_message |> Option.Functor.map (fun m -> Interrupt.Message m ))
+        else
+          (t, None))
 
 let on_interrupt message t =
-  Program.Return t
+  let open Program in
+  let open Program.Functor in
+  let open Program.Monad in
+  read_register Reg.A |> map Word.to_int >>= function
+  | 0 -> begin
+      read_register Reg.B >>= fun b ->
+      Return (if b = word 0 then { t with on = false } else { t with on = true; divider = b; })
+    end
+  | 1 -> write_register Reg.C t.elapsed_ticks >>= fun () -> Return t
+  | 2 -> begin
+      read_register Reg.B >>= fun b ->
+      Return { t with interrupt_message = (if b = word 0 then None else Some b) }
+    end
+  | _ -> Return t
 
 let info =
   Device.Info.{

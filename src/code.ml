@@ -2,3 +2,4 @@
 
 type t =
   | Set
+  | Add

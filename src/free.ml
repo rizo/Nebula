@@ -24,4 +24,8 @@ module Make(F : Functor_class.S) = struct
   end
 
   module Monad = Monad_class.Extend(Monad_instance)
+
+  module Functor_instance = Functor_class.Of_monad(Monad_instance)
+
+  module Functor = Functor_class.Extend(Functor_instance)
 end

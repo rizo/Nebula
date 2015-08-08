@@ -15,6 +15,11 @@ and execute_binary code address_b address_a =
   let open Program.Monad in
   match code with
   | Set -> Address.get address_a >>= fun a -> Address.set a address_b
+  | Add -> begin
+      Address.get address_a >>= fun a ->
+      Address.get address_b >>= fun b ->
+      Address.set Word.(a + b) address_b
+    end
 
 and execute_unary code address_a =
   let open Computer in
@@ -26,8 +31,7 @@ and execute_unary code address_a =
   let state_a = of_program (Address.get address_a) in
 
   match code with
-  | Jsr ->
-    begin
+  | Jsr -> begin
       state_a >>= fun a ->
       of_program begin
         let open Program.Monad in
@@ -35,8 +39,7 @@ and execute_unary code address_a =
         write_special Special.PC a
       end
     end
-  | Int ->
-    begin
+  | Int -> begin
       let open Interrupt_control in
       state_a >>= fun a ->
       modify begin function
@@ -47,20 +50,23 @@ and execute_unary code address_a =
           }
       end
     end
-  | Ias ->
-    begin
+  | Ias -> begin
       let open Interrupt_control in
-      state_a >>= fun a ->
-      Computer_state.write_special Special.IA a >>= fun () ->
+      state_a >>= Computer_state.write_special Special.IA
+    end
+  | Rfi -> begin
+      let open Interrupt_control in
+      of_program begin
+        let open Program.Monad in
+        pop >>= write_register Reg.A >>= fun () ->
+        pop >>= write_special Special.PC
+      end >>= fun () ->
       modify begin function
-          { interrupt_ctrl; _ } as c ->
-          { c with
-            interrupt_ctrl =
-              (if a = word 0 then disable_queuing else enable_queuing) interrupt_ctrl }
+        | { interrupt_ctrl; _ } as c ->
+          { c with interrupt_ctrl = Interrupt_control.enable_dequeuing interrupt_ctrl }
       end
     end
-  | Hwi ->
-    begin
+  | Hwi -> begin
       let open Interrupt_control in
       state_a >>= fun a ->
       modify begin function
@@ -70,4 +76,10 @@ and execute_unary code address_a =
               trigger (Interrupt.Trigger.Hardware a) interrupt_ctrl
           }
       end
+    end
+  | Dbg -> begin
+      state_a >>= fun a ->
+      let time = IO.unsafe_perform IO.now in
+      print_endline (Printf.sprintf "[%f] %s" time (Word.show a));
+      unit ()
     end

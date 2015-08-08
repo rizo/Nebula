@@ -16,7 +16,7 @@ exception Caught_fire
 (** Enqueue a new interrupt from an external source.
 
     If queueing is disabled, then do nothing. *)
-val receive : Interrupt.t -> t -> t
+val enqueue : Interrupt.t -> t -> t
 
 (** Remove the next received interrupt from the queue, if there is one. *)
 val handle : t -> (Interrupt.t * t) option
@@ -31,11 +31,11 @@ val trigger : Interrupt.Trigger.t -> t -> t
     This will also remove the trigger. *)
 val triggered : t -> (Interrupt.Trigger.t * t) option
 
-(** Whether or not received interrupts are queued. *)
-val queuing : t -> bool
+(** Whether or not interrupts are being dequeued during execution. *)
+val dequeuing : t -> bool
 
-(** Enable interrupt queueing. *)
-val enable_queuing :  t -> t
+(** Enable interrupt dequeuing. *)
+val enable_dequeuing :  t -> t
 
-(** Disable interrupt queueing. *)
-val disable_queuing : t -> t
+(** Disable interrupt dequeuing. *)
+val disable_dequeuing : t -> t

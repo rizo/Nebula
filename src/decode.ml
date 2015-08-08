@@ -21,6 +21,7 @@ let code w =
   let open Code in
   match Word.to_int w with
   | 0x01 -> Some Set
+  | 0x02 -> Some Add
   | _ -> None
 
 (** Decode a special opcode. *)
@@ -30,7 +31,9 @@ let special_code w =
   | 0x01 -> Some Jsr
   | 0x08 -> Some Int
   | 0x0a -> Some Ias
+  | 0x0b -> Some Rfi
   | 0x12 -> Some Hwi
+  | 0x1f -> Some Dbg
   | _ -> None
 
 (** Decode a register. *)
