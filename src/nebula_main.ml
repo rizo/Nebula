@@ -12,12 +12,12 @@ let show_error_and_exit ?computer message =
 
   IO.terminate 1
 
-let () =
+let main file_name =
   IO.main begin
     let open Computer in
 
-    Mem.of_file "a.bin" >>= function
-    | Left (`Bad_memory_file message) -> show_error_and_exit ("Reading memory file: " ^ message)
+    Mem.of_file file_name >>= function
+    | Left (`Bad_memory_file message) -> show_error_and_exit ("Reading memory file " ^ message)
     | Right memory ->
       begin
         Clock.make >>= fun clock ->
@@ -48,3 +48,8 @@ let () =
                  (sprintf "Unexpected failure: %s" (Printexc.to_string error))
       end
   end
+
+let () =
+  match Cli.parse_to main with
+  | `Error _ -> exit 1
+  | _ -> exit 0

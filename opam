@@ -9,10 +9,17 @@ dev-repo: "git@github.com:hakuch/Nebula.git"
 build: [
   [make]
 ]
+build-doc: [
+  [make "doc"]
+]
 depends: [
-  "ctypes"
-  "ctypes-foreign"
-  "ocamlfind" {build}
-  "ounit" {test}
-  "ppx_deriving"
+  "cmdliner" { = "0.9.7" }
+  "ctypes" { = "0.4.1" }
+  "ctypes-foreign" { = "0.4.0" }
+  "ocamlfind" {build & = "1.5.5" }
+  "ounit" {test & = "2.0.0" }
+  "ppx_deriving" { = "2.2" }
+]
+available: [
+  ocaml-version >= "4.02.3"
 ]

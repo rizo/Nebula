@@ -1,7 +1,8 @@
 (** Helper for invoking ocamlbuild. *)
 
 let package_depends =
-  [ "ctypes";
+  [ "cmdliner";
+    "ctypes";
     "ctypes.foreign";
     "ppx_deriving.std";
     "threads" ]
