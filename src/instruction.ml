@@ -50,10 +50,7 @@ and execute_unary code address_a =
           }
       end
     end
-  | Ias -> begin
-      let open Interrupt_control in
-      state_a >>= Computer_state.write_special Special.IA
-    end
+  | Ias -> state_a >>= Computer_state.write_special Special.IA
   | Rfi -> begin
       let open Interrupt_control in
       of_program begin
