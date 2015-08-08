@@ -24,8 +24,7 @@ exception Invalid_operation
 let get = function
   | Reg_direct r -> read_register r
   | Reg_indirect r -> read_register r >>= read_memory
-  | Reg_indirect_offset r ->
-    begin
+  | Reg_indirect_offset r -> begin
       next_word >>= fun n ->
       read_register r >>= fun v ->
       read_memory Word.(n + v)
@@ -33,8 +32,7 @@ let get = function
   | Push -> raise Invalid_operation
   | Pop -> pop
   | Peek -> read_special SP >>= read_memory
-  | Pick ->
-    begin
+  | Pick -> begin
       next_word >>= fun n ->
       read_special SP >>= fun sp ->
       read_memory Word.(n + sp)
@@ -49,8 +47,7 @@ let get = function
 let set value = function
   | Reg_direct r -> write_register r value
   | Reg_indirect r -> read_register r >>= fun offset -> write_memory offset value
-  | Reg_indirect_offset r ->
-    begin
+  | Reg_indirect_offset r -> begin
       next_word >>= fun n ->
       read_register r >>= fun v ->
       write_memory Word.(n + v) value
@@ -58,8 +55,7 @@ let set value = function
   | Push -> push value
   | Pop -> raise Invalid_operation
   | Peek -> read_special SP >>= fun sp -> write_memory sp value
-  | Pick ->
-    begin
+  | Pick -> begin
       next_word >>= fun n ->
       read_special SP >>= fun sp ->
       write_memory Word.(sp + n) value
