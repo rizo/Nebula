@@ -28,6 +28,24 @@ Make sure to switch to the `ocaml` branch:
 $ git checkout ocaml
 ```
 
+## Running
+
+Nebula runs from the command line.
+
+Executing
+
+```bash
+$ nebula FILE
+```
+
+will treat the file named `FILE` as a memory image for the DCPU-16 and start executing instructions at the start of the memory it has loaded.
+
+For more options and information, execute
+
+```bash
+$ nebula --help
+```
+
 ## Installing
 
 The fastest way to use Nebula is to install it to your local file system with opam. A good way to do this is to pin it in the root source directory:
