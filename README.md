@@ -5,16 +5,12 @@ peripherals.
 
 ## Philosophy
 
-Nebula is written in a very pure functional style that is not particularly common in OCaml.
+Nebula is written in OCaml, and in a very pure functional style.
 
 Some notable points:
 
 - Most impure code is managed in a `IO.t` context with a monadic interface that is very similar to `IO` in Haskell. The vast majority of the code is purely functional and interfaces that expose mutation are (virtually) absent.
 - Interaction with the CPU and memory is expressed as pure data with a DSL defined using the free monad. These "programs" can be subsequently _interpreted_ in terms of the state monad or any other context.
-
-## About
-
-Nebula is written by Jesse Haber-Kucharsky (@hakuch).
 
 # Quick-start guide
 
@@ -66,9 +62,9 @@ will start a new shell with the necessary dependencies in scope (after they have
 
 Nebula is built by invoking the `make` command with one of the following targets:
 
-- `doc`: Development documentation
-- `top`: Interactive OCaml top-level REPL for Nebula's sources
-- `lib`: The Nebula library that is used for the top-level, the main executable, and tests
+- `doc`: Development documentation.
+- `top`: Interactive OCaml top-level REPL for Nebula's sources.
+- `lib`: The Nebula library that is used for the top-level, the main executable, and tests.
 - `test`: Build unit tests.
 - `nebula`: The main executable.
 
