@@ -44,6 +44,12 @@ $ opam install nebula
 
 This will install the `nebula` executable.
 
+Subsequent changes (perhaps made during development) can be installed by invoking
+
+```bash
+$ opam upgrade nebula
+```
+
 ## Development
 
 ### Nix environment
