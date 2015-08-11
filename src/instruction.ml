@@ -76,7 +76,7 @@ and execute_unary code address_a =
     end
   | Dbg -> begin
       state_a >>= fun a ->
-      let time = IO.unsafe_perform IO.now in
+      let time = Unix.gettimeofday () in
       print_endline (Printf.sprintf "[%f] %s" time (Word.show a));
       unit ()
     end

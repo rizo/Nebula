@@ -1,5 +1,7 @@
 #utop_prompt_simple ;;
 
+#require "lwt.simple-top" ;;
+
 #directory "src" ;;
 #directory "_build/src" ;;
 

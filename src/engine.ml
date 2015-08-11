@@ -19,8 +19,9 @@ let handle_interrupt (Interrupt.Message message) c =
     read_special Special.IA >>= write_special Special.PC >>= fun () ->
     write_register Reg.A message
   end
-  |> Computer_state.run { c with
-                          interrupt_ctrl = Interrupt_control.disable_dequeuing c.interrupt_ctrl }
+  |> Computer_state.run
+    { c with
+      interrupt_ctrl = Interrupt_control.disable_dequeuing c.interrupt_ctrl }
   |> fst
 
 let trigger_interrupt trigger c =
@@ -89,11 +90,11 @@ let step c =
   c
 
 let visit_devices c =
+  let open Lwt in
   let open Computer in
-  let open IO.Monad in
 
   let visit_instance c (module I : Device.Instance) =
-    I.Device.on_visit I.this |> IO.Functor.map (fun (updated_this, generated_interrupt) ->
+    I.Device.on_visit I.this |> Lwt.map (fun (updated_this, generated_interrupt) ->
         let manifest =
           Manifest.update
             (module struct
@@ -111,14 +112,25 @@ let visit_devices c =
         { c with manifest; interrupt_ctrl })
   in
   let instances = Manifest.all c.manifest in
-  IO.Monad.fold visit_instance c instances
+  Lwt_monad.fold visit_instance c instances
 
-let rec launch c =
-  let open IO.Monad in
+let launch ~computer ~suspend_every suspend =
+  let open Lwt in
 
-  visit_devices c >>= fun c ->
-  try
-    let next = step c in
-    launch next
-  with
-  | error -> IO.unit error
+  let rec loop last_suspension_time computer =
+    visit_devices computer >>= fun computer ->
+    Lwt.wrap (fun () -> step computer) >>= fun computer ->
+
+    Precision_clock.get_time () >>= fun now ->
+    let elapsed = now - last_suspension_time in
+
+    let next () =
+      if elapsed >= suspend_every then
+        suspend computer |> map (fun computer -> now, computer)
+      else
+        return (last_suspension_time, computer)
+    in
+    next () >>= fun (time, computer) -> loop time computer
+  in
+
+  Precision_clock.get_time () >>= fun now -> loop now computer

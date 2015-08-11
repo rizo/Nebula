@@ -13,7 +13,7 @@ val empty : t
 val of_bytes : Bytes.t -> t
 
 (** Read memory from an image file specified through its name. *)
-val of_file : string -> ([> `Bad_memory_file of string], t) either IO.t
+val of_file : string -> ([> `Bad_memory_file of string], t) either Lwt.t
 
 (** {2 Reading and writing} *)
 

@@ -13,7 +13,7 @@ module type S = sig
 
   val on_interrupt : device_index -> t -> t Program.t
 
-  val on_visit : t -> (t * (Interrupt.t option)) IO.t
+  val on_visit : t -> (t * (Interrupt.t option)) Lwt.t
 
   val info : Info.t
 end

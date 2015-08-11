@@ -35,7 +35,7 @@ let of_bytes bytes =
   !memory
 
 let of_file filename =
-  IO.lift begin fun _ ->
+  Lwt.wrap begin fun () ->
     try
       let channel = open_in_bin filename in
       let size = in_channel_length channel in

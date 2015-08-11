@@ -4,16 +4,16 @@ type t = {
   on : bool;
   divider : word;
   elapsed_ticks : word;
-  last_tick_time : float;
+  last_tick_time : int;
   interrupt_message : word option;
 }
 
 let base_clock_period =
-  1.0 /. 60.0
+  16666666
 
-let make =
-  let open IO.Monad in
-  IO.now |> IO.Functor.map (fun time -> {
+let make () =
+  let open Lwt in
+  Precision_clock.get_time () |> Lwt.map (fun time -> {
         on = true;
         divider = word 1;
         elapsed_ticks = word 0;
@@ -22,13 +22,12 @@ let make =
       })
 
 let on_visit t =
-  let open IO.Monad in
-  let open IO.Functor in
-  if not t.on then IO.unit (t, None)
+  let open Lwt in
+  if not t.on then Lwt.return (t, None)
   else
-    IO.now |> map (fun time ->
-        let since_last_tick = time -. t.last_tick_time in
-        let effective_period = float (Word.to_int t.divider) *. base_clock_period in
+    Precision_clock.get_time () |> map (fun time ->
+        let since_last_tick = time - t.last_tick_time in
+        let effective_period = (Word.to_int t.divider) * base_clock_period in
 
         if since_last_tick >= effective_period then
           ({ t with

@@ -9,7 +9,7 @@ Nebula is written in OCaml, and in a very pure functional style.
 
 Some notable points:
 
-- Most impure code is managed in a `IO.t` context with a monadic interface that is very similar to `IO` in Haskell. The vast majority of the code is purely functional and interfaces that expose mutation are (virtually) absent.
+- All impure code is wrapped in `Lwt.t` from the `lwt` package, which is similar to `IO` in Haskell and with support for concurrency. The vast majority of the code is purely functional and interfaces that expose mutation are (virtually) absent.
 - Interaction with the CPU and memory is expressed as pure data with a DSL defined using the free monad. These "programs" can be subsequently _interpreted_ in terms of the state monad or any other context.
 
 # Quick-start guide
@@ -91,8 +91,6 @@ Nebula is built by invoking the `make` command with one of the following targets
 - `lib`: The Nebula library that is used for the top-level, the main executable, and tests.
 - `test`: Build unit tests.
 - `nebula`: The main executable.
-
-The `Makefile` actually calls into a short script, `make.ml`, that populates flags for the `ocamlbuild` tool.
 
 ### Testing
 
