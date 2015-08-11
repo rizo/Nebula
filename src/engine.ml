@@ -89,12 +89,12 @@ let step c =
   in
   c
 
-let visit_devices c =
+let tick_devices c =
   let open Lwt in
   let open Computer in
 
   let visit_instance c (module I : Device.Instance) =
-    I.Device.on_visit I.this |> Lwt.map (fun (updated_this, generated_interrupt) ->
+    I.Device.on_tick I.this |> map (fun (updated_this, generated_interrupt) ->
         let manifest =
           Manifest.update
             (module struct
@@ -118,8 +118,8 @@ let launch ~computer ~suspend_every suspend =
   let open Lwt in
 
   let rec loop last_suspension_time computer =
-    visit_devices computer >>= fun computer ->
-    Lwt.wrap (fun () -> step computer) >>= fun computer ->
+    tick_devices computer >>= fun computer ->
+    wrap (fun () -> step computer) >>= fun computer ->
 
     Precision_clock.get_time () >>= fun now ->
     let elapsed = now - last_suspension_time in

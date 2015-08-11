@@ -21,7 +21,10 @@ let make () =
         interrupt_message = None;
       })
 
-let on_visit t =
+let on_interaction t =
+  Lwt.return t
+
+let on_tick t =
   let open Lwt in
   if not t.on then Lwt.return (t, None)
   else

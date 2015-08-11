@@ -11,9 +11,11 @@ end
 module type S = sig
   type t
 
-  val on_interrupt : device_index -> t -> t Program.t
+  val on_interrupt : message -> t -> t Program.t
 
-  val on_visit : t -> (t * (Interrupt.t option)) Lwt.t
+  val on_interaction : t -> t Lwt.t
+
+  val on_tick : t -> (t * (Interrupt.t option)) Lwt.t
 
   val info : Info.t
 end

@@ -18,6 +18,7 @@ Lwt_monad
 Manifest
 Mem
 Monad_class
+Monitor
 Option
 Persistent_queue
 Precision_clock
@@ -27,5 +28,6 @@ Reg
 Sdl
 Special
 State
+Visual
 Word
 Toplevel

@@ -34,28 +34,32 @@ let handle_error error =
   | _ -> show_error_and_exit
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
-let render window =
-  Lwt_monad.sequence_unit Visual.[
-    set_color window Color.white;
-    clear window;
-    set_color window Color.red;
-    rectangle window ~origin:(0, 0) ~width:50 ~height:50;
-    render window
-    ]
+let interact_with_devices computer =
+  let open Lwt in
+  let open Computer in
 
-let handle_event window =
+  let interact_with_instance c (module I : Device.Instance) =
+    I.Device.on_interaction I.this |> map (fun updated_this ->
+        let manifest =
+          Manifest.update
+            (module struct
+              include I
+
+              let this = updated_this
+            end : Device.Instance)
+            c.manifest
+        in
+        { c with manifest })
+  in
+  let instances = Manifest.all computer.manifest in
+  Lwt_monad.fold interact_with_instance computer instances
+
+let handle_event computer =
   Input_event.poll () >>= function
   | Some Input_event.Quit -> exit 0
-  | _ -> render window
+  | _ -> interact_with_devices computer
 
-let prepare_manifest () =
-  Clock.make () >>= fun clock ->
-
-  Lwt.return Manifest.(
-    empty
-    |> register (module Clock) clock)
-
-let monitor_window () =
+let make_monitor_window () =
   Visual.Window.make ~width:640 ~height:480 ~title:"DCPU-16 Monitor"
 
 let frame_period =
@@ -69,14 +73,24 @@ let main file_name =
     | Left (`Bad_memory_file message) -> show_error_and_exit ("Reading memory file " ^ message)
     | Right memory -> begin
         initialize () >>= fun () ->
-        monitor_window () >>= fun window ->
-        prepare_manifest () >>= fun manifest ->
+
+        make_monitor_window () >>= fun window ->
+
+        Clock.make () >>= fun clock ->
+
+        let monitor = Monitor.make window in
+
+        let manifest = Manifest.(
+            empty
+            |> register (module Clock) clock
+            |> register (module Monitor) monitor)
+        in
 
         let computer = { Computer.default with memory; manifest } in
 
         let runtime () =
-          Engine.launch ~computer ~suspend_every:frame_period (fun computer ->
-              handle_event window >>= fun () -> return computer)
+          Engine.launch ~computer ~suspend_every:frame_period
+            handle_event
         in
 
         Lwt.catch
