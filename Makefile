@@ -11,14 +11,14 @@ default: nebula top
 nebula: lib
 	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.native
 
-stubs: $(STUB_SOURCES)
-	$(OCAMLBUILD) $(STUB_OBJECTS)
-
 lib: stubs
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/nebula.cma
 
 test: lib
 	$(OCAMLBUILD) test/nebula_test.byte
+
+stubs: $(STUB_SOURCES)
+	$(OCAMLBUILD) $(STUB_OBJECTS)
 
 top: lib
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
