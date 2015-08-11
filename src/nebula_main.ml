@@ -64,7 +64,6 @@ let frame_period =
 let main file_name =
   Lwt_main.run begin
     let open Computer in
-    let open Lwt in
 
     Mem.of_file file_name >>= function
     | Left (`Bad_memory_file message) -> show_error_and_exit ("Reading memory file " ^ message)
