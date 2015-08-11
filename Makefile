@@ -8,20 +8,21 @@ OCAMLBUILD = ocamlbuild -use-ocamlfind
 
 default: nebula top
 
-nebula: lib
+nebula: stubs
 	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.native
-
-lib: stubs
-	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/nebula.cma
 
 test: lib
 	$(OCAMLBUILD) test/nebula_test.byte
 
+top: lib
+	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
+
+lib: stubs
+	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/nebula.cma
+
 stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)
 
-top: lib
-	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
 
 # TODO
 # doc: lib
