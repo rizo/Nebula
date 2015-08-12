@@ -1,5 +1,9 @@
 type 'a t
 
+val throw : exn -> 'a t
+
+val catch : 'a t -> (exn -> 'a t) -> 'a t
+
 val lift : (unit -> 'a) -> 'a t
 
 val unit : 'a -> 'a t

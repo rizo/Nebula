@@ -57,7 +57,10 @@ let handle_event computer =
   | _ -> interact_with_devices computer
 
 let make_monitor_window =
-  Visual.Window.make ~width:640 ~height:480 ~title:"DCPU-16 Monitor"
+  Visual.Window.make
+    ~width:Monitor.total_width
+    ~height:Monitor.total_height
+    ~title:"DCPU-16 Monitor"
 
 let frame_period =
   16666667
@@ -70,12 +73,10 @@ let main file_name =
     | Left (`Bad_memory_file message) -> show_error_and_exit ("Reading memory file " ^ message)
     | Right memory -> begin
         initialize >>= fun () ->
-
         make_monitor_window >>= fun window ->
 
         Clock.make >>= fun clock ->
-
-        let monitor = Monitor.make window in
+        Monitor.make window >>= fun monitor ->
 
         let manifest = Manifest.(
             empty
@@ -85,11 +86,10 @@ let main file_name =
 
         let computer = { Computer.default with memory; manifest } in
 
-        try
-          Engine.launch ~computer ~suspend_every:frame_period
-            handle_event
-        with
-          error -> handle_error error
+        IO.catch
+          (Engine.launch ~computer ~suspend_every:frame_period
+             handle_event)
+          handle_error
       end
   end
 

@@ -36,3 +36,7 @@ module Float : sig
 
   val compare : t -> t -> int
 end
+
+module Exception : sig
+  type t = exn
+end

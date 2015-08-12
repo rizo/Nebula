@@ -20,6 +20,7 @@ Mem
 Monad_class
 Monitor
 Option
+Or_exn
 Persistent_queue
 Precision_clock
 Prelude

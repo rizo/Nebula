@@ -33,3 +33,7 @@ module Float = struct
   let compare x y =
     compare x y
 end
+
+module Exception = struct
+  type t = exn
+end
