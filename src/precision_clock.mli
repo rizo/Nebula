@@ -1,1 +1,1 @@
-val get_time : unit -> int Lwt.t
+val get_time : int IO.t

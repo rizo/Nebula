@@ -1,5 +1,6 @@
+open IO.Monad
+
 open Ctypes
-open Lwt
 open Unsigned
 
 module Color = struct
@@ -34,7 +35,7 @@ module Window = struct
     Sdl.lift "Creating window: %s" (fun () ->
          Sdl.create_window ~w:width ~h:height title Sdl.Window.windowed) >>= fun window ->
     Sdl.lift "Creating renderer: %s" (fun () -> Sdl.create_renderer window) >>= fun renderer ->
-    Lwt.return { window; renderer }
+    IO.unit { window; renderer }
 end
 
 let set_color window color =
@@ -60,4 +61,4 @@ let rectangle window ~origin ~width ~height =
   end
 
 let render w =
-  Lwt.wrap (fun () -> Sdl.render_present w.Window.renderer)
+  IO.lift (fun () -> Sdl.render_present w.Window.renderer)

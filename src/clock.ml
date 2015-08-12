@@ -11,9 +11,8 @@ type t = {
 let base_clock_period =
   16666666
 
-let make () =
-  let open Lwt in
-  Precision_clock.get_time () |> Lwt.map (fun time -> {
+let make =
+  Precision_clock.get_time |> IO.Functor.map (fun time -> {
         on = true;
         divider = word 1;
         elapsed_ticks = word 0;
@@ -22,13 +21,14 @@ let make () =
       })
 
 let on_interaction t =
-  Lwt.return t
+  IO.unit t
 
 let on_tick t =
-  let open Lwt in
-  if not t.on then Lwt.return (t, None)
+  let open IO.Monad in
+  let open IO.Functor in
+  if not t.on then IO.unit (t, None)
   else
-    Precision_clock.get_time () |> map (fun time ->
+    Precision_clock.get_time |> map (fun time ->
         let since_last_tick = time - t.last_tick_time in
         let effective_period = (Word.to_int t.divider) * base_clock_period in
 

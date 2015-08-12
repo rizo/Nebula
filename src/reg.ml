@@ -3,5 +3,3 @@ type t =
   | X | Y | Z
   | I | J
 [@@deriving eq, ord, show]
-
-

@@ -8,25 +8,23 @@ let make window =
   { window }
 
 let on_tick t =
-  Lwt.return (t, None)
+  IO.unit (t, None)
 
 let on_interrupt message t =
   Program.Return t
 
 let render t =
-  let open Lwt in
-
   let window = t.window in
-  Visual.(
-    set_color window Color.white >>= fun () ->
-    clear window >>= fun () ->
-    set_color window Color.blue >>= fun () ->
-    rectangle window ~origin:(0, 0) ~width:50 ~height:50 >>= fun () ->
-    render window)
+  IO.Monad.sequence_unit Visual.[
+    set_color window Color.white;
+    clear window;
+    set_color window Color.blue;
+    rectangle window ~origin:(0, 0) ~width:50 ~height:50;
+    render window
+  ]
 
 let on_interaction t =
-  let open Lwt in
-  render t >>= fun () -> Lwt.return t
+  IO.Monad.(render t >>= fun () -> IO.unit t)
 
 let info =
   Device.Info.{

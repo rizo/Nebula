@@ -13,9 +13,9 @@ module type S = sig
 
   val on_interrupt : message -> t -> t Program.t
 
-  val on_interaction : t -> t Lwt.t
+  val on_interaction : t -> t IO.t
 
-  val on_tick : t -> (t * (Interrupt.t option)) Lwt.t
+  val on_tick : t -> (t * (Interrupt.t option)) IO.t
 
   val info : Info.t
 end

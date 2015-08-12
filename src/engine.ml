@@ -90,18 +90,14 @@ let step c =
   c
 
 let tick_devices c =
-  let open Lwt in
   let open Computer in
+  let open IO.Functor in
 
   let visit_instance c (module I : Device.Instance) =
     I.Device.on_tick I.this |> map (fun (updated_this, generated_interrupt) ->
         let manifest =
           Manifest.update
-            (module struct
-              include I
-
-              let this = updated_this
-            end : Device.Instance)
+            (Device.make_instance (module I.Device) updated_this I.index)
             c.manifest
         in
         let interrupt_ctrl =
@@ -112,25 +108,25 @@ let tick_devices c =
         { c with manifest; interrupt_ctrl })
   in
   let instances = Manifest.all c.manifest in
-  Lwt_monad.fold visit_instance c instances
+  IO.Monad.fold visit_instance c instances
 
 let launch ~computer ~suspend_every suspend =
-  let open Lwt in
+  let open IO.Monad in
+  let open IO.Functor in
 
   let rec loop last_suspension_time computer =
     tick_devices computer >>= fun computer ->
-    wrap (fun () -> step computer) >>= fun computer ->
+    IO.lift (fun () -> step computer) >>= fun computer ->
 
-    Precision_clock.get_time () >>= fun now ->
+    Precision_clock.get_time >>= fun now ->
     let elapsed = now - last_suspension_time in
 
     let next () =
       if elapsed >= suspend_every then
         suspend computer |> map (fun computer -> now, computer)
       else
-        return (last_suspension_time, computer)
+        IO.unit (last_suspension_time, computer)
     in
     next () >>= fun (time, computer) -> loop time computer
   in
-
-  Precision_clock.get_time () >>= fun now -> loop now computer
+  Precision_clock.get_time >>= fun now -> loop now computer

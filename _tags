@@ -5,12 +5,9 @@ true: safe_string, bin_annot, thread
 true: package(cmdliner), \
       package(ctypes), \
       package(ctypes.foreign), \
-      package(lwt), \
-      package(lwt.unix), \
       package(ppx_deriving.std), \
       package(tsdl)
 
 <test/*>: package(oUnit)
 
 <top/*>: package(utop)
-

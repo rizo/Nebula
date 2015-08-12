@@ -1,4 +1,4 @@
 type t =
   | Quit
 
-val poll: unit -> t option Lwt.t
+val poll : t option IO.t

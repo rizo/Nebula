@@ -20,13 +20,13 @@ end
 module Window : sig
   type t
 
-  val make : title:string -> width:int -> height:int -> t Lwt.t
+  val make : title:string -> width:int -> height:int -> t IO.t
 end
 
-val set_color : Window.t -> Color.t -> unit Lwt.t
+val set_color : Window.t -> Color.t -> unit IO.t
 
-val clear : Window.t -> unit Lwt.t
+val clear : Window.t -> unit IO.t
 
-val rectangle : Window.t -> origin:(int * int) -> width:int -> height:int -> unit Lwt.t
+val rectangle : Window.t -> origin:(int * int) -> width:int -> height:int -> unit IO.t
 
-val render : Window.t -> unit Lwt.t
+val render : Window.t -> unit IO.t

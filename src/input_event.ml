@@ -1,8 +1,8 @@
 type t =
   | Quit
 
-let poll () =
-  Lwt.wrap begin fun () ->
+let poll =
+  IO.lift begin fun () ->
     let event = Sdl.Event.create () in
     if Sdl.poll_event (Some event) then
       let typ = Sdl.Event.(get event typ) in
