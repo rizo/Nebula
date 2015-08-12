@@ -87,8 +87,7 @@ let main file_name =
         let computer = { Computer.default with memory; manifest } in
 
         IO.catch
-          (Engine.launch ~computer ~suspend_every:frame_period
-             handle_event)
+          (Engine.launch ~computer ~suspend_every:frame_period ~suspension:handle_event)
           handle_error
       end
   end

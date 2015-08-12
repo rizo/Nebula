@@ -6,7 +6,7 @@ type t
 
 (** {2 Creation} *)
 
-(** Memory with all cells initiialized to zero. *)
+(** Memory with all cells initialized to zero. *)
 val empty : t
 
 (** Memory initialized from a raw byte stream. *)

@@ -43,11 +43,7 @@ let trigger_interrupt trigger c =
       { c with
         manifest =
           Manifest.update
-            (module struct
-              include I
-
-              let this = device
-            end : Device.Instance)
+            (Device.make_instance (module I.Device) device I.index)
             c.manifest
       }
     end
@@ -93,7 +89,7 @@ let tick_devices c =
   let open Computer in
   let open IO.Functor in
 
-  let visit_instance c (module I : Device.Instance) =
+  let tick_instance c (module I : Device.Instance) =
     I.Device.on_tick I.this |> map (fun (updated_this, generated_interrupt) ->
         let manifest =
           Manifest.update
@@ -108,9 +104,9 @@ let tick_devices c =
         { c with manifest; interrupt_ctrl })
   in
   let instances = Manifest.all c.manifest in
-  IO.Monad.fold visit_instance c instances
+  IO.Monad.fold tick_instance c instances
 
-let launch ~computer ~suspend_every suspend =
+let launch ~computer ~suspend_every ~suspension =
   let open IO.Monad in
   let open IO.Functor in
 
@@ -122,12 +118,12 @@ let launch ~computer ~suspend_every suspend =
     Precision_clock.get_time >>= fun now ->
     let elapsed = now - last_suspension_time in
 
-    let next () =
+    let next =
       if elapsed >= suspend_every then
-        suspend computer |> map (fun computer -> now, computer)
+        suspension computer |> map (fun computer -> now, computer)
       else
         IO.unit (last_suspension_time, computer)
     in
-    next () >>= fun (time, computer) -> loop time computer
+    next >>= fun (time, computer) -> loop time computer
   in
   Precision_clock.get_time >>= fun now -> loop now computer

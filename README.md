@@ -9,7 +9,8 @@ Nebula is written in OCaml, and in a very pure functional style.
 
 Some notable points:
 
-- All impure code is wrapped in `Lwt.t` from the `lwt` package, which is similar to `IO` in Haskell and with support for concurrency. The vast majority of the code is purely functional and interfaces that expose mutation are (virtually) absent.
+- All impure code is wrapped in `IO.t`, which is analogous to `IO` in Haskell. The implementation of the `IO` module is also included and has support for exceptions and both functor and monad interfaces.
+
 - Interaction with the CPU and memory is expressed as pure data with a DSL defined using the free monad. These "programs" can be subsequently _interpreted_ in terms of the state monad or any other context.
 
 # Quick-start guide
@@ -70,17 +71,10 @@ $ opam upgrade nebula
 
 ## Development
 
-### Nix environment
+In addition to requiring the opam package manager, Nebula depends on two packages being installed on your system:
 
-Nebula depends on a few external libraries that are not tracked in opam. Nebula uses the [Nix](https://nixos.org/nix/) package manager to manage these dependencies with the `derivation.nix` and `default.nix` files.
-
-Executing
-
-```bash
-$ nix-shell
-```
-
-will start a new shell with the necessary dependencies in scope (after they have been downloaded, if necessary).
+- SDL2
+- libffi
 
 ### Building
 
