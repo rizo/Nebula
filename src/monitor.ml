@@ -1,12 +1,14 @@
 open Prelude
 
+open Unsigned
+
 type t = {
   window : Visual.Window.t;
   connected : bool;
   last_blink_time : int;
   blink_visible : bool;
-  border_color_offset : word;
-  video_color_offset : word;
+  border_color_index : uint8;
+  video_memory_offset : word;
   font_memory_offset : word;
   palette_memory_offset : word;
 }
@@ -32,6 +34,12 @@ let cell_height =
 let atom_size =
   cell_width / 4
 
+let atoms_per_cell_width =
+  cell_width / atom_size
+
+let atoms_per_cell_height =
+  cell_height / atom_size
+
 let border_width =
   2 * atom_size
 
@@ -44,27 +52,39 @@ let total_width =
 let total_height =
   height + (2 * border_height)
 
-let make window =
-  let open IO.Functor in
-  Precision_clock.get_time |> map (fun now ->
-  { window;
-    connected = false;
-    last_blink_time = now;
-    blink_visible = true;
-    border_color_offset = word 0;
-    video_color_offset = word 0;
-    font_memory_offset = word 0;
-    palette_memory_offset = word 0;
-  })
+let default_palette =
+  [| 0x000; 0x00a; 0x0a0; 0x0aa; 0xa00; 0xa0a; 0xa50; 0xaaa;
+     0x555; 0x55f; 0x5f5; 0x5ff; 0xf55; 0xf5f; 0xff5; 0xfff; |]
+  |> Array.map Word.of_int
 
-let on_tick t =
-  IO.unit (t, None)
+let default_font =
+  Monitor_font.default
 
-let on_interrupt message t =
-  Program.Return t
+let color_of_index index memory t =
+  let color_code_word =
+    if t.palette_memory_offset <> word 0 then
+      Mem.read Word.(t.palette_memory_offset + (of_int (UInt8.to_int index))) memory
+    else
+      default_palette.(UInt8.to_int index)
+  in
+  let color_code = Word.to_int color_code_word in
 
-let draw_border window =
+  (* Since only 4 bits are provided for each channel, we shift everything to
+     the left by 4 bits so that the bits that _are_ provided are interpreted as
+     high-order bits. *)
+
+  let r = (color_code land 0x0f00) lsr 4 |> UInt8.of_int in
+  let g = (color_code land 0x00f0) |> UInt8.of_int in
+  let b = (color_code land 0x000f) lsl 4 |> UInt8.of_int in
+  Visual.Color.make ~r ~g ~b
+
+let draw_border memory t =
+  let window = t.window in
+  let border_color = color_of_index t.border_color_index memory t in
+
   IO.Monad.sequence_unit Visual.[
+      set_color window border_color;
+
       (* Left. *)
       rectangle
         ~origin:(0, border_height) ~width:border_width ~height window;
@@ -80,20 +100,145 @@ let draw_border window =
       (* Bottom. *)
       rectangle
         ~origin:(0, total_height - border_height) ~width:total_width ~height:border_height window;
-  ]
+    ]
 
-let render t =
+let draw_atom window ~x_atom ~y_atom =
+  let x = border_width + (x_atom * atom_size) in
+  let y = border_height + (y_atom * atom_size) in
+
+  Visual.rectangle
+    ~origin:(x, y)
+    ~width:atom_size
+    ~height:atom_size
+    window
+
+let draw_cell ~x_cell ~y_cell ~character_index ~fg_color_index ~bg_color_index ~blink memory t =
+  let open IO.Monad in
+
+  IO.lift begin fun () ->
+    let fg_color = color_of_index fg_color_index memory t in
+    let bg_color = color_of_index bg_color_index memory t in
+
+    let base_x_atom_offset = x_cell * atoms_per_cell_width in
+    let base_y_atom_offset = y_cell * atoms_per_cell_height in
+
+    let draw_column column_data x_atom =
+      for y_atom = 0 to (atoms_per_cell_height - 1) do
+        let is_fg =
+          Word.((column_data land (word 1 lsl y_atom)) |> to_bool) &&
+          ((blink && t.blink_visible) || (not blink))
+        in
+
+        IO.unsafe_perform begin
+          Visual.set_color t.window (if is_fg then fg_color else bg_color) >>= fun () ->
+          draw_atom
+            ~x_atom:(base_x_atom_offset + x_atom)
+            ~y_atom:(base_y_atom_offset + y_atom)
+            t.window
+        end
+      done
+    in
+
+    let ch =
+      if t.font_memory_offset <> word 0 then
+        let i = UInt8.to_int character_index |> Word.of_int in
+        (Mem.read Word.(t.font_memory_offset + (word 2 * i)) memory,
+         Mem.read Word.((t.font_memory_offset + (word 2 * i)) + word 1) memory)
+      else
+        default_font.(UInt8.to_int character_index)
+    in
+
+    draw_column Word.((fst ch land word 0xff00) lsr 8) 0;
+    draw_column Word.(fst ch land word 0x00ff) 1;
+    draw_column Word.((snd ch land word 0xff00) lsr 8) 2;
+    draw_column Word.(snd ch land word 0x00ff) 3;
+  end
+
+let draw_from_memory memory t =
+  IO.lift begin fun () ->
+    let draw ~x_cell ~y_cell =
+      let memory_offset =
+        Word.((word y_cell * word cells_per_monitor_width) + (word x_cell) + t.video_memory_offset)
+      in
+
+      let w = Mem.read memory_offset memory in
+      let blink = Word.(w land word 0x0080 <> word 0) in
+      let character_index = Word.(w land word 0x007f |> to_int) |> UInt8.of_int in
+      let fg_color_index = Word.((w land word 0xf000) lsr 12 |> to_int) |> UInt8.of_int in
+      let bg_color_index = Word.((w land word 0x0f00) lsr 8 |> to_int) |> UInt8.of_int in
+
+      IO.unsafe_perform begin
+        draw_cell ~x_cell ~y_cell ~character_index ~fg_color_index ~bg_color_index ~blink
+          memory
+          t
+      end
+    in
+
+    for x_cell = 0 to (cells_per_monitor_width - 1) do
+      for y_cell = 0 to (cells_per_monitor_height -1) do
+        draw ~x_cell ~y_cell
+      done
+    done
+  end
+
+let memory_with_default_font =
+  let rec loop memory offset =
+    if Word.to_int offset = Array.length default_font then memory
+    else
+      let memory =
+        Mem.write
+          offset
+          Word.((word 0xf lsl 12) lor offset)
+          memory
+      in
+      loop memory Word.(offset + word 1)
+  in
+  loop Mem.empty (word 0)
+
+let draw_default_font t =
+  draw_from_memory memory_with_default_font t
+
+let render memory t =
   let window = t.window in
+
   IO.Monad.sequence_unit Visual.[
     set_color window Color.black;
     clear window;
-    set_color window Color.blue;
-    draw_border window;
+    draw_default_font t;
+    draw_border memory t;
     render window
   ]
 
-let on_interaction t =
-  IO.Monad.(render t >>= fun () -> IO.unit t)
+let make window =
+  let open IO.Functor in
+  Precision_clock.get_time |> map (fun now ->
+  { window;
+    connected = false;
+    last_blink_time = now;
+    blink_visible = true;
+    border_color_index = UInt8.of_int 1;
+    video_memory_offset = word 0;
+    font_memory_offset = word 0;
+    palette_memory_offset = word 0;
+  })
+
+let on_tick t =
+  IO.unit (t, None)
+
+let on_interrupt t =
+  let open Program in
+  let open Program.Functor in
+  let open Program.Monad in
+
+  read_register Reg.A |> map Word.to_int >>= function
+  | 3 -> begin (* SET_BORDER_COLOR *)
+      Program.read_register Reg.B >>= fun b ->
+      Program.Return { t with border_color_index = UInt8.of_int (Word.(b land word 0xf |> to_int)) }
+    end
+  | _ -> Program.Return t
+
+let on_interaction memory t =
+  IO.Monad.(render memory t >>= fun () -> IO.unit t)
 
 let info =
   Device.Info.{

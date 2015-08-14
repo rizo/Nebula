@@ -19,6 +19,7 @@ Manifest
 Mem
 Monad_class
 Monitor
+Monitor_font
 Option
 Or_exn
 Persistent_queue

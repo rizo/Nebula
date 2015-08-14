@@ -37,7 +37,7 @@ let trigger_interrupt trigger c =
   | Interrupt.Trigger.Hardware index -> begin
       let (module I : Device.Instance) = Manifest.instance index c.manifest in
       let (c, device) =
-        Computer_state.of_program (I.Device.on_interrupt index I.this)
+        Computer_state.of_program (I.Device.on_interrupt I.this)
         |> Computer_state.run c
       in
       { c with

@@ -10,7 +10,11 @@ val ( + ) : t -> t -> t
 
 val ( - ) : t -> t -> t
 
+val ( * ) : t -> t -> t
+
 val ( land ) : t -> t -> t
+
+val ( lor ) : t -> t -> t
 
 val ( lsl ) : t -> int -> t
 
@@ -22,6 +26,8 @@ val ( lsr ) : t -> int -> t
 val of_int : int -> t
 
 val to_int : t -> int
+
+val to_bool : t -> bool
 
 val compare : t -> t -> int
 

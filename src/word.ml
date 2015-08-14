@@ -8,6 +8,10 @@ let of_int =
 let to_int =
   Unsigned.UInt16.to_int
 
+let to_bool w = to_int w |> function
+  | 0 -> false
+  | _ -> true
+
 let compare =
   Unsigned.UInt16.compare
 

@@ -11,6 +11,9 @@ default: nebula top
 nebula: stubs
 	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.native
 
+profiled: stubs
+	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.p.native
+
 test: lib
 	$(OCAMLBUILD) test/nebula_test.byte
 

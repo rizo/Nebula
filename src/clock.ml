@@ -20,7 +20,7 @@ let make =
         interrupt_message = None;
       })
 
-let on_interaction t =
+let on_interaction memory t =
   IO.unit t
 
 let on_tick t =
@@ -41,7 +41,7 @@ let on_tick t =
         else
           (t, None))
 
-let on_interrupt message t =
+let on_interrupt t =
   let open Program in
   let open Program.Functor in
   let open Program.Monad in

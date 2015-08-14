@@ -40,7 +40,7 @@ let interact_with_devices computer =
   let open Computer in
 
   let interact_with_instance c (module I : Device.Instance) =
-    I.Device.on_interaction I.this |> map (fun updated_this ->
+    I.Device.on_interaction c.memory I.this |> map (fun updated_this ->
         let manifest =
           Manifest.update
             (Device.make_instance (module I.Device) updated_this I.index)
@@ -63,7 +63,7 @@ let make_monitor_window =
     ~title:"DCPU-16 Monitor"
 
 let frame_period =
-  16666667
+  40000000
 
 let main file_name =
   IO.main begin
