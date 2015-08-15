@@ -2,9 +2,13 @@ open Prelude
 
 open Unsigned
 
+type state =
+  | Disconnected
+  | Running
+
 type t = {
   window : Visual.Window.t;
-  connected : bool;
+  state : state;
   last_blink_time : int;
   blink_visible : bool;
   border_color_index : uint8;
@@ -51,6 +55,12 @@ let total_width =
 
 let total_height =
   height + (2 * border_height)
+
+let start_up_duration =
+  1300000000
+
+let blink_period =
+  500000000
 
 let default_palette =
   [| 0x000; 0x00a; 0x0a0; 0x0aa; 0xa00; 0xa0a; 0xa50; 0xaaa;
@@ -188,7 +198,7 @@ let memory_with_default_font =
       let memory =
         Mem.write
           offset
-          Word.((word 0xf lsl 12) lor offset)
+          Word.((word 0xf lsl 12) lor word 0x80 lor offset)
           memory
       in
       loop memory Word.(offset + word 1)
@@ -204,7 +214,7 @@ let render memory t =
   IO.Monad.sequence_unit Visual.[
     set_color window Color.black;
     clear window;
-    draw_default_font t;
+    if t.state <> Disconnected then draw_default_font t else IO.unit ();
     draw_border memory t;
     render window
   ]
@@ -213,7 +223,7 @@ let make window =
   let open IO.Functor in
   Precision_clock.get_time |> map (fun now ->
   { window;
-    connected = false;
+    state = Disconnected;
     last_blink_time = now;
     blink_visible = true;
     border_color_index = UInt8.of_int 1;
@@ -223,17 +233,62 @@ let make window =
   })
 
 let on_tick t =
-  IO.unit (t, None)
+  let open IO.Monad in
+
+  Precision_clock.get_time >>= fun now ->
+  let elapsed = now - t.last_blink_time in
+  IO.unit (
+    (if elapsed >= blink_period then
+      { t with last_blink_time = now; blink_visible = not t.blink_visible }
+     else t),
+    None)
 
 let on_interrupt t =
   let open Program in
   let open Program.Functor in
   let open Program.Monad in
 
+  read_register Reg.B >>= fun b ->
   read_register Reg.A |> map Word.to_int >>= function
+  | 0 -> begin (* MEM_MAP_SCREEN *)
+      Program.Return {
+        t with
+        video_memory_offset = b;
+        state = if b <> word 0 then Running else Disconnected;
+      }
+    end
+  | 1 -> begin (* MEM_MAP_FONT *)
+      Program.Return { t with font_memory_offset = b }
+    end
+  | 2 -> begin (* MEM_MAP_PALETTE *)
+      Program.Return { t with palette_memory_offset = b }
+    end
   | 3 -> begin (* SET_BORDER_COLOR *)
-      Program.read_register Reg.B >>= fun b ->
-      Program.Return { t with border_color_index = UInt8.of_int (Word.(b land word 0xf |> to_int)) }
+      Program.Return {
+        t with
+        border_color_index = UInt8.of_int (Word.(b land word 0xf |> to_int))
+      }
+    end
+  | 4 -> begin (* MEM_DUMP_FONT *)
+      let rec loop offset =
+        if offset >= Array.length default_font then Program.Return t
+        else
+          let (w1, w2) = default_font.(offset) in
+          let v = Word.(b + (word 2 * word offset)) in
+          Program.write_memory v w1 >>= fun () ->
+          Program.write_memory Word.(v + word 1) w2 >>= fun () ->
+          loop (offset + 1)
+      in
+      loop 0
+    end
+  | 5 -> begin (* MEM_DUMP_PALETTE *)
+      let rec loop offset =
+        if offset >= Array.length default_palette then Program.Return t
+        else
+          Program.write_memory Word.(b + word offset) default_palette.(offset) >>= fun () ->
+          loop (offset + 1)
+      in
+      loop 0
     end
   | _ -> Program.Return t
 
