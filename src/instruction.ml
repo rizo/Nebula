@@ -51,6 +51,7 @@ and execute_unary code address_a =
       end
     end
   | Ias -> state_a >>= Computer_state.write_special Special.IA
+  | Iag -> Computer_state.read_special Special.IA >>= Computer_state.write_register Reg.A
   | Rfi -> begin
       let open Interrupt_control in
       of_program begin
@@ -62,6 +63,32 @@ and execute_unary code address_a =
         | { interrupt_ctrl; _ } as c ->
           { c with interrupt_ctrl = Interrupt_control.enable_dequeuing interrupt_ctrl }
       end
+    end
+  | Iaq -> begin
+      state_a >>= fun a ->
+      modify begin function
+        | { interrupt_ctrl; _ } as c ->
+          { c with
+            interrupt_ctrl =
+              (if a <> word 0 then
+                Interrupt_control.disable_dequeuing
+              else Interrupt_control.enable_dequeuing) interrupt_ctrl }
+      end
+    end
+  | Hwn -> modify begin fun c ->
+      { c with
+        cpu = Manifest.size c.manifest |> Word.of_int |> fun w -> Cpu.write_register Reg.A w c.cpu
+      }
+    end
+  | Hwq -> begin
+      state_a >>= fun index ->
+      get >>= fun c ->
+      let info = Manifest.query index c.manifest in
+      Computer_state.write_register Reg.A Device.Info.(snd info.id) >>= fun () ->
+      Computer_state.write_register Reg.B Device.Info.(fst info.id) >>= fun () ->
+      Computer_state.write_register Reg.C Device.Info.(info.version) >>= fun () ->
+      Computer_state.write_register Reg.X Device.Info.(snd info.manufacturer) >>= fun () ->
+      Computer_state.write_register Reg.Y Device.Info.(fst info.manufacturer)
     end
   | Hwi -> begin
       let open Interrupt_control in

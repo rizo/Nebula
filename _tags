@@ -1,6 +1,6 @@
 <src>: include
 
-true: safe_string, bin_annot, thread
+true: safe_string, bin_annot, thread, warn_error(+8)
 
 true: package(cmdliner), \
       package(ctypes), \

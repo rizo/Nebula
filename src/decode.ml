@@ -30,8 +30,12 @@ let special_code w =
   match Word.to_int w with
   | 0x01 -> Some Jsr
   | 0x08 -> Some Int
+  | 0x09 -> Some Iag
   | 0x0a -> Some Ias
   | 0x0b -> Some Rfi
+  | 0x0c -> Some Iaq
+  | 0x10 -> Some Hwn
+  | 0x11 -> Some Hwq
   | 0x12 -> Some Hwi
   | 0x1f -> Some Dbg
   | _ -> None
