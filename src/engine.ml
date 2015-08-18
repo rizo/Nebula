@@ -26,26 +26,30 @@ let handle_interrupt (Interrupt.Message message) c =
 
 let trigger_interrupt trigger c =
   let open Computer in
+  let open IO.Functor in
+  let open IO.Monad in
 
   match trigger with
   | Interrupt.Trigger.Software message -> begin
       let interrupt_ctrl =
         Interrupt_control.enqueue (Interrupt.Message message) c.interrupt_ctrl
       in
-      { c with interrupt_ctrl }
+      IO.unit { c with interrupt_ctrl }
     end
   | Interrupt.Trigger.Hardware index -> begin
-      let (module I : Device.Instance) = Manifest.instance index c.manifest in
-      let (c, device) =
-        Computer_state.of_program (I.Device.on_interrupt I.this)
-        |> Computer_state.run c
-      in
-      { c with
-        manifest =
-          Manifest.update
-            (Device.make_instance (module I.Device) device I.index)
-            c.manifest
-      }
+      IO.lift (fun () -> Manifest.instance index c.manifest) >>= fun (module I : Device.Instance) ->
+      I.Device.on_interrupt I.this
+      |> IO.Functor.map (fun program ->
+          program
+          |> Computer_state.of_program
+          |> Computer_state.run c
+          |> fun (c, device) ->
+          { c with
+            manifest =
+              Manifest.update
+                (Device.make_instance (module I.Device) device I.index)
+                c.manifest
+          })
     end
 
 let step c =
@@ -73,17 +77,15 @@ let step c =
     | Program.Stack_overflow -> raise (Stack_overflow c)
   in
 
-  let c =
-    match Interrupt_control.triggered c.interrupt_ctrl with
-    | None -> c
-    | Some (trigger, interrupt_ctrl) -> begin
-        try
-          trigger_interrupt trigger { c with interrupt_ctrl }
-        with
-        | Manifest.No_such_device index -> raise (No_such_device (index, c))
-      end
-  in
-  c
+  match Interrupt_control.triggered c.interrupt_ctrl with
+  | None -> IO.unit c
+  | Some (trigger, interrupt_ctrl) -> begin
+      IO.catch
+        (trigger_interrupt trigger { c with interrupt_ctrl })
+        (function
+          | Manifest.No_such_device index -> IO.throw (No_such_device (index, c))
+          | error -> IO.throw error)
+    end
 
 let tick_devices c =
   let open Computer in
@@ -113,7 +115,7 @@ let launch ~computer ~suspend_every ~suspension =
   let rec loop last_suspension_time computer =
     tick_devices computer >>= fun computer ->
 
-    IO.lift (fun () -> step computer) >>= fun computer ->
+    step computer >>= fun computer ->
 
     Precision_clock.get_time >>= fun now ->
     let elapsed = now - last_suspension_time in
