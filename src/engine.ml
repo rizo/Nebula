@@ -1,4 +1,4 @@
-(** Execute the DCPU-16 instructions from memory while handling interrupts. *)
+(** Launch the DCPU-16. *)
 
 open Prelude
 
