@@ -27,12 +27,12 @@ let handle_interrupt (Interrupt.Message message) c =
       interrupt_ctrl = Interrupt_control.disable_dequeuing c.interrupt_ctrl }
   |> fst
 
-(** Trigger a new interrupt.
+(** Execute a triggered interrupt.
 
-    Software interrupts are enqueued directly. Hardware interrupts cause
+    Software interrupts are enqueued directly. Hardware interrupts cause the
     interrupt hook for the device registered at the interrupt index to be
     invoked. *)
-let trigger_interrupt trigger c =
+let execute_interrupt trigger c =
   let open Computer in
   let open IO.Functor in
   let open IO.Monad in
@@ -62,7 +62,7 @@ let trigger_interrupt trigger c =
 
 (** Execute an iteration of the DCPU-16.
 
-    First, dequeue an interrupt and handle it if it is waiting.
+    First, dequeue an interrupt (if one is waiting) and transfer control to the interrupt handler.
 
     Next, decode the next instruction from memory at the program counter.
 
@@ -97,7 +97,7 @@ let step c =
   | None -> IO.unit c
   | Some (trigger, interrupt_ctrl) -> begin
       IO.catch
-        (trigger_interrupt trigger { c with interrupt_ctrl })
+        (execute_interrupt trigger { c with interrupt_ctrl })
         (function
           | Manifest.No_such_device index -> IO.throw (No_such_device (index, c))
           | error -> IO.throw error)

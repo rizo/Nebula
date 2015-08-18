@@ -1,3 +1,5 @@
+(** Simulated hardware device. *)
+
 open Prelude
 
 module Info = struct
@@ -11,15 +13,22 @@ end
 module type S = sig
   type t
 
+  (** Invoked by the {! Engine} when the device receives an interrupt. *)
   val on_interrupt : t -> t Program.t IO.t
 
+  (** Invoked by the {! Engine} on every iteration of the event loop which
+      renders graphics and handles user input. *)
   val on_interaction : Mem.t -> t -> t IO.t
 
+  (** Invoked by the {! Engine} on every instruction that is decoded from memory
+      and executed. *)
   val on_tick : t -> (t * (Interrupt.t option)) IO.t
 
   val info : Info.t
 end
 
+(** A specific device module and its instance as well as the reserved hardware
+    index for the {! Manifest}. *)
 module type Instance = sig
   module Device : S
 

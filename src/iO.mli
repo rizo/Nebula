@@ -9,17 +9,21 @@
 
 type 'a t
 
-(** Fail the context with the exception.
+(** An impure computation that has failed with an exception.
 
     Thrown exceptions can be recovered from with {! catch}. *)
 val throw : exn -> 'a t
 
 (** Recover from a thrown exception.
 
-    If the first argument has not resulted in an exception, then it is returned unchanged. *)
+    If the first argument does not result in an exception, then it is executed unchanged. *)
 val catch : 'a t -> (exn -> 'a t) -> 'a t
 
 (** Lift an impure function to the IO context.
+
+    Native OCaml exceptions that are raised inside the body of the function are
+    converted to {! IO} contexts that have had an exception thrown, as if by {!
+    throw}.
 
     This is useful for correctly wrapping an impure API. *)
 val lift : (unit -> 'a) -> 'a t
@@ -43,7 +47,7 @@ val unsafe_perform : 'a t -> 'a
 
 (** Top-level entry-point for impure programs.
 
-    You should combine IO computations with the provided functions and
+    You should combine IO computations with the functions and
     interfaces in this module and execute {! main} only at the main entry-point to
     your program. *)
 val main : 'a t -> unit
