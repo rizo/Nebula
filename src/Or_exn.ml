@@ -1,7 +1,11 @@
+(** Specialization of {! Either} for error handling with exceptions. *)
+
 open Prelude
 
 type 'a t = (exn, 'a) either
 
+(** Converts a function that raises exceptions to one where error is indicated
+    in the return value. *)
 let protect f =
   fun a ->
     try Right (f a) with

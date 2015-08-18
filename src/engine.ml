@@ -1,3 +1,5 @@
+(** Execute the DCPU-16 instructions from memory while handling interrupts. *)
+
 open Prelude
 
 exception Bad_decoding of word * Computer.t
@@ -8,6 +10,7 @@ exception Stack_overflow of Computer.t
 
 exception Stack_underflow of Computer.t
 
+(** Jump to the interrupt handler and disable interrupt dequeing. *)
 let handle_interrupt (Interrupt.Message message) c =
   let open Computer in
   let open Program.Monad in
@@ -24,6 +27,11 @@ let handle_interrupt (Interrupt.Message message) c =
       interrupt_ctrl = Interrupt_control.disable_dequeuing c.interrupt_ctrl }
   |> fst
 
+(** Trigger a new interrupt.
+
+    Software interrupts are enqueued directly. Hardware interrupts cause
+    interrupt hook for the device registered at the interrupt index to be
+    invoked. *)
 let trigger_interrupt trigger c =
   let open Computer in
   let open IO.Functor in
@@ -52,6 +60,14 @@ let trigger_interrupt trigger c =
           })
     end
 
+(** Execute an iteration of the DCPU-16.
+
+    First, dequeue an interrupt and handle it if it is waiting.
+
+    Next, decode the next instruction from memory at the program counter.
+
+    Finally, check for triggered interrupts (either by software, or by a device
+    when it was "ticked") and execute them. *)
 let step c =
   let open Computer in
   let open Computer_state.Monad in
@@ -87,6 +103,7 @@ let step c =
           | error -> IO.throw error)
     end
 
+(** "Tick" all devices in the manifest. *)
 let tick_devices c =
   let open Computer in
   let open IO.Functor in
@@ -108,6 +125,10 @@ let tick_devices c =
   let instances = Manifest.all c.manifest in
   IO.Monad.fold tick_instance c instances
 
+(**  Launch a DCPU-16.
+
+     Control is suspended every [suspend_every] nanoseconds to [suspension]. Otherwise, this
+     computation will never terminate unless it throws. *)
 let launch ~computer ~suspend_every ~suspension =
   let open IO.Monad in
   let open IO.Functor in

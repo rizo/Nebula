@@ -10,7 +10,7 @@ open Unsigned
 
 type state =
   | Stopped
-  | Starting of int
+  | Starting of int (** Time at which monitor was started. *)
   | Running
 
 type t = {

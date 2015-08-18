@@ -1,3 +1,5 @@
+SHELL=bash
+
 STUB_SOURCES = src/precision_clock_stub.c
 STUB_OBJECTS = src/precision_clock_stub.o
 
@@ -27,10 +29,13 @@ stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)
 
 
-# TODO
-# doc: lib
-# 	mkdir -p doc
-# 	ocaml make.ml doc
+doc: lib
+	mkdir -p doc
+
+	ocamlfind ocamldoc -I _build/src -html -d doc \
+    -package cmdliner \
+		-package tsdl \
+		$(shell echo src/*.{mli,ml})
 
 .PHONY: clean
 

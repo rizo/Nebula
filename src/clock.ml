@@ -1,3 +1,5 @@
+(** Simulated hardware clock. *)
+
 open Prelude
 
 type t = {
@@ -8,6 +10,7 @@ type t = {
   interrupt_message : word option;
 }
 
+(** The simulated clock period, in nanoseconds. *)
 let base_clock_period =
   16666666
 

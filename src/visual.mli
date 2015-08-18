@@ -1,3 +1,8 @@
+(** Simple graphics.
+
+    Drawing commands can be imperatively applied to a buffer, but nothing is
+    rendered to the {! Window} until {! render} is invoked. *)
+
 open Ctypes
 open Unsigned
 
@@ -20,13 +25,20 @@ end
 module Window : sig
   type t
 
+  (** Create a new graphical window on which to draw.
+
+      Both the [width] and [height] are expressed in real pixels. *)
   val make : title:string -> width:int -> height:int -> t IO.t
 end
 
+(** Set the drawing color for subsequent drawing commands. *)
 val set_color : Window.t -> Color.t -> unit IO.t
 
+(** Fill the entire window with the drawing color. *)
 val clear : Window.t -> unit IO.t
 
+(** Fill a rectangle. *)
 val rectangle : Window.t -> origin:(int * int) -> width:int -> height:int -> unit IO.t
 
+(** Render the buffer to the window. *)
 val render : Window.t -> unit IO.t
