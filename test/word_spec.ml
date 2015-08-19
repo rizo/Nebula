@@ -4,6 +4,7 @@ open Prelude
 
 let suite =
   let open Word in
+
   "word" >::: [
     "converts from an integer within the word size" >:: (fun ctx ->
         assert_equal (to_int (word 2)) 2);

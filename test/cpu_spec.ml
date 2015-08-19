@@ -4,6 +4,7 @@ open Prelude
 
 let suite =
   let open Cpu in
+  
   "cpu" >::: [
     "registers are initialized to zero" >:: (fun ctx ->
         assert_equal

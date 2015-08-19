@@ -2,6 +2,7 @@ open OUnit2
 
 let suite =
   let open Persistent_queue in
+  
   "persistent queue" >::: [
     "starts out empty" >:: (fun ctx ->
         let q = empty in
