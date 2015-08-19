@@ -95,3 +95,19 @@ $ ./nebula_test.byte
 ```
 
 Unit tests are written with the `ounit` package and ideally cover all functionality.
+
+### Interactive read-eval-print-loop (REPL)
+
+Nebula comes with an interactive REPL built on top of [utop](https://opam.ocaml.org/blog/about-utop/) that starts with all modules loaded and with extra pretty-printers for Nebula types installed.
+
+To build the top-level, execute
+
+```bash
+$ make top
+```
+
+Once it has built, the top-level can be started by invoking
+
+```bash
+$ ./nebula.top
+```
