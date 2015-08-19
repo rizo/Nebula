@@ -101,9 +101,14 @@ and execute_unary code address_a =
           }
       end
     end
+  | Abt -> begin
+      print_endline "Aborting.";
+      exit 0
+    end
   | Dbg -> begin
       state_a >>= fun a ->
       let time = Unix.gettimeofday () in
       print_endline (Printf.sprintf "[%f] %s" time (Word.show a));
+      flush stdout;
       unit ()
     end

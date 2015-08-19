@@ -70,28 +70,34 @@ let execute_interrupt trigger c =
     when it was "ticked") and execute them. *)
 let step c =
   let open Computer in
-  let open Computer_state.Monad in
+  let open IO.Monad in
 
-  let c =
-    if Cpu.read_special Special.IA c.cpu != word 0 then
-      match Interrupt_control.handle c.interrupt_ctrl with
-      | None -> c
-      | Some (interrupt, interrupt_ctrl) -> handle_interrupt interrupt { c with interrupt_ctrl }
-    else c
-  in
+  IO.lift begin fun () ->
+    let c =
+      if Cpu.read_special Special.IA c.cpu != word 0 then
+        match Interrupt_control.handle c.interrupt_ctrl with
+        | None -> c
+        | Some (interrupt, interrupt_ctrl) -> handle_interrupt interrupt { c with interrupt_ctrl }
+      else c
+    in
 
-  let c =
-    try
-      let s = Computer_state.of_program Program.next_word >>= fun w ->
-        match Decode.instruction w with
-        | None -> raise (Bad_decoding (w, c))
-        | Some ins -> Instruction.execute ins
-      in
-      Computer_state.run c s |> fst
-    with
-    | Program.Stack_underflow -> raise (Stack_underflow c)
-    | Program.Stack_overflow -> raise (Stack_overflow c)
-  in
+    let c =
+      let open Computer_state.Monad in
+
+      try
+        let s = Computer_state.of_program Program.next_word >>= fun w ->
+          match Decode.instruction w with
+          | None -> raise (Bad_decoding (w, c))
+          | Some ins -> Instruction.execute ins
+        in
+        Computer_state.run c s |> fst
+      with
+      | Program.Stack_underflow -> raise (Stack_underflow c)
+      | Program.Stack_overflow -> raise (Stack_overflow c)
+    in
+
+    c
+  end >>= fun c ->
 
   match Interrupt_control.triggered c.interrupt_ctrl with
   | None -> IO.unit c

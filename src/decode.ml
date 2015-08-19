@@ -37,6 +37,7 @@ let special_code w =
   | 0x10 -> Some Hwn
   | 0x11 -> Some Hwq
   | 0x12 -> Some Hwi
+  | 0x1e -> Some Abt
   | 0x1f -> Some Dbg
   | _ -> None
 
