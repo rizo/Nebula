@@ -2,12 +2,23 @@
 
 open Prelude
 
+open Unsigned
+
 module Info = struct
   type t = {
     id : word * word;
     manufacturer : word * word;
     version : word
   }
+end
+
+module Input = struct
+  type t = {
+    key_code : uint8 option;
+  }
+
+  let none =
+    { key_code = None; }
 end
 
 module type S = sig
@@ -18,7 +29,7 @@ module type S = sig
 
   (** Invoked by the {! Engine} on every iteration of the event loop which
       renders graphics and handles user input. *)
-  val on_interaction : Mem.t -> t -> t IO.t
+  val on_interaction : Input.t -> Mem.t -> t -> t IO.t
 
   (** Invoked by the {! Engine} on every instruction that is decoded from memory
       and executed. *)

@@ -352,7 +352,7 @@ let on_interrupt t =
     | _ -> Program.Return t
   end
 
-let on_interaction memory t =
+let on_interaction device_input memory t =
   IO.Monad.(render memory t >>= fun () -> IO.unit t)
 
 let info =

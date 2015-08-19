@@ -23,7 +23,7 @@ let make =
         interrupt_message = None;
       })
 
-let on_interaction memory t =
+let on_interaction device_input memory t =
   IO.unit t
 
 let on_tick t =

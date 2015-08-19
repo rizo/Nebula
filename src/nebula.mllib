@@ -16,6 +16,7 @@ Instruction
 Interrupt
 Interrupt_control
 IO
+Keyboard
 Manifest
 Mem
 Monad_class

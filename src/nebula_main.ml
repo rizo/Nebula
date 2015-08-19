@@ -2,6 +2,8 @@ open IO.Functor
 open IO.Monad
 open Prelude
 
+open Unsigned
+
 open Printf
 
 let initialize =
@@ -36,11 +38,11 @@ let handle_error error =
   | _ -> show_error_and_exit
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
-let interact_with_devices computer =
+let interact_with_devices device_input computer =
   let open Computer in
 
   let interact_with_instance c (module I : Device.Instance) =
-    I.Device.on_interaction c.memory I.this |> map (fun updated_this ->
+    I.Device.on_interaction device_input c.memory I.this |> map (fun updated_this ->
         let manifest =
           Manifest.update
             (Device.make_instance (module I.Device) updated_this I.index)
@@ -53,8 +55,11 @@ let interact_with_devices computer =
 
 let handle_event computer =
   Input_event.poll >>= function
-  | Some Input_event.Quit -> exit 0
-  | _ -> interact_with_devices computer
+  | Some Input_event.Quit -> IO.terminate 0
+  | Some Input_event.Key_down code -> interact_with_devices
+                                        Device.Input.{ key_code = Some code }
+                                        computer
+  | _ -> interact_with_devices Device.Input.none computer
 
 let make_monitor_window =
   Visual.Window.make
@@ -63,7 +68,7 @@ let make_monitor_window =
     ~title:"DCPU-16 Monitor"
 
 let frame_period =
-  40000000
+  30000000
 
 let main file_name =
   IO.main begin
@@ -75,12 +80,14 @@ let main file_name =
         initialize >>= fun () ->
         make_monitor_window >>= fun window ->
 
+        let keyboard = Keyboard.make in
         Clock.make >>= fun clock ->
         Monitor.make window >>= fun monitor ->
 
         let manifest = Manifest.(
             empty
             |> register (module Clock) clock
+            |> register (module Keyboard) keyboard
             |> register (module Monitor) monitor)
         in
 
