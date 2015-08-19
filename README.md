@@ -88,7 +88,7 @@ Nebula is built by invoking the `make` command with one of the following targets
 
 ### Testing
 
-After building the tests with `make test`, run the tests with
+Build and run tests with `make test`. The tests can also be run after they have been built by invoking
 
 ```bash
 $ ./nebula_test.byte

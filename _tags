@@ -8,6 +8,6 @@ true: package(cmdliner), \
       package(ppx_deriving.std), \
       package(tsdl)
 
-<test/*>: package(oUnit)
+<test/*>: debug, package(oUnit)
 
 <top/*>: package(utop)

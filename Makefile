@@ -18,6 +18,7 @@ profiled: stubs
 
 test: lib
 	$(OCAMLBUILD) test/nebula_test.byte
+	./nebula_test.byte
 
 top: lib
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
@@ -27,7 +28,6 @@ lib: stubs
 
 stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)
-
 
 doc: lib
 	mkdir -p doc
