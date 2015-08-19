@@ -47,4 +47,9 @@ let show t =
   Buffer.add_string buffer (special "EX" Special.EX);
   Buffer.add_string buffer (special "IA" Special.IA);
 
+  Buffer.add_string buffer "\n";
+
+  Buffer.add_string buffer ("Skip_next: " ^ string_of_bool (Cpu.get_flag Cpu.Flag.Skip_next t.cpu));
+
+  Buffer.add_string buffer "\n";
   Buffer.contents buffer

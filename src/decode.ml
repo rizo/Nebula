@@ -22,6 +22,15 @@ let code w =
   match Word.to_int w with
   | 0x01 -> Some Set
   | 0x02 -> Some Add
+  | 0x03 -> Some Sub
+  | 0x04 -> Some Mul
+  | 0x05 -> Some Mli
+  | 0x06 -> Some Div
+  | 0x07 -> Some Dvi
+  | 0x0b -> Some Bor
+  | 0x0f -> Some Shl
+  | 0x12 -> Some Ife
+  | 0x13 -> Some Ifn
   | _ -> None
 
 (** Decode a special opcode. *)

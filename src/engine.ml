@@ -81,22 +81,43 @@ let step c =
       else c
     in
 
-    let c =
+    let skipping = Cpu.get_flag Cpu.Flag.Skip_next c.cpu in
+
+    let (c_after_execution, continue_skipping) =
       let open Computer_state.Monad in
+      let open Computer_state.Functor in
 
       try
         let s = Computer_state.of_program Program.next_word >>= fun w ->
           match Decode.instruction w with
           | None -> raise (Bad_decoding (w, c))
-          | Some ins -> Instruction.execute ins
+          | Some ins -> begin
+              Instruction.execute ins
+              |> map (fun conditional_instruction -> skipping && conditional_instruction)
+            end
         in
-        Computer_state.run c s |> fst
+        Computer_state.run c s
       with
       | Program.Stack_underflow -> raise (Stack_underflow c)
       | Program.Stack_overflow -> raise (Stack_overflow c)
     in
 
-    c
+    print_endline (Computer.show c);
+
+    (* If we're skipping instructions, then we only care about updating the
+       position of the program counter. That we can do this in this way is the
+       beauty of immutable data structures. *)
+    if skipping then begin
+      print_endline "Skipped!";
+      { c with
+        cpu =
+          c.cpu
+          |> Cpu.write_special Special.PC (Cpu.read_special Special.PC c_after_execution.cpu)
+          |> Cpu.set_flag Cpu.Flag.Skip_next continue_skipping
+      }
+    end
+    else c_after_execution
+
   end >>= fun c ->
 
   match Interrupt_control.triggered c.interrupt_ctrl with

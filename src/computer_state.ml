@@ -16,6 +16,12 @@ let read_special s =
 let write_special s value =
   modify (fun t -> { t with cpu = Cpu.write_special s value t.cpu })
 
+let set_flag flag value =
+  modify (fun t -> { t with cpu = Cpu.set_flag flag value t.cpu })
+
+let get_flag flag =
+  gets (fun t -> Cpu.get_flag flag t.cpu)
+
 let read_memory offset =
   gets (fun t -> Mem.read offset t.memory)
 
@@ -43,5 +49,11 @@ let rec of_program t =
 
   | Program.Suspend (Program.Op.Write_special (s, v, next)) ->
     write_special s v >>= fun () -> of_program next
+
+  | Program.Suspend (Program.Op.Set_flag (flag, v, next)) ->
+    set_flag flag v >>= fun () -> of_program next
+
+  | Program.Suspend (Program.Op.Get_flag (flag, next)) ->
+    get_flag flag >>= fun value -> of_program (next value)
 
   | Program.Return v -> unit v

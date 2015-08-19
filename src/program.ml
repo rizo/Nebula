@@ -8,6 +8,8 @@ module Op = struct
     | Write_register of Reg.t * word * 'a
     | Read_special of Special.t * (word -> 'a)
     | Write_special of Special.t * word * 'a
+    | Set_flag of Cpu.Flag.t * bool * 'a
+    | Get_flag of Cpu.Flag.t * (bool -> 'a)
 
   let map f = function
     | Read_memory (o, next) -> Read_memory (o, fun w -> f (next w))
@@ -16,6 +18,8 @@ module Op = struct
     | Write_register (r, v, next) -> Write_register (r, v, f next)
     | Read_special (s, next) -> Read_special (s, fun v -> f (next v))
     | Write_special (s, v, next) -> Write_special (s, v, f next)
+    | Set_flag (flag, v, next) -> Set_flag (flag, v, f next)
+    | Get_flag (flag, next) -> Get_flag (flag, fun v -> f (next v))
 end
 
 include Free.Make(Op)
@@ -37,6 +41,12 @@ let read_special s =
 
 let write_special s value =
   lift (Op.Write_special (s, value, ()))
+
+let set_flag flag value =
+  lift (Op.Set_flag (flag, value, ()))
+
+let get_flag flag =
+  lift (Op.Get_flag (flag, id))
 
 exception Stack_overflow
 

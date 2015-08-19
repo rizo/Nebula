@@ -7,7 +7,17 @@ module Special_map = Map.Make(Special)
 type t = {
   registers : word Reg_map.t;
   specials : word Special_map.t;
+  flags : flags;
 }
+
+and flags = {
+  skip_next : bool;
+}
+
+module Flag = struct
+  type t =
+    | Skip_next
+end
 
 let read_register r t =
   Reg_map.find r t.registers
@@ -36,4 +46,16 @@ let empty =
                    |> add SP (word 0xffff)
                    |> add PC (word 0)
                    |> add IA (word 0));
+    flags = { skip_next = false; }
   }
+
+let set_flag flag value t =
+  { t with
+    flags =
+      match flag with
+      | Flag.Skip_next -> { skip_next = value; }
+  }
+
+let get_flag flag t =
+  match flag with
+  | Flag.Skip_next -> t.flags.skip_next

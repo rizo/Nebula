@@ -1,25 +1,99 @@
 open Prelude
 
+open Unsigned
+
 type t =
   | Binary of Code.t * Address.t * Address.t
   | Unary of Special_code.t * Address.t
 
-let rec execute = function
-  | Binary (code, address_b, address_a) -> Computer_state.of_program
-                                             (execute_binary code address_b address_a)
-  | Unary (code, address_a) -> execute_unary code address_a
+let rec execute ins =
+  let open Computer_state.Monad in
+
+  match ins with
+  | Binary (code, address_b, address_a) -> begin
+      Computer_state.of_program (execute_binary code address_b address_a) >>= fun () ->
+      Computer_state.unit (Code.conditional code)
+    end
+  | Unary (code, address_a) -> begin
+      execute_unary code address_a >>= fun () ->
+      Computer_state.unit false
+    end
 
 and execute_binary code address_b address_a =
   let open Code in
   let open Program in
+  let open Program.Functor in
   let open Program.Monad in
+
+  let apply f =
+    Address.get address_a >>= fun y ->
+    Address.get address_b >>= fun x ->
+    Address.set (f x y) address_b
+  in
+
+  let apply_to_signed f =
+    Address.get address_a |> map Word.to_int >>= fun ys ->
+    Address.get address_b |> map Word.to_int >>= fun xs ->
+    let zs = f xs ys in
+    Address.set (Word.of_int zs) address_b
+  in
+
+  let apply_to_double f action =
+    Address.get address_a |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
+    Address.get address_b |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+    let zd = f xd yd in
+    Address.set (word (UInt16.to_int zd)) address_b >>= fun () ->
+    action zd >>= fun () ->
+    Return ()
+  in
+
+  let skip_unless test =
+    Address.get address_a >>= fun y ->
+    Address.get address_b >>= fun x ->
+    set_flag Cpu.Flag.Skip_next (not (test x y))
+  in
+
   match code with
   | Set -> Address.get address_a >>= fun a -> Address.set a address_b
-  | Add -> begin
-      Address.get address_a >>= fun a ->
-      Address.get address_b >>= fun b ->
-      Address.set Word.(a + b) address_b
+  | Add -> apply_to_double (fun x y -> UInt16.Infix.(x + y))
+             (fun z ->
+                write_special
+                  Special.EX
+                  (if UInt16.(z > of_int 0xffff) then word 1 else word 0))
+  | Sub -> apply_to_double (fun x y -> UInt16.Infix.(x - y))
+             (fun z ->
+                write_special
+                  Special.EX
+                  (if UInt16.(z > of_int 0xffff) then word 0xffff else word 0))
+  | Mul -> apply_to_double (fun x y -> UInt16.Infix.(x * y))
+             (fun z ->
+                write_special
+                  Special.EX
+                  Word.(of_int UInt16.(to_int UInt16.Infix.((z lsr 16) land of_int 0xffff))))
+  | Mli -> apply_to_signed (fun x y -> x * y)
+  | Div -> begin
+      Address.get address_a |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
+      Address.get address_b |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+
+      if yd = UInt16.zero then
+        Address.set (word 0) address_b >>= fun () ->
+        write_special Special.EX (word 0)
+      else
+        Address.set (Word.of_int UInt16.Infix.((xd / yd) |> UInt16.to_int)) address_b >>= fun () ->
+        write_special
+          Special.EX
+          (Word.of_int UInt16.Infix.(((xd lsl 16) / yd) land UInt16.of_int 0xffff |> UInt16.to_int))
     end
+  | Dvi -> apply_to_signed (fun x y -> x / y)
+  | Bor -> apply (fun x y -> Word.(x lor y))
+  | Shl -> begin
+      Address.get address_a |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
+      Address.get address_b |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+      let zd = UInt16.Infix.(xd lsl (UInt16.to_int yd)) |> UInt16.to_int |> word in
+      Address.set zd address_b
+    end
+  | Ife -> skip_unless (fun x y -> x = y)
+  | Ifn -> skip_unless (fun x y -> x <> y)
 
 and execute_unary code address_a =
   let open Computer in
