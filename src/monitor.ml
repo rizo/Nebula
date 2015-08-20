@@ -357,7 +357,7 @@ let on_interaction device_input memory t =
 
 let info =
   Device.Info.{
-    id = (word 0x7349f615, word 0xf615);
+    id = (word 0x7349, word 0xf615);
     manufacturer = (word 0x1c6c, word 0x8b36);
     version = word 0x1802
   }
