@@ -61,7 +61,6 @@ and execute_binary code address_b address_a =
   let skip_unless test =
     Address.get address_a >>= fun y ->
     Address.get address_b >>= fun x ->
-    print_endline ("test: " ^ string_of_bool (not (test x y)));
     set_flag Cpu.Flag.Skip_next (not (test x y))
   in
 
