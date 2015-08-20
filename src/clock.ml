@@ -65,7 +65,7 @@ let on_interrupt t =
 
 let info =
   Device.Info.{
-    id = (word 0x30cf, word 0x7406);
+    id = (word 0x12d0, word 0xb402);
     manufacturer = (word 0, word 0);
     version = word 1;
 }
