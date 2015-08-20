@@ -22,15 +22,11 @@ let handle_error error =
   let open Format in
 
   match error with
-  | Engine.Bad_decoding (w, computer) ->
-    begin
+  | Engine.Bad_decoding (w, computer) -> begin
       show_error_and_exit
         (sprintf "Failed to decode word %s." (Word.show w)) ~computer
     end
-  | Engine.Stack_overflow computer -> show_error_and_exit "Stack overflow." ~computer
-  | Engine.Stack_underflow computer -> show_error_and_exit "Stack underflow" ~computer
-  | Engine.No_such_device (index, computer) ->
-    begin
+  | Engine.No_such_device (index, computer) -> begin
       show_error_and_exit
         (sprintf "Index %s is not associated with a device." (Word.show index))
         ~computer

@@ -31,6 +31,13 @@ let show t =
 
   let buffer = Buffer.create 20 in
 
+  Buffer.add_string buffer (special "PC" Special.PC);
+  Buffer.add_string buffer (special "SP" Special.SP);
+  Buffer.add_string buffer (special "EX" Special.EX);
+  Buffer.add_string buffer (special "IA" Special.IA);
+
+  Buffer.add_string buffer "\n";
+
   Buffer.add_string buffer (register "A" Reg.A);
   Buffer.add_string buffer (register "B" Reg.B);
   Buffer.add_string buffer (register "C" Reg.B);
@@ -39,13 +46,6 @@ let show t =
   Buffer.add_string buffer (register "Z" Reg.Z);
   Buffer.add_string buffer (register "I" Reg.I);
   Buffer.add_string buffer (register "J" Reg.J);
-
-  Buffer.add_string buffer "\n";
-
-  Buffer.add_string buffer (special "PC" Special.PC);
-  Buffer.add_string buffer (special "SP" Special.SP);
-  Buffer.add_string buffer (special "EX" Special.EX);
-  Buffer.add_string buffer (special "IA" Special.IA);
 
   Buffer.add_string buffer "\n";
 

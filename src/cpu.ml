@@ -43,7 +43,7 @@ let empty =
     specials =
       Special_map.(empty
                    |> add EX (word 0)
-                   |> add SP (word 0xffff)
+                   |> add SP (word 0)
                    |> add PC (word 0)
                    |> add IA (word 0));
     flags = { skip_next = false; }

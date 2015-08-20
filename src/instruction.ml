@@ -6,18 +6,29 @@ type t =
   | Binary of Code.t * Address.t * Address.t
   | Unary of Special_code.t * Address.t
 
+let conditional = function
+  | Unary _ -> false
+  | Binary (code, _, _) -> Code.conditional code
+
+let encoded_size = function
+  | Binary (code, b, a) -> 1 + Address.extra_encoded_size b + Address.extra_encoded_size a
+  | Unary (code, a) -> 1 + Address.extra_encoded_size a
+
 let rec execute ins =
   let open Computer_state.Monad in
 
-  match ins with
-  | Binary (code, address_b, address_a) -> begin
-      Computer_state.of_program (execute_binary code address_b address_a) >>= fun () ->
-      Computer_state.unit (Code.conditional code)
-    end
-  | Unary (code, address_a) -> begin
-      execute_unary code address_a >>= fun () ->
-      Computer_state.unit false
-    end
+  Computer_state.get_flag Cpu.Flag.Skip_next >>= fun skipping ->
+  if skipping then begin
+    let open Computer_state in
+    read_special Special.PC >>= fun pc ->
+    write_special Special.PC Word.(pc + word (encoded_size ins) - word 1) >>= fun () ->
+    set_flag Cpu.Flag.Skip_next (conditional ins)
+  end else
+    match ins with
+    | Binary (code, address_b, address_a) -> begin
+        Computer_state.of_program (execute_binary code address_b address_a)
+      end
+    | Unary (code, address_a) -> execute_unary code address_a
 
 and execute_binary code address_b address_a =
   let open Code in
@@ -50,11 +61,15 @@ and execute_binary code address_b address_a =
   let skip_unless test =
     Address.get address_a >>= fun y ->
     Address.get address_b >>= fun x ->
+    print_endline ("test: " ^ string_of_bool (not (test x y)));
     set_flag Cpu.Flag.Skip_next (not (test x y))
   in
 
   match code with
-  | Set -> Address.get address_a >>= fun a -> Address.set a address_b
+  | Set -> begin
+      Address.get address_a >>= fun y ->
+      Address.set y address_b
+    end
   | Add -> apply_to_double (fun x y -> UInt16.Infix.(x + y))
              (fun z ->
                 write_special
@@ -149,10 +164,10 @@ and execute_unary code address_a =
               else Interrupt_control.enable_dequeuing) interrupt_ctrl }
       end
     end
-  | Hwn -> modify begin fun c ->
-      { c with
-        cpu = Manifest.size c.manifest |> Word.of_int |> fun w -> Cpu.write_register Reg.A w c.cpu
-      }
+  | Hwn -> begin
+      get >>= fun c ->
+      Manifest.size c.manifest |> Word.of_int |> fun w ->
+      Computer_state.of_program (Address.set w address_a)
     end
   | Hwq -> begin
       state_a >>= fun index ->

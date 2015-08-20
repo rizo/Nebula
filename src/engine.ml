@@ -6,10 +6,6 @@ exception Bad_decoding of word * Computer.t
 
 exception No_such_device of word * Computer.t
 
-exception Stack_overflow of Computer.t
-
-exception Stack_underflow of Computer.t
-
 (** Jump to the interrupt handler and disable interrupt dequeing. *)
 let handle_interrupt (Interrupt.Message message) c =
   let open Computer in
@@ -69,10 +65,10 @@ let execute_interrupt trigger c =
     Finally, check for triggered interrupts (either by software, or by a device
     when it was "ticked") and execute them. *)
 let step c =
-  let open Computer in
-  let open IO.Monad in
+  let unsafe_step c =
+    let open Computer in
+    let open IO.Monad in
 
-  IO.lift begin fun () ->
     let c =
       if Cpu.read_special Special.IA c.cpu != word 0 then
         match Interrupt_control.handle c.interrupt_ctrl with
@@ -81,54 +77,28 @@ let step c =
       else c
     in
 
-    let skipping = Cpu.get_flag Cpu.Flag.Skip_next c.cpu in
+    (* print_endline (Computer.show c); *)
 
-    let (c_after_execution, continue_skipping) =
+    IO.lift begin fun () ->
       let open Computer_state.Monad in
       let open Computer_state.Functor in
 
-      try
-        let s = Computer_state.of_program Program.next_word >>= fun w ->
-          match Decode.instruction w with
-          | None -> raise (Bad_decoding (w, c))
-          | Some ins -> begin
-              Instruction.execute ins
-              |> map (fun conditional_instruction -> skipping && conditional_instruction)
-            end
-        in
-        Computer_state.run c s
-      with
-      | Program.Stack_underflow -> raise (Stack_underflow c)
-      | Program.Stack_overflow -> raise (Stack_overflow c)
-    in
+      let s = Computer_state.of_program Program.next_word >>= fun w ->
+        match Decode.instruction w with
+        | None -> raise (Bad_decoding (w, c))
+        | Some ins -> Instruction.execute ins
+      in
+      Computer_state.run c s |> fst
+    end >>= fun c ->
+    match Interrupt_control.triggered c.interrupt_ctrl with
+    | None -> IO.unit c
+    | Some (trigger, interrupt_ctrl) -> execute_interrupt trigger { c with interrupt_ctrl }
+  in
 
-    print_endline (Computer.show c);
-
-    (* If we're skipping instructions, then we only care about updating the
-       position of the program counter. That we can do this in this way is the
-       beauty of immutable data structures. *)
-    if skipping then begin
-      print_endline "Skipped!";
-      { c with
-        cpu =
-          c.cpu
-          |> Cpu.write_special Special.PC (Cpu.read_special Special.PC c_after_execution.cpu)
-          |> Cpu.set_flag Cpu.Flag.Skip_next continue_skipping
-      }
-    end
-    else c_after_execution
-
-  end >>= fun c ->
-
-  match Interrupt_control.triggered c.interrupt_ctrl with
-  | None -> IO.unit c
-  | Some (trigger, interrupt_ctrl) -> begin
-      IO.catch
-        (execute_interrupt trigger { c with interrupt_ctrl })
-        (function
-          | Manifest.No_such_device index -> IO.throw (No_such_device (index, c))
-          | error -> IO.throw error)
-    end
+  IO.catch (unsafe_step c)
+    (function
+      | Manifest.No_such_device index -> IO.throw (No_such_device (index, c))
+      | error -> IO.throw error)
 
 (** "Tick" all devices in the manifest. *)
 let tick_devices c =

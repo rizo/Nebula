@@ -48,10 +48,6 @@ let set_flag flag value =
 let get_flag flag =
   lift (Op.Get_flag (flag, id))
 
-exception Stack_overflow
-
-exception Stack_underflow
-
 let next_word =
   let open Monad in
   read_special Special.PC >>= fun pc ->
@@ -62,19 +58,13 @@ let push value =
   let open Monad in
   let open Special in
   read_special SP >>= fun sp ->
-  if sp = word 0 then
-    raise Stack_overflow
-  else
-    let sp = Word.(sp - word 1) in
-    write_special SP sp >>= fun () ->
-    write_memory sp value
+  let sp = Word.(sp - word 1) in
+  write_special SP sp >>= fun () ->
+  write_memory sp value
 
 let pop =
   let open Monad in
   let open Special in
   read_special SP >>= fun sp ->
-  if sp = word 0xffff then
-    raise Stack_underflow
-  else
-    write_special SP Word.(sp + word 1) >>= fun () ->
-    read_memory sp
+  write_special SP Word.(sp + word 1) >>= fun () ->
+  read_memory sp

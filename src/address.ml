@@ -1,5 +1,9 @@
 open Prelude
 
+open Program
+open Program.Monad
+open Special
+
 type t =
   | Reg_direct of Reg.t
   | Reg_indirect of Reg.t
@@ -15,11 +19,22 @@ type t =
   | Indirect
   | Literal of word
 
-open Program
-open Program.Monad
-open Special
-
 exception Invalid_operation
+
+let extra_encoded_size = function
+  | Reg_direct _ -> 0
+  | Reg_indirect _ -> 0
+  | Reg_indirect_offset _ -> 1
+  | Push -> 0
+  | Pop -> 0
+  | Peek -> 0
+  | Pick -> 1
+  | SP -> 0
+  | PC -> 0
+  | EX -> 0
+  | Direct -> 1
+  | Indirect -> 1
+  | Literal _ -> 0
 
 let get = function
   | Reg_direct r -> read_register r
