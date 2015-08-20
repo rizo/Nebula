@@ -55,17 +55,7 @@ let suite =
             push (word 3)
           ] |> run
         in
-        assert_equal (Cpu.read_special Special.SP c.cpu) (word 0xfffc));
-
-    "raise an exception on stack overflow" >:: (fun ctx ->
-        let open Computer in
-        let full_stack = {
-          Computer.default with
-          cpu = Cpu.write_special Special.SP (word 0) Cpu.empty
-        }
-        in
-        assert_raises Program.Stack_overflow (fun () ->
-            push (word 1) |> run ~computer:full_stack));
+        assert_equal (Cpu.read_special Special.SP c.cpu) (word 0xfffd));
 
     "pop values from the stack" >:: (fun ctx ->
         let open Computer in
@@ -81,8 +71,4 @@ let suite =
           ] end |> run
         in
         assert_equal items [word 3; word 2; word 1]);
-
-    "raise an exception on stack underflow" >:: (fun ctx ->
-        assert_raises Program.Stack_underflow (fun () ->
-            pop |> run));
   ]

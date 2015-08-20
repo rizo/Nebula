@@ -4,7 +4,7 @@ open Prelude
 
 let suite =
   let open Cpu in
-  
+
   "cpu" >::: [
     "registers are initialized to zero" >:: (fun ctx ->
         assert_equal
@@ -20,8 +20,8 @@ let suite =
     "IA is initialized to zero" >:: (fun ctx ->
         assert_equal (read_special Special.IA empty) (word 0));
 
-    "SP is initialized to 0xffff" >:: (fun ctx ->
-        assert_equal (read_special Special.SP empty) (word 0xffff));
+    "SP is initialized to zero" >:: (fun ctx ->
+        assert_equal (read_special Special.SP empty) (word 0));
 
     "registers can be read and written to" >:: (fun ctx ->
         let test_value = word 42 in
