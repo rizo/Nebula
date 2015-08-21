@@ -36,48 +36,56 @@ let extra_encoded_size = function
   | Indirect -> 1
   | Literal _ -> 0
 
-let get = function
-  | Reg_direct r -> read_register r
-  | Reg_indirect r -> read_register r >>= read_memory
-  | Reg_indirect_offset r -> begin
-      next_word >>= fun n ->
-      read_register r >>= fun v ->
-      read_memory Word.(n + v)
-    end
-  | Push -> raise Invalid_operation
-  | Pop -> pop
-  | Peek -> read_special SP >>= read_memory
-  | Pick -> begin
-      next_word >>= fun n ->
-      read_special SP >>= fun sp ->
-      read_memory Word.(n + sp)
-    end
-  | SP -> read_special SP
-  | PC -> read_special PC
-  | EX -> read_special EX
-  | Direct -> next_word
-  | Indirect -> next_word >>= read_memory
-  | Literal v -> Program.Return v
+module Target = struct
+  open Computer_state
 
-let set value = function
-  | Reg_direct r -> write_register r value
-  | Reg_indirect r -> read_register r >>= fun offset -> write_memory offset value
-  | Reg_indirect_offset r -> begin
-      next_word >>= fun n ->
-      read_register r >>= fun v ->
-      write_memory Word.(n + v) value
-    end
-  | Push -> push value
-  | Pop -> raise Invalid_operation
-  | Peek -> read_special SP >>= fun sp -> write_memory sp value
-  | Pick -> begin
-      next_word >>= fun n ->
-      read_special SP >>= fun sp ->
-      write_memory Word.(sp + n) value
-    end
-  | SP -> write_special SP value
-  | PC -> write_special PC value
-  | EX -> write_special EX value
-  | Direct -> Return ()
-  | Indirect -> next_word >>= fun n -> write_memory n value
-  | Literal v -> Return ()
+  type t =
+    | Reg of Reg.t
+    | Special of Special.t
+    | Offset of word
+    | Push
+    | Pop
+    | Value of word
+
+  let get = function
+    | Reg r -> read_register r
+    | Special s -> read_special s
+    | Offset o -> read_memory o
+    | Push -> raise Invalid_operation
+    | Pop -> of_program pop
+    | Value v -> unit v
+
+  let set v = function
+    | Reg r -> write_register r v
+    | Special s -> write_special s v
+    | Offset o -> write_memory o v
+    | Push -> of_program (push v)
+    | Pop -> raise Invalid_operation
+    | Value _ -> unit ()
+end
+
+let target_of t =
+  Computer_state.of_program begin
+    match t with
+    | Reg_direct r -> Return (Target.Reg r)
+    | Reg_indirect r -> read_register r >>= fun w -> Return (Target.Offset w)
+    | Reg_indirect_offset r -> begin
+        next_word >>= fun n ->
+        read_register r >>= fun w ->
+        Return (Target.Offset Word.(n + w))
+      end
+    | Push -> Return (Target.Push)
+    | Pop -> Return (Target.Pop)
+    | Peek -> read_special PC >>= fun w -> Return (Target.Offset w)
+    | Pick -> begin
+        next_word >>= fun n ->
+        read_special SP >>= fun sp ->
+        Return (Target.Offset Word.(n + sp))
+      end
+    | SP -> Return (Target.Special SP)
+    | PC -> Return (Target.Special PC)
+    | EX -> Return (Target.Special EX)
+    | Direct -> next_word >>= fun n -> Return (Target.Value n)
+    | Indirect -> next_word >>= fun n -> Return (Target.Offset n)
+    | Literal v -> Return (Target.Value v)
+  end

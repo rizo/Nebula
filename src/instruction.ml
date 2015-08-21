@@ -25,50 +25,47 @@ let rec execute ins =
     set_flag Cpu.Flag.Skip_next (conditional ins)
   end else
     match ins with
-    | Binary (code, address_b, address_a) -> begin
-        Computer_state.of_program (execute_binary code address_b address_a)
-      end
+    | Binary (code, address_b, address_a) -> execute_binary code address_b address_a
     | Unary (code, address_a) -> execute_unary code address_a
 
 and execute_binary code address_b address_a =
   let open Code in
-  let open Program in
-  let open Program.Functor in
-  let open Program.Monad in
+  let open Computer_state in
+  let open Computer_state.Functor in
+  let open Computer_state.Monad in
+
+  Address.target_of address_a >>= fun ta ->
+  Address.target_of address_b >>= fun tb ->
 
   let apply f =
-    Address.get address_a >>= fun y ->
-    Address.get address_b >>= fun x ->
-    Address.set (f x y) address_b
+    Address.Target.get ta >>= fun y ->
+    Address.Target.get tb >>= fun x ->
+    Address.Target.set (f x y) tb
   in
 
   let apply_to_signed f =
-    Address.get address_a |> map Word.to_int >>= fun ys ->
-    Address.get address_b |> map Word.to_int >>= fun xs ->
+    Address.Target.get ta |> map Word.to_int >>= fun ys ->
+    Address.Target.get tb |> map Word.to_int >>= fun xs ->
     let zs = f xs ys in
-    Address.set (Word.of_int zs) address_b
+    Address.Target.set (Word.of_int zs) tb
   in
 
   let apply_to_double f action =
-    Address.get address_a |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
-    Address.get address_b |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+    Address.Target.get ta |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
+    Address.Target.get tb |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
     let zd = f xd yd in
-    Address.set (word (UInt16.to_int zd)) address_b >>= fun () ->
-    action zd >>= fun () ->
-    Return ()
+    Address.Target.set (word (UInt16.to_int zd)) tb >>= fun () ->
+    action zd
   in
 
   let skip_unless test =
-    Address.get address_a >>= fun y ->
-    Address.get address_b >>= fun x ->
+    Address.Target.get ta >>= fun y ->
+    Address.Target.get tb >>= fun x ->
     set_flag Cpu.Flag.Skip_next (not (test x y))
   in
 
   match code with
-  | Set -> begin
-      Address.get address_a >>= fun y ->
-      Address.set y address_b
-    end
+  | Set -> Address.Target.get ta >>= fun y -> Address.Target.set y tb
   | Add -> apply_to_double (fun x y -> UInt16.Infix.(x + y))
              (fun z ->
                 write_special
@@ -86,14 +83,14 @@ and execute_binary code address_b address_a =
                   Word.(of_int UInt16.(to_int UInt16.Infix.((z lsr 16) land of_int 0xffff))))
   | Mli -> apply_to_signed (fun x y -> x * y)
   | Div -> begin
-      Address.get address_a |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
-      Address.get address_b |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+      Address.Target.get ta |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
+      Address.Target.get tb |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
 
       if yd = UInt16.zero then
-        Address.set (word 0) address_b >>= fun () ->
+        Address.Target.set (word 0) tb >>= fun () ->
         write_special Special.EX (word 0)
       else
-        Address.set (Word.of_int UInt16.Infix.((xd / yd) |> UInt16.to_int)) address_b >>= fun () ->
+        Address.Target.set (Word.of_int UInt16.Infix.((xd / yd) |> UInt16.to_int)) tb >>= fun () ->
         write_special
           Special.EX
           (Word.of_int UInt16.Infix.(((xd lsl 16) / yd) land UInt16.of_int 0xffff |> UInt16.to_int))
@@ -101,13 +98,14 @@ and execute_binary code address_b address_a =
   | Dvi -> apply_to_signed (fun x y -> x / y)
   | Bor -> apply (fun x y -> Word.(x lor y))
   | Shl -> begin
-      Address.get address_a |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
-      Address.get address_b |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+      Address.Target.get ta |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
+      Address.Target.get tb |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
       let zd = UInt16.Infix.(xd lsl (UInt16.to_int yd)) |> UInt16.to_int |> word in
-      Address.set zd address_b
+      Address.Target.set zd tb
     end
   | Ife -> skip_unless (fun x y -> x = y)
   | Ifn -> skip_unless (fun x y -> x <> y)
+  | Ifl -> skip_unless (fun x y -> Word.(x < y))
 
 and execute_unary code address_a =
   let open Computer in
@@ -116,11 +114,11 @@ and execute_unary code address_a =
   let open Program in
   let open Special_code in
 
-  let state_a = of_program (Address.get address_a) in
+  Address.target_of address_a >>= fun ta ->
+  Address.Target.get ta >>= fun a ->
 
   match code with
   | Jsr -> begin
-      state_a >>= fun a ->
       of_program begin
         let open Program.Monad in
         read_special Special.PC >>= push >>= fun () ->
@@ -129,7 +127,6 @@ and execute_unary code address_a =
     end
   | Int -> begin
       let open Interrupt_control in
-      state_a >>= fun a ->
       modify begin function
           { interrupt_ctrl; _ } as c ->
           { c with
@@ -138,7 +135,7 @@ and execute_unary code address_a =
           }
       end
     end
-  | Ias -> state_a >>= Computer_state.write_special Special.IA
+  | Ias -> Computer_state.write_special Special.IA a
   | Iag -> Computer_state.read_special Special.IA >>= Computer_state.write_register Reg.A
   | Rfi -> begin
       let open Interrupt_control in
@@ -153,7 +150,6 @@ and execute_unary code address_a =
       end
     end
   | Iaq -> begin
-      state_a >>= fun a ->
       modify begin function
         | { interrupt_ctrl; _ } as c ->
           { c with
@@ -166,10 +162,10 @@ and execute_unary code address_a =
   | Hwn -> begin
       get >>= fun c ->
       Manifest.size c.manifest |> Word.of_int |> fun w ->
-      Computer_state.of_program (Address.set w address_a)
+      Address.Target.set w ta
     end
   | Hwq -> begin
-      state_a >>= fun index ->
+      let index = a in
       get >>= fun c ->
       let info = Manifest.query index c.manifest in
       Computer_state.write_register Reg.A Device.Info.(snd info.id) >>= fun () ->
@@ -180,7 +176,6 @@ and execute_unary code address_a =
     end
   | Hwi -> begin
       let open Interrupt_control in
-      state_a >>= fun a ->
       modify begin function
           { interrupt_ctrl; _ } as c ->
           { c with
@@ -194,7 +189,6 @@ and execute_unary code address_a =
       exit 0
     end
   | Dbg -> begin
-      state_a >>= fun a ->
       let time = Unix.gettimeofday () in
       print_endline (Printf.sprintf "[%f] %s" time (Word.show a));
       flush stdout;

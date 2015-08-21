@@ -31,6 +31,7 @@ let code w =
   | 0x0f -> Some Shl
   | 0x12 -> Some Ife
   | 0x13 -> Some Ifn
+  | 0x16 -> Some Ifl
   | _ -> None
 
 (** Decode a special opcode. *)

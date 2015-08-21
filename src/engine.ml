@@ -132,7 +132,6 @@ let launch ~computer ~suspend_every ~suspension =
 
   let rec loop last_suspension_time computer =
     tick_devices computer >>= fun computer ->
-
     step computer >>= fun computer ->
 
     Precision_clock.get_time >>= fun now ->
@@ -144,6 +143,8 @@ let launch ~computer ~suspend_every ~suspension =
       else
         IO.unit (last_suspension_time, computer)
     in
-    next >>= fun (time, computer) -> loop time computer
+    next >>= fun (time, computer) ->
+
+    loop time computer
   in
   Precision_clock.get_time >>= fun now -> loop now computer

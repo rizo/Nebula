@@ -12,6 +12,7 @@ type t =
   | Shl
   | Ife
   | Ifn
+  | Ifl
 
 let conditional = function
   | Ife -> true

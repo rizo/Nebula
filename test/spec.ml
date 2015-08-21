@@ -8,5 +8,7 @@ let specials =
   let open Special in
   [ EX; SP; PC; IA ]
 
-let run ?(computer = Computer.default) t =
-  t |> Computer_state.of_program |> Computer_state.run computer
+let run_program ?(computer = Computer.default) t =
+  t
+  |> Computer_state.of_program
+  |> Computer_state.run computer
