@@ -51,10 +51,10 @@ and execute_binary code address_b address_a =
   in
 
   let apply_to_double f action =
-    Address.Target.get ta |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
-    Address.Target.get tb |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+    Address.Target.get ta |> map Word.to_dword >>= fun yd ->
+    Address.Target.get tb |> map Word.to_dword >>= fun xd ->
     let zd = f xd yd in
-    Address.Target.set (word (UInt16.to_int zd)) tb >>= fun () ->
+    Address.Target.set (Word.of_dword zd) tb >>= fun () ->
     action zd
   in
 
@@ -83,29 +83,36 @@ and execute_binary code address_b address_a =
                   Word.(of_int UInt16.(to_int UInt16.Infix.((z lsr 16) land of_int 0xffff))))
   | Mli -> apply_to_signed (fun x y -> x * y)
   | Div -> begin
-      Address.Target.get ta |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
-      Address.Target.get tb |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
+      Address.Target.get ta |> map Word.to_dword >>= fun yd ->
+      Address.Target.get tb |> map Word.to_dword >>= fun xd ->
 
       if yd = UInt16.zero then
         Address.Target.set (word 0) tb >>= fun () ->
         write_special Special.EX (word 0)
       else
-        Address.Target.set (Word.of_int UInt16.Infix.((xd / yd) |> UInt16.to_int)) tb >>= fun () ->
+        Address.Target.set (Word.of_dword UInt16.Infix.(xd / yd)) tb >>= fun () ->
         write_special
           Special.EX
-          (Word.of_int UInt16.Infix.(((xd lsl 16) / yd) land UInt16.of_int 0xffff |> UInt16.to_int))
+          (Word.of_dword UInt16.Infix.(((xd lsl 16) / yd) land UInt16.of_int 0xffff))
     end
   | Dvi -> apply_to_signed (fun x y -> x / y)
   | Bor -> apply (fun x y -> Word.(x lor y))
   | Shl -> begin
-      Address.Target.get ta |> map (fun a -> UInt16.of_int (Word.to_int a)) >>= fun yd ->
-      Address.Target.get tb |> map (fun b -> UInt16.of_int (Word.to_int b)) >>= fun xd ->
-      let zd = UInt16.Infix.(xd lsl (UInt16.to_int yd)) |> UInt16.to_int |> word in
+      Address.Target.get ta |> map Word.to_dword >>= fun yd ->
+      Address.Target.get tb |> map Word.to_dword >>= fun xd ->
+      let zd = UInt16.Infix.(xd lsl (UInt16.to_int yd)) |> Word.of_dword in
       Address.Target.set zd tb
     end
   | Ife -> skip_unless (fun x y -> x = y)
   | Ifn -> skip_unless (fun x y -> x <> y)
+  | Ifg -> skip_unless (fun x y -> Word.(x > y))
   | Ifl -> skip_unless (fun x y -> Word.(x < y))
+  | Sti -> begin
+      Address.Target.get ta >>= fun y ->
+      Address.Target.set y tb >>= fun () ->
+      read_register Reg.I >>= fun i -> write_register Reg.I Word.(i + word 1) >>= fun () ->
+      read_register Reg.J >>= fun j -> write_register Reg.J Word.(j + word 1)
+    end
 
 and execute_unary code address_a =
   let open Computer in

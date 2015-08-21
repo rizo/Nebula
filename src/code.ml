@@ -12,8 +12,13 @@ type t =
   | Shl
   | Ife
   | Ifn
+  | Ifg
   | Ifl
+  | Sti
 
 let conditional = function
-  | Ife -> true
+  | Ife
+  | Ifn
+  | Ifg
+  | Ifl -> true
   | _ -> false
