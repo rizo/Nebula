@@ -1,12 +1,20 @@
-type t = Unsigned.UInt16.t
+open Unsigned
 
-include Unsigned.UInt16.Infix
+type t = UInt16.t
+
+include UInt16.Infix
 
 let of_int =
-  Unsigned.UInt16.of_int
+  UInt16.of_int
 
 let to_int =
-  Unsigned.UInt16.to_int
+  UInt16.to_int
+
+let to_dword t =
+  UInt16.of_int (to_int t)
+
+let of_dword d =
+  of_int (UInt16.to_int d)
 
 let to_bool w = to_int w |> function
   | 0 -> false
