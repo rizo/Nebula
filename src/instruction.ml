@@ -143,7 +143,7 @@ and execute_unary code address_a =
       end
     end
   | Ias -> Computer_state.write_special Special.IA a
-  | Iag -> Computer_state.read_special Special.IA >>= Computer_state.write_register Reg.A
+  | Iag -> Computer_state.read_special Special.IA >>= fun w -> Address.Target.set w ta
   | Rfi -> begin
       let open Interrupt_control in
       of_program begin
