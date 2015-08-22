@@ -77,8 +77,6 @@ let step c =
       else c
     in
 
-    (* print_endline (Computer.show c); *)
-
     IO.lift begin fun () ->
       let open Computer_state.Monad in
       let open Computer_state.Functor in
