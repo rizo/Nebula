@@ -1,5 +1,6 @@
 (** Simulated keyboard. *)
 
+open Functional
 open Prelude
 
 open Unsigned

@@ -1,5 +1,7 @@
 (** The SDL library for audio, video, and input events. *)
 
+open Functional
+
 include Tsdl.Sdl
 
 (** Wrap an SDL function into the IO context, with an error message. *)

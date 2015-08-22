@@ -1,3 +1,5 @@
+open Functional
+
 open Unsigned
 
 type t =

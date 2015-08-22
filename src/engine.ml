@@ -1,5 +1,6 @@
 (** Launch the DCPU-16. *)
 
+open Functional
 open Prelude
 
 exception Bad_decoding of word * Computer.t

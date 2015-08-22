@@ -1,6 +1,7 @@
 (** Simulated volatile memory. *)
 
 open Prelude
+open Functional
 
 type t
 

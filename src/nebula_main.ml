@@ -1,10 +1,12 @@
-open IO.Functor
-open IO.Monad
+open Functional
 open Prelude
 
 open Unsigned
 
 open Printf
+
+open IO.Functor
+open IO.Monad
 
 let initialize =
   Sdl.lift "Initializing: %s" (fun () -> Sdl.init Sdl.Init.(video + events))
@@ -59,8 +61,8 @@ let handle_event computer =
 
 let make_monitor_window =
   Visual.Window.make
-    ~width:Monitor.total_width
-    ~height:Monitor.total_height
+    ~width:Devices.Monitor.total_width
+    ~height:Devices.Monitor.total_height
     ~title:"DCPU-16 Monitor"
 
 let frame_period =
@@ -76,15 +78,15 @@ let main file_name =
         initialize >>= fun () ->
         make_monitor_window >>= fun window ->
 
-        let keyboard = Keyboard.make in
-        Clock.make >>= fun clock ->
-        Monitor.make window >>= fun monitor ->
+        let keyboard = Devices.Keyboard.make in
+        Devices.Clock.make >>= fun clock ->
+        Devices.Monitor.make window >>= fun monitor ->
 
         let manifest = Manifest.(
             empty
-            |> register (module Clock) clock
-            |> register (module Keyboard) keyboard
-            |> register (module Monitor) monitor)
+            |> register (module Devices.Clock) clock
+            |> register (module Devices.Keyboard) keyboard
+            |> register (module Devices.Monitor) monitor)
         in
 
         let computer = { Computer.default with memory; manifest } in

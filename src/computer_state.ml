@@ -1,3 +1,4 @@
+open Functional
 open Prelude
 
 include State.Make(Computer)

@@ -1,5 +1,6 @@
 (** Simulated hardware device. *)
 
+open Functional
 open Prelude
 
 open Unsigned

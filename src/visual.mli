@@ -3,6 +3,8 @@
     Drawing commands can be imperatively applied to a buffer, but nothing is
     rendered to the {! Window} until {! render} is invoked. *)
 
+open Functional
+
 open Ctypes
 open Unsigned
 

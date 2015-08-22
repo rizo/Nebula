@@ -1,0 +1,9 @@
+Applicative_class
+Either    
+Free
+Functor_class
+IO
+Monad_class
+Option
+Or_exn
+State

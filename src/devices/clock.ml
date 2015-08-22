@@ -1,5 +1,6 @@
 (** Simulated hardware clock. *)
 
+open Functional
 open Prelude
 
 type t = {

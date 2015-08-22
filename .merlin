@@ -1,4 +1,6 @@
 S src
+S src/functional
+S src/devices
 S test
 B _build/src
 B +threads

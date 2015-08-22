@@ -1,4 +1,5 @@
 open Prelude
+open Functional
 
 module Op = struct
   type 'a t =

@@ -1,7 +1,5 @@
 #utop_prompt_simple ;;
 
-#require "lwt.simple-top" ;;
-
 #directory "src" ;;
 #directory "_build/src" ;;
 
@@ -9,4 +7,5 @@
 
 #install_printer Word.pp ;;
 
+open Functional ;;
 open Prelude ;;

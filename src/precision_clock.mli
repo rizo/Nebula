@@ -1,3 +1,4 @@
+open Functional
 
 (** Get a precision time-stamp, expressed in nanoseconds.
 

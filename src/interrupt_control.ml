@@ -1,3 +1,5 @@
+include Functional
+
 type t = {
   dequeuing : bool;
   queue : Interrupt.t Persistent_queue.t;

@@ -1,4 +1,5 @@
 open Prelude
+open Functional
 
 module Cells = Map.Make(Word)
 

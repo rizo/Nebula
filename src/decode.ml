@@ -2,8 +2,10 @@
 
     Generally, decoding errors will result in a value of {! None}. *)
 
-open Option.Functor
+open Functional
 open Prelude
+
+module F = Option.Functor
 
 (** The address context.
 
@@ -71,11 +73,11 @@ let address ctx w =
   let i = Word.to_int w in
 
   if i <= 0x07 then
-    register w |> map (fun r -> Address.Reg_direct r)
+    register w |> F.map (fun r -> Address.Reg_direct r)
   else if (i >= 0x08) && (i < 0x0f) then
-    register Word.(w - word 0x08) |> map (fun r -> Address.Reg_indirect r)
+    register Word.(w - word 0x08) |> F.map (fun r -> Address.Reg_indirect r)
   else if (i >= 0x10) && (i <= 0x17) then
-    register Word.(w - word 0x10) |> map (fun r -> Address.Reg_indirect_offset r)
+    register Word.(w - word 0x10) |> F.map (fun r -> Address.Reg_indirect_offset r)
   else match i with
     | 0x18 when ctx = A -> Some Address.Pop
     | 0x18 when ctx = B -> Some Address.Push

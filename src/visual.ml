@@ -1,7 +1,9 @@
-open IO.Monad
+open Functional
 
 open Ctypes
 open Unsigned
+
+open IO.Monad
 
 module Color = struct
   type t = Sdl.color
