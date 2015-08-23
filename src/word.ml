@@ -11,10 +11,10 @@ let to_int =
   UInt16.to_int
 
 let to_dword t =
-  UInt16.of_int (to_int t)
+  UInt32.of_int (to_int t)
 
 let of_dword d =
-  of_int (UInt16.to_int d)
+  of_int (UInt32.to_int d)
 
 let to_bool w = to_int w |> function
   | 0 -> false

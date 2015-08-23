@@ -12,9 +12,13 @@ val ( - ) : t -> t -> t
 
 val ( * ) : t -> t -> t
 
+val ( mod ) : t -> t -> t
+
 val ( land ) : t -> t -> t
 
 val ( lor ) : t -> t -> t
+
+val ( lxor ) : t -> t -> t
 
 val ( lsl ) : t -> int -> t
 
@@ -27,9 +31,9 @@ val of_int : int -> t
 
 val to_int : t -> int
 
-val of_dword : Unsigned.uint16 -> t
+val of_dword : Unsigned.uint32 -> t
 
-val to_dword : t -> Unsigned.uint16
+val to_dword : t -> Unsigned.uint32
 
 val to_bool : t -> bool
 
