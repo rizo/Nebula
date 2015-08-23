@@ -3,25 +3,27 @@
 open Functional
 open Prelude
 
+module C = Computer_state
+module P = Program
+
 exception Bad_decoding of word * Computer.t
 
 exception No_such_device of word * Computer.t
 
 (** Jump to the interrupt handler and disable interrupt dequeing. *)
 let handle_interrupt (Interrupt.Message message) c =
-  let open Computer in
   let open Program.Monad in
 
-  Computer_state.of_program begin
-    let open Program in
-    read_special Special.PC >>= push >>= fun () ->
-    read_register Reg.A >>= push >>= fun () ->
-    read_special Special.IA >>= write_special Special.PC >>= fun () ->
-    write_register Reg.A message
+  C.of_program begin
+    P.read_special Special.PC >>= P.push >>= fun () ->
+    P.read_register Reg.A >>= P.push >>= fun () ->
+    P.read_special Special.IA >>= P.write_special Special.PC >>= fun () ->
+    P.write_register Reg.A message
   end
   |> Computer_state.run
     { c with
-      interrupt_ctrl = Interrupt_control.disable_dequeuing c.interrupt_ctrl }
+      Computer.interrupt_ctrl =
+        Interrupt_control.disable_dequeuing c.Computer.interrupt_ctrl }
   |> fst
 
 (** Execute a triggered interrupt.
@@ -30,26 +32,27 @@ let handle_interrupt (Interrupt.Message message) c =
     interrupt hook for the device registered at the interrupt index to be
     invoked. *)
 let execute_interrupt trigger c =
-  let open Computer in
   let open IO.Functor in
   let open IO.Monad in
 
   match trigger with
   | Interrupt.Trigger.Software message -> begin
       let interrupt_ctrl =
-        Interrupt_control.enqueue (Interrupt.Message message) c.interrupt_ctrl
+        Interrupt_control.enqueue (Interrupt.Message message) c.Computer.interrupt_ctrl
       in
-      IO.unit { c with interrupt_ctrl }
+      IO.unit Computer.{ c with interrupt_ctrl }
     end
   | Interrupt.Trigger.Hardware index -> begin
-      IO.lift (fun () -> Manifest.instance index c.manifest) >>= fun (module I : Device.Instance) ->
+      IO.lift begin fun () ->
+        Manifest.instance index c.Computer.manifest
+      end >>= fun (module I : Device.Instance) ->
       I.Device.on_interrupt I.this
       |> IO.Functor.map (fun program ->
           program
           |> Computer_state.of_program
           |> Computer_state.run c
           |> fun (c, device) ->
-          { c with
+          Computer.{ c with
             manifest =
               Manifest.update
                 (Device.make_instance (module I.Device) device I.index)
@@ -67,14 +70,15 @@ let execute_interrupt trigger c =
     when it was "ticked") and execute them. *)
 let step c =
   let unsafe_step c =
-    let open Computer in
     let open IO.Monad in
 
     let c =
-      if Cpu.read_special Special.IA c.cpu != word 0 then
-        match Interrupt_control.handle c.interrupt_ctrl with
+      if Cpu.read_special Special.IA c.Computer.cpu != word 0 then
+        match Interrupt_control.handle c.Computer.interrupt_ctrl with
         | None -> c
-        | Some (interrupt, interrupt_ctrl) -> handle_interrupt interrupt { c with interrupt_ctrl }
+        | Some (interrupt, interrupt_ctrl) -> handle_interrupt
+                                                interrupt
+                                                Computer.{ c with interrupt_ctrl }
       else c
     in
 
@@ -89,9 +93,11 @@ let step c =
       in
       Computer_state.run c s |> fst
     end >>= fun c ->
-    match Interrupt_control.triggered c.interrupt_ctrl with
+    match Interrupt_control.triggered c.Computer.interrupt_ctrl with
     | None -> IO.unit c
-    | Some (trigger, interrupt_ctrl) -> execute_interrupt trigger { c with interrupt_ctrl }
+    | Some (trigger, interrupt_ctrl) -> execute_interrupt
+                                          trigger
+                                          Computer.{ c with interrupt_ctrl }
   in
 
   IO.catch (unsafe_step c)
@@ -101,7 +107,6 @@ let step c =
 
 (** "Tick" all devices in the manifest. *)
 let tick_devices c =
-  let open Computer in
   let open IO.Functor in
 
   let tick_instance c (module I : Device.Instance) =
@@ -109,41 +114,40 @@ let tick_devices c =
         let manifest =
           Manifest.update
             (Device.make_instance (module I.Device) updated_this I.index)
-            c.manifest
+            c.Computer.manifest
         in
         let interrupt_ctrl =
           match generated_interrupt with
-          | Some interrupt -> Interrupt_control.enqueue interrupt c.interrupt_ctrl
-          | None -> c.interrupt_ctrl
+          | Some interrupt -> Interrupt_control.enqueue interrupt c.Computer.interrupt_ctrl
+          | None -> c.Computer.interrupt_ctrl
         in
-        { c with manifest; interrupt_ctrl })
+        Computer.{ c with manifest; interrupt_ctrl })
   in
-  let instances = Manifest.all c.manifest in
+  let instances = Manifest.all c.Computer.manifest in
   IO.Monad.fold tick_instance c instances
 
 (**  Launch a DCPU-16.
 
      Control is suspended every [suspend_every] nanoseconds to [suspension]. Otherwise, this
      computation will never terminate unless it throws. *)
-let launch ~computer ~suspend_every ~suspension =
+let launch ~suspend_every ~suspension c =
   let open IO.Monad in
   let open IO.Functor in
 
-  let rec loop last_suspension_time computer =
-    tick_devices computer >>= fun computer ->
-    step computer >>= fun computer ->
+  let rec loop last_suspension_time c =
+    tick_devices c >>= step >>= fun c ->
 
     Precision_clock.get_time >>= fun now ->
     let elapsed = now - last_suspension_time in
 
     let next =
       if elapsed >= suspend_every then
-        suspension computer |> map (fun computer -> now, computer)
+        suspension c |> map (fun c -> now, c)
       else
-        IO.unit (last_suspension_time, computer)
+        IO.unit (last_suspension_time, c)
     in
-    next >>= fun (time, computer) ->
+    next >>= fun (time, c) ->
 
-    loop time computer
+    loop time c
   in
-  Precision_clock.get_time >>= fun now -> loop now computer
+  Precision_clock.get_time >>= fun now -> loop now c

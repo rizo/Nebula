@@ -51,15 +51,13 @@ let set_color window color =
         255)
 
 let clear window =
-  let open Window in
   Sdl.lift "Clearing window: %s" (fun () ->
-      Sdl.render_clear window.renderer)
+      Sdl.render_clear window.Window.renderer)
 
 let rectangle window ~origin ~width ~height =
-  let open Window in
   Sdl.lift "Drawing rectangle: %s" begin fun () ->
     let r = Sdl.Rect.create ~x:(fst origin) ~y:(snd origin) ~h:height ~w:width in
-    Sdl.render_fill_rect window.renderer (Some r)
+    Sdl.render_fill_rect window.Window.renderer (Some r)
   end
 
 let render w =

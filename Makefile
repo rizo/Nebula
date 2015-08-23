@@ -32,10 +32,14 @@ stubs: $(STUB_SOURCES)
 doc: lib
 	mkdir -p doc
 
-	ocamlfind ocamldoc -I _build/src -html -d doc \
-    -package cmdliner \
+	ocamlfind ocamldoc \
+		-I _build/src \
+		-I _build/src/functional \
+		-I _build/src/devices \
+		-html -d doc \
+		-package cmdliner \
 		-package tsdl \
-		$(shell echo src/*.{mli,ml})
+		$(shell echo src/*.{mli,ml} src/devices/*.ml src/functional/*.{mli,ml})
 
 .PHONY: clean
 
