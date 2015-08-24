@@ -15,6 +15,12 @@ Some notable points:
 
 - Interaction with the CPU and memory is expressed as pure data with a DSL defined using the free monad. These "programs" can be subsequently _interpreted_ in terms of the state monad or any other context.
 
+### Correctness vs performance
+
+First and foremost, the implementation of Nebula focuses on being correct and understandable. Particularly since Nebula uses immutable structures and functional idioms throughout, this comes at the expense of a focus on performance.
+
+Nebula is frequently profiled to identify when the performance cost of these idioms is not acceptable, and this has been a successful approach thus far.
+
 # Quick-start guide
 
 ## Getting the source code
