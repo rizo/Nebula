@@ -2,6 +2,7 @@
 
 open Prelude
 
+(** The manifest. *)
 type t
 
 exception No_such_device of device_index
@@ -9,13 +10,15 @@ exception No_such_device of device_index
 (** The empty manifest. *)
 val empty : t
 
-(** Register a new device.
+(** Register a new device in the manifest.
 
-    Given a device type, create a new device instance with a unique index in the
-    manifest. *)
+    Registers devices are given an index that is unique to the manifest. *)
 val register : (module Device.S with type t = 'a) -> 'a -> t -> t
 
-(** Update the record of an existing device. *)
+(** Update the record of an existing device.
+
+    If the device instance does not exist in the manifest, then the manifest is
+    unchanged. *)
 val update : (module Device.Instance) -> t -> t
 
 (** Retrieve all registered devices. *)

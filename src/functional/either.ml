@@ -1,8 +1,11 @@
+(** Disjunction type. Either a result or an error value. *)
+
 open Prelude
 
 type ('a, 'b) t = ('a, 'b) either
 
-module Monad_instance(E : sig type t end)
+(** Computations which fail short-circuit execution. *)
+module Monad_instance (E : sig type t end)
   : (Monad_class.S with type 'a t = (E.t, 'a) either) =
 struct
   type error = E.t

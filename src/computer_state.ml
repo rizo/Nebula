@@ -17,11 +17,11 @@ let read_special s =
 let write_special s value =
   modify (fun t -> { t with cpu = Cpu.write_special s value t.cpu })
 
-let set_flag flag value =
-  modify (fun t -> { t with cpu = Cpu.set_flag flag value t.cpu })
-
 let get_flag flag =
   gets (fun t -> Cpu.get_flag flag t.cpu)
+
+let set_flag flag value =
+  modify (fun t -> { t with cpu = Cpu.set_flag flag value t.cpu })
 
 let read_memory offset =
   gets (fun t -> Mem.read offset t.memory)

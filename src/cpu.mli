@@ -1,19 +1,19 @@
-(** The CPU state. *)
+(** CPU registers, special registers, and flags. *)
 
 open Prelude
 
 type t
 
+(** Boolean flags dictating execution behavior. *)
 module Flag : sig
   type t =
-    | Skip_next
+    | Skip_next (** Skip the next instruction if [true]. *)
 end
 
-(** The default initialized state.
+(** The default initialized CPU state.
 
-    Registers are initialized to zero. Most special values are initialized to
-    zero as well, except the stack pointer [SP], which is initialized to
-    [0xffff]. *)
+    All registers and special registers are initialized to zero. Flags are
+    initialized to [false]. *)
 val empty : t
 
 val read_register : Reg.t -> t -> word

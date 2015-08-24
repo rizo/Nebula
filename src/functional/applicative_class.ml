@@ -1,3 +1,5 @@
+(** Applicative functors. *)
+
 open Prelude
 
 module type S = sig

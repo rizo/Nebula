@@ -10,7 +10,6 @@ exception Bad_decoding of word * Computer.t
 
 exception No_such_device of word * Computer.t
 
-(** Jump to the interrupt handler and disable interrupt dequeing. *)
 let handle_interrupt (Interrupt.Message message) c =
   let open Program.Monad in
 
@@ -26,11 +25,6 @@ let handle_interrupt (Interrupt.Message message) c =
         Interrupt_control.disable_dequeuing c.Computer.interrupt_ctrl }
   |> fst
 
-(** Execute a triggered interrupt.
-
-    Software interrupts are enqueued directly. Hardware interrupts cause the
-    interrupt hook for the device registered at the interrupt index to be
-    invoked. *)
 let execute_interrupt trigger c =
   let open IO.Functor in
   let open IO.Monad in
@@ -60,14 +54,6 @@ let execute_interrupt trigger c =
           })
     end
 
-(** Execute an iteration of the DCPU-16.
-
-    First, dequeue an interrupt (if one is waiting) and transfer control to the interrupt handler.
-
-    Next, decode the next instruction from memory at the program counter.
-
-    Finally, check for triggered interrupts (either by software, or by a device
-    when it was "ticked") and execute them. *)
 let step c =
   let unsafe_step c =
     let open IO.Monad in
@@ -105,7 +91,6 @@ let step c =
       | Manifest.No_such_device index -> IO.throw (No_such_device (index, c))
       | error -> IO.throw error)
 
-(** "Tick" all devices in the manifest. *)
 let tick_devices c =
   let open IO.Functor in
 
@@ -126,10 +111,6 @@ let tick_devices c =
   let instances = Manifest.all c.Computer.manifest in
   IO.Monad.fold tick_instance c instances
 
-(**  Launch a DCPU-16.
-
-     Control is suspended every [suspend_every] nanoseconds to [suspension]. Otherwise, this
-     computation will never terminate unless it throws. *)
 let launch ~suspend_every ~suspension c =
   let open IO.Monad in
   let open IO.Functor in

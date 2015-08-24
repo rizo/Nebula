@@ -1,3 +1,5 @@
+(** Command-line argument processing helpers. *)
+
 open Cmdliner
 
 module Args = struct

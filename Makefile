@@ -36,8 +36,10 @@ doc: lib
 		-I _build/src \
 		-I _build/src/functional \
 		-I _build/src/devices \
+		-colorize-code \
 		-html -d doc \
 		-package cmdliner \
+		-package ppx_deriving.std \
 		-package tsdl \
 		$(shell echo src/*.{mli,ml} src/devices/*.ml src/functional/*.{mli,ml})
 

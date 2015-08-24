@@ -9,5 +9,16 @@ Device
 Devices    
 Engine
 Functional
+Input_event
+Manifest
+Mem        
+Persistent_queue
+Precision_clock
+Prelude
+Program
+Reg
+Sdl
+Special
+Special_code
 Visual
 Word

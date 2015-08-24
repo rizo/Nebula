@@ -1,5 +1,5 @@
-open Prelude
 open Functional
+open Prelude
 
 module Op = struct
   type 'a t =
@@ -43,11 +43,11 @@ let read_special s =
 let write_special s value =
   lift (Op.Write_special (s, value, ()))
 
-let set_flag flag value =
-  lift (Op.Set_flag (flag, value, ()))
-
 let get_flag flag =
   lift (Op.Get_flag (flag, id))
+
+let set_flag flag value =
+  lift (Op.Set_flag (flag, value, ()))
 
 let next_word =
   let open Monad in

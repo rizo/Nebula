@@ -1,3 +1,5 @@
+(** System clock with a finer glanularity than the default clock. *)
+
 open Functional
 
 (** Get a precision time-stamp, expressed in nanoseconds.

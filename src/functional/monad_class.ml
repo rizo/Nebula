@@ -1,3 +1,4 @@
+(** The monad abstraction. *)
 module type S = sig
   type _ t
 
@@ -22,7 +23,7 @@ module type EXTENSION = sig
   val fold : ('b -> 'a -> 'b t) -> 'b -> 'a list -> 'b t
 end
 
-module Extend(M : S) : (EXTENSION with type 'a t := 'a M.t) = struct
+module Extend (M : S) : (EXTENSION with type 'a t := 'a M.t) = struct
   include M
 
   let ( >>= ) m f =

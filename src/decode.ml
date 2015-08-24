@@ -1,24 +1,10 @@
-(** Decode binary data for the processor.
-
-    Generally, decoding errors will result in a value of {! None}. *)
-
 open Functional
 open Prelude
 
 module F = Option.Functor
 
-(** The address context.
-
-    In an instruction like
-
-    {[
-      ADD X, [Y]
-    ]}
-
-    the [A] context is [[Y]] and the [B] context is [X]. *)
 type context = A | B
 
-(** Decode an opcode. *)
 let code w =
   let open Code in
   match Word.to_int w with
@@ -38,7 +24,6 @@ let code w =
   | 0x1e -> Some Sti
   | _ -> None
 
-(** Decode a special opcode. *)
 let special_code w =
   let open Special_code in
   match Word.to_int w with
@@ -55,7 +40,6 @@ let special_code w =
   | 0x1f -> Some Dbg
   | _ -> None
 
-(** Decode a register. *)
 let register w =
   match Word.to_int w with
   | 0 -> Some Reg.A
@@ -68,7 +52,6 @@ let register w =
   | 7 -> Some Reg.J
   | _ -> None
 
-(** Decode an address. *)
 let address ctx w =
   let i = Word.to_int w in
 
@@ -94,7 +77,6 @@ let address ctx w =
       else
         None
 
-(** Decode an instruction. *)
 let instruction w =
   let open Option.Monad in
 

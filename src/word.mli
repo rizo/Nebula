@@ -4,6 +4,8 @@
     will yield [0].
 *)
 
+open Unsigned
+
 type t
 
 val ( + ) : t -> t -> t
@@ -26,14 +28,17 @@ val ( lsr ) : t -> int -> t
 
 (** Convert from an {! int }.
 
-    Anything beyond the first 16 lower-order bits will be discarded. *)
+    Anything beyond the first 16 lower-order bits is discarded. *)
 val of_int : int -> t
 
 val to_int : t -> int
 
-val of_dword : Unsigned.uint32 -> t
+(** Convert from an {! UInt32}.
 
-val to_dword : t -> Unsigned.uint32
+    Anything beyond the first 16 lower-order bits is discarded. *)
+val of_dword : uint32 -> t
+
+val to_dword : t -> uint32
 
 val to_bool : t -> bool
 

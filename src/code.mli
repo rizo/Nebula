@@ -1,3 +1,5 @@
+(** Operation codes ("opcodes") for the DCPU-16 instructions. *)
+
 type t =
   | Set
   | Add
@@ -27,13 +29,5 @@ type t =
   | Sti
   | Std
 
-let conditional = function
-  | Ifb
-  | Ifc
-  | Ife
-  | Ifn
-  | Ifg
-  | Ifa
-  | Ifl
-  | Ifu -> true
-  | _ -> false
+(** Whether the opcode refers to a conditional instruction. *)
+val conditional : t -> bool

@@ -1,3 +1,5 @@
+(** Simulated hardware registers. *)
+
 type t =
   | A | B | C
   | X | Y | Z

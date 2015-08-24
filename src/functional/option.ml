@@ -1,3 +1,5 @@
+(** Helpful functions for the {! option} type. *)
+
 type 'a t = 'a option
 
 module Monad_instance : (Monad_class.S with type 'a t = 'a option) = struct

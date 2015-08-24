@@ -1,3 +1,5 @@
+(** Main entry point for Nebula. *)
+
 open Functional
 open Prelude
 
@@ -8,6 +10,7 @@ open Printf
 open IO.Functor
 open IO.Monad
 
+(** Must be called at the beginning of Nebula's execution. *)
 let initialize =
   Sdl.lift "Initializing: %s" (fun () -> Sdl.init Sdl.Init.(video + events))
 
@@ -20,6 +23,7 @@ let show_error_and_exit ?computer message =
 
   IO.terminate 1
 
+(** Print a helpful error message and then terminate. *)
 let handle_error error =
   match error with
   | Engine.Bad_decoding (w, computer) -> begin
@@ -61,6 +65,8 @@ let make_monitor_window =
     ~height:Devices.Monitor.total_height
     ~title:"DCPU-16 Monitor"
 
+(** The period between rendering graphics and processing input events. Expressed
+    in nanoseconds. *)
 let frame_period =
   30000000
 
