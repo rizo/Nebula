@@ -37,12 +37,6 @@ Nebula is written in OCaml and depends on some packages available in opam. Start
 $ git clone git@github.com:hakuch/Nebula.git
 ```
 
-Make sure to switch to the `ocaml` branch:
-
-```bash
-$ git checkout ocaml
-```
-
 ## Running
 
 Nebula runs from the command line.
