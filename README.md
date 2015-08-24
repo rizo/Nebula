@@ -5,6 +5,8 @@
 Nebula is an emulator for the fictional DCPU-16 computer, including its hardware
 peripherals.
 
+Nebula is a part of [DCPU-16 Universe](https://github.com/hakuch/Dcpu16Universe).
+
 ## Philosophy
 
 Nebula is written in OCaml, and in a very pure functional style.
