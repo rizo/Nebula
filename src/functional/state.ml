@@ -1,4 +1,7 @@
-(** The state monad. *)
+(** The state monad.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 module type S = sig
   type _ t

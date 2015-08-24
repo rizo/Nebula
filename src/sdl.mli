@@ -1,4 +1,7 @@
-(** The SDL library for audio, video, and input events. *)
+(** The SDL library for audio, video, and input events.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 

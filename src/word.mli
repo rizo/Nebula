@@ -2,7 +2,9 @@
 
     This is a two's complement unsigned representation. That is, [0xffff + 1]
     will yield [0].
-*)
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Unsigned
 

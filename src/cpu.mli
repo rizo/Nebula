@@ -1,4 +1,7 @@
-(** CPU registers, special registers, and flags. *)
+(** CPU registers, special registers, and flags.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

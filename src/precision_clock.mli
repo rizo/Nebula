@@ -1,4 +1,7 @@
-(** System clock with a finer glanularity than the default clock. *)
+(** System clock with a finer glanularity than the default clock.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 

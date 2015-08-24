@@ -1,6 +1,9 @@
 (** A persistent (immutable) queue.
 
-    Pushing and popping from the queue is ammortized to be constant time. *)
+    Pushing and popping from the queue is ammortized to be constant time.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 (** The queue. *)
 type 'a t

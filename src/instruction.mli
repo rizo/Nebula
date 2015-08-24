@@ -1,3 +1,8 @@
+(** DCPU-16 instructions.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 open Prelude
 
 open Unsigned

@@ -1,4 +1,5 @@
-(** Simulated hardware device. *)
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

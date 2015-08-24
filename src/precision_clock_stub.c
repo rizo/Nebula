@@ -1,3 +1,8 @@
+/**
+ *  @author Jesse Haber-Kucharsky
+ *  @see 'LICENSE' License details
+ */
+
 #include <caml/alloc.h>
 #include <caml/mlvalues.h>
 

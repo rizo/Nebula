@@ -1,4 +1,7 @@
-(** {! Computer} operations interpretted in the context of the {! State} monad. *)
+(** {! Computer} operations interpretted in the context of the {! State} monad.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

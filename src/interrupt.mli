@@ -1,4 +1,7 @@
-(** Hardware and software interrupts. *)
+(** Hardware and software interrupts.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

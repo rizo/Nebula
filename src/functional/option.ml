@@ -1,4 +1,7 @@
-(** Helpful functions for the {! option} type. *)
+(** Helpful functions for the {! option} type.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 type 'a t = 'a option
 

@@ -1,4 +1,7 @@
-(** Command-line argument processing helpers. *)
+(** Command-line argument processing helpers.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Cmdliner
 

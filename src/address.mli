@@ -5,7 +5,10 @@
 
     An {! t} refers to a {b relative} location, which changes based on current
     state of the DCPU-16 processor and memory. Addresses are resolved to an
-    absolute location via {! target_of}. *)
+    absolute location via {! target_of}.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

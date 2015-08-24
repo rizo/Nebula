@@ -2,7 +2,10 @@
 
     A {b cell} is a single character on the simulated monitor. Cells are not
     square. An {b atom} is a single simulated pixel. A cell consists of many
-    atoms (get it?). *)
+    atoms (get it?).
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

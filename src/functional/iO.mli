@@ -5,7 +5,10 @@
 
     OCaml exceptions are incompatible with this interface, so {! throw} and {!
     catch} are provided for exception handling within the IO context. To lift
-    impure APIs into the IO context, use {! lift}. *)
+    impure APIs into the IO context, use {! lift}.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 type 'a t
 

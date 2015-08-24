@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 type 'a t = {
   inbox : 'a list;
   outbox : 'a list;

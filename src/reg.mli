@@ -1,4 +1,7 @@
-(** Simulated hardware registers. *)
+(** Simulated hardware registers.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 type t =
   | A | B | C

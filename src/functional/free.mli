@@ -1,4 +1,7 @@
-(** The free monad. *)
+(** The free monad.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 (** Any {! Functor_class.S} instance is a monad "for free". *)
 module Make : functor (F : Functor_class.S) -> sig

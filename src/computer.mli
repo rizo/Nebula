@@ -1,7 +1,10 @@
 (** Pure computer state.
 
     This structure encompasses the entire state of the DCPU-16 including the
-    processor, the memory, and interrupt handling. *)
+    processor, the memory, and interrupt handling.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

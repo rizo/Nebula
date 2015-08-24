@@ -1,4 +1,7 @@
-(** Operation codes ("opcodes") for the DCPU-16 instructions. *)
+(** Operation codes ("opcodes") for the DCPU-16 instructions.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 type t =
   | Set

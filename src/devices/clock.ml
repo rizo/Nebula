@@ -1,4 +1,7 @@
-(** Simulated hardware clock. *)
+(** Simulated hardware clock.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

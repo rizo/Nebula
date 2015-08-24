@@ -1,4 +1,7 @@
-(** Simulated volatile memory. *)
+(** Simulated volatile memory.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 open Functional

@@ -1,4 +1,7 @@
-(** Applicative functors. *)
+(** Applicative functors.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

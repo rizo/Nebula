@@ -1,4 +1,7 @@
-(** Fundemental definitions. *)
+(** Fundemental definitions.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 (** Convenient alias for {! Word.t } *)
 type word = Word.t

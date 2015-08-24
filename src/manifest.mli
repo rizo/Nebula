@@ -1,4 +1,7 @@
-(** Manifest of simulated hardware devices. *)
+(** Manifest of simulated hardware devices.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

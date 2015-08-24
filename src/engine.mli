@@ -1,4 +1,7 @@
-(** Manage the running DCPU-16 computer. *)
+(** Manage the running DCPU-16 computer.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

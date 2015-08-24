@@ -1,4 +1,7 @@
-(** Input events from the user. *)
+(** Input events from the user.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 

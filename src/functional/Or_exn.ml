@@ -1,4 +1,7 @@
-(** Specialization of {! Either} for error handling with exceptions. *)
+(** Specialization of {! Either} for error handling with exceptions.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

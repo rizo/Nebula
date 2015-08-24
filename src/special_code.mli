@@ -1,4 +1,7 @@
-(** Operation codes for special instructions. *)
+(** Operation codes for special instructions.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 type t =
   | Jsr

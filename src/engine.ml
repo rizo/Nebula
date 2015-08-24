@@ -1,4 +1,5 @@
-(** Launch the DCPU-16. *)
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

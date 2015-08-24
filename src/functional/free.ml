@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 module Make(F : Functor_class.S) = struct
   module Self = struct
     type 'a t =

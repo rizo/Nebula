@@ -1,7 +1,10 @@
 (** Simple graphics.
 
     Drawing commands can be imperatively applied to a buffer, but nothing is
-    rendered to the {! Window} until {! render} is invoked. *)
+    rendered to the {! Window} until {! render} is invoked.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 

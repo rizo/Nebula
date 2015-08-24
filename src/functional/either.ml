@@ -1,4 +1,7 @@
-(** Disjunction type. Either a result or an error value. *)
+(** Disjunction type. Either a result or an error value.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Prelude
 

@@ -6,7 +6,10 @@
 
     Programs must be {b executed} against a {! Computer.t} in order to have any
     effect. The {! Computer_state} module executes programs in the
-    context of the {! State} monad instantiated with {! Computer.t}, for instance. *)
+    context of the {! State} monad instantiated with {! Computer.t}, for instance.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

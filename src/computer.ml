@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 type t = {
   memory : Mem.t;
   cpu : Cpu.t;

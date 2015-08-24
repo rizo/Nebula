@@ -1,4 +1,7 @@
-(** Simulated keyboard. *)
+(** Simulated keyboard.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

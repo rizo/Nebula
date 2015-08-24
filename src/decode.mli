@@ -1,6 +1,9 @@
 (** Decode binary data for the processor.
 
-    Generally, decoding errors will result in a value of {! None}. *)
+    Generally, decoding errors will result in a value of {! None}.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude

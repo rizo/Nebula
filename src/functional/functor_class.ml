@@ -1,4 +1,7 @@
-(** The functor abstraction. *)
+(** The functor abstraction.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 module type S = sig
   type _ t

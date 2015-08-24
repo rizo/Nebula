@@ -1,4 +1,7 @@
-(** Simulated hardware device specification. *)
+(** Simulated hardware device specification.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
 
 open Functional
 open Prelude
