@@ -1,6 +1,6 @@
 # Nebula
 
-![](https://github.com/hakuch/Nebula/blob/ocaml/img/monitor-animation.gif)
+![](https://github.com/hakuch/Nebula/blob/master/img/monitor-animation.gif)
 
 Nebula is an emulator for the fictional DCPU-16 computer, including its hardware
 peripherals.
