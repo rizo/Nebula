@@ -17,9 +17,13 @@ Some notable points:
 
 ### Correctness vs performance
 
-First and foremost, the implementation of Nebula focuses on being correct and understandable. Particularly since Nebula uses immutable structures and functional idioms throughout, this comes at the expense of a focus on performance.
+The implementation of Nebula focuses on being correct and understandable. Particularly since Nebula uses immutable structures and functional idioms throughout, this comes at the expense of a focus on performance.
 
 Nebula is frequently profiled to identify when the performance cost of these idioms is not acceptable, and this has been a successful approach thus far.
+
+## Old version
+
+The previous version of Nebula was written in C++. This is still available in the commit with the tag `c++`.
 
 # Quick-start guide
 
