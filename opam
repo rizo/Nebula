@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "nebula"
-version: "0.1.0"
+version: "0.2.0"
 maintainer: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
 authors: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
 homepage: "https://github.com:hakuch/Nebula"
