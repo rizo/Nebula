@@ -29,12 +29,40 @@ The previous version of Nebula was written in C++. This is still available in th
 
 # Quick-start guide
 
-## Getting the source code
+## Installing through opam
+
+The fastest way to use Nebula is to install it via opam:
+
+```bash
+$ opam install nebula
+```
+
+Alternatively, you can download Nebula's source code and compile it yourself.
+
+## Installing from source
 
 Nebula is written in OCaml and depends on some packages available in opam. Start by grabbing the Nebula sources:
 
 ```bash
 $ git clone git@github.com:hakuch/Nebula.git
+```
+
+Then register the development version with opam:
+
+```bash
+$ opam pin add nebula .
+```
+
+and finally install the `nebula` executable with
+
+```bash
+$ opam install nebula
+```
+
+Subsequent changes (perhaps made during development) can be installed by invoking
+
+```bash
+$ opam upgrade nebula
 ```
 
 ## Running
@@ -53,28 +81,6 @@ For more options and information, execute
 
 ```bash
 $ nebula --help
-```
-
-## Installing
-
-The fastest way to use Nebula is to install it to your local file system with opam. A good way to do this is to pin it in the root source directory:
-
-```bash
-$ opam pin add nebula .
-```
-
-then install it with
-
-```bash
-$ opam install nebula
-```
-
-This will install the `nebula` executable.
-
-Subsequent changes (perhaps made during development) can be installed by invoking
-
-```bash
-$ opam upgrade nebula
 ```
 
 ## Development
@@ -119,3 +125,7 @@ Once it has built, the top-level can be started by invoking
 ```bash
 $ ./nebula.top
 ```
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
