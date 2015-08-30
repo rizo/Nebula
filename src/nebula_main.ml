@@ -20,7 +20,7 @@ let initialize =
   Sdl.lift "Initializing: %s" (fun () -> Sdl.init Sdl.Init.(video + events))
 
 let show_error_and_exit ?computer message =
-  IO.put_string (sprintf "ERROR: %s\n" message) >>= fun () ->
+  IO.put_string (sprintf "Error: %s\n" message) >>= fun () ->
 
   (match computer with
   | Some c -> IO.put_string ("\n" ^ C.show c)
