@@ -24,6 +24,10 @@ val const : 'a -> 'b -> 'a
 (** Identity function. *)
 val id : 'a -> 'a
 
+(** Populate a {! list} from a lower bound (inclusive) to an upper bound
+    (exclusive). *)
+val enum_from_to : int -> int -> int list
+
 type ('a, 'b) either =
   | Left of 'a
   | Right of 'b

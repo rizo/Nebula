@@ -72,3 +72,8 @@ let pop =
   read_special SP >>= fun sp ->
   write_special SP Word.(sp + word 1) >>= fun () ->
   read_memory sp
+
+let read_extent offset n =
+  let low = Word.to_int offset in
+  let offsets = enum_from_to low (low + n) in
+  List.map (fun i -> read_memory (word i)) offsets |> Monad.sequence

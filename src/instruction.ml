@@ -283,8 +283,21 @@ and execute_unary code address_a =
       end
     end
   | Special_code.Abt -> begin
-      print_endline "Aborting.";
-      exit 0
+      Cs.of_program begin
+        let open Program.Functor in
+        let open Program.Monad in
+
+        P.read_memory a |> map Word.to_int >>= fun error_length ->
+        P.read_extent Word.(a + word 1) error_length >>= fun message_words ->
+
+        print_string "Run-time error: ";
+        message_words |> List.iter (fun w -> print_char (Char.chr (Word.to_int w)));
+        print_newline ();
+        print_endline "Aborting.";
+        exit 0 |> ignore;
+
+        P.Return ()
+      end
     end
   | Special_code.Dbg -> begin
       let time = Unix.gettimeofday () in

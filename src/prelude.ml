@@ -19,6 +19,13 @@ let const a b =
 let id a =
   a
 
+let enum_from_to l h =
+  let rec loop accum n =
+    if n >= h then List.rev accum
+    else loop (n :: accum) (n + 1)
+  in
+  loop [] l
+
 type ('a, 'b) either =
   | Left of 'a
   | Right of 'b

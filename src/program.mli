@@ -55,3 +55,6 @@ val push : word -> unit t
 
 (** Pop a value from the stack. *)
 val pop : word t
+
+(** Read a region of memory starting at an offset. *)
+val read_extent : word -> int -> word list t
