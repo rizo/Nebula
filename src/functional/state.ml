@@ -37,7 +37,7 @@ module type S = sig
 end
 
 (** Parameterize {! S} on a specific state type [K.t]. *)
-module Make(K : sig type t end) : (S with type state := K.t) = struct
+module Make (K : sig type t end) : (S with type state := K.t) = struct
   module Run = struct
     type 'a t = K.t -> K.t * 'a
   end

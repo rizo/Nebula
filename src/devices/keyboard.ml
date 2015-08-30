@@ -8,6 +8,8 @@ open Prelude
 
 open Unsigned
 
+module P = Program
+
 type t = {
   key_buffer : uint8 option;
   interrupt_message : word option;
@@ -39,26 +41,25 @@ let on_tick t =
   end
 
 let on_interrupt t =
-  let open Program in
   let open Program.Functor in
   let open Program.Monad in
 
   IO.unit begin
-    read_register Reg.A |> map Word.to_int >>= function
+    P.read_register Reg.A |> map Word.to_int >>= function
     | 0 -> begin (* Clear keyboard buffer. *)
-        Return { t with key_buffer = None }
+        P.Return { t with key_buffer = None }
       end
     | 1 -> begin (* Store key. *)
-        write_register
+        P.write_register
           Reg.C
           (match t.key_buffer with
            | None -> word 0
            | Some key -> Word.of_int (UInt8.to_int key)) >>= fun () ->
-        Return t
+        P.Return t
       end
     | 2 -> begin (* Check key. *)
-        read_register Reg.B >>= fun b ->
-        write_register
+        P.read_register Reg.B >>= fun b ->
+        P.write_register
           Reg.C
           (match t.key_buffer with
            | None -> word 0
@@ -66,16 +67,16 @@ let on_interrupt t =
                let k = Word.of_int (UInt8.to_int key) in
                if k = b then word 1 else word 0
              end) >>= fun () ->
-        Return t
+        P.Return t
       end
     | 3 -> begin (* Enable interrupts. *)
-        read_register Reg.B >>= fun b ->
-        Return {
+        P.read_register Reg.B >>= fun b ->
+        P.Return {
           t with
           interrupt_message = if b = word 0 then None else Some b;
         }
       end
-    | _ -> Return t
+    | _ -> P.Return t
   end
 
 let info =

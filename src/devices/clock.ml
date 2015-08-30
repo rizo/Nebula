@@ -6,6 +6,8 @@
 open Functional
 open Prelude
 
+module P = Program
+
 type t = {
   on : bool;
   divider : word;
@@ -49,22 +51,21 @@ let on_tick t =
           (t, None))
 
 let on_interrupt t =
-  let open Program in
   let open Program.Functor in
   let open Program.Monad in
 
   IO.unit begin
-    read_register Reg.A |> map Word.to_int >>= function
+    P.read_register Reg.A |> map Word.to_int >>= function
     | 0 -> begin
-        read_register Reg.B >>= fun b ->
-        Return (if b = word 0 then { t with on = false } else { t with on = true; divider = b; })
+        P.read_register Reg.B >>= fun b ->
+        P.Return (if b = word 0 then { t with on = false } else { t with on = true; divider = b; })
       end
-    | 1 -> write_register Reg.C t.elapsed_ticks >>= fun () -> Return t
+    | 1 -> P.write_register Reg.C t.elapsed_ticks >>= fun () -> P.Return t
     | 2 -> begin
-        read_register Reg.B >>= fun b ->
-        Return { t with interrupt_message = (if b = word 0 then None else Some b) }
+        P.read_register Reg.B >>= fun b ->
+        P.Return { t with interrupt_message = (if b = word 0 then None else Some b) }
       end
-    | _ -> Return t
+    | _ -> P.Return t
   end
 
 let info =

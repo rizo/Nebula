@@ -10,6 +10,8 @@ open Unsigned
 
 open Printf
 
+module C = Computer
+
 open IO.Functor
 open IO.Monad
 
@@ -21,7 +23,7 @@ let show_error_and_exit ?computer message =
   IO.put_string (sprintf "ERROR: %s\n" message) >>= fun () ->
 
   (match computer with
-  | Some c -> IO.put_string ("\n" ^ Computer.show c)
+  | Some c -> IO.put_string ("\n" ^ C.show c)
   | None -> IO.unit ()) >>= fun () ->
 
   IO.terminate 1
@@ -43,15 +45,15 @@ let handle_error error =
 
 let interact_with_devices device_input c =
   let interact_with_instance c (module I : Device.Instance) =
-    I.Device.on_interaction device_input c.Computer.memory I.this |> map (fun updated_this ->
+    I.Device.on_interaction device_input c.C.memory I.this |> map (fun updated_this ->
         let manifest =
           Manifest.update
             (Device.make_instance (module I.Device) updated_this I.index)
-            c.Computer.manifest
+            c.C.manifest
         in
-        Computer.{ c with manifest })
+        C.{ c with manifest })
   in
-  let instances = Manifest.all c.Computer.manifest in
+  let instances = Manifest.all c.C.manifest in
   IO.Monad.fold interact_with_instance c instances
 
 let handle_event c =
@@ -92,7 +94,7 @@ let main file_name =
             |> register (module Devices.Monitor) monitor)
         in
 
-        let c = Computer.{ default with memory; manifest } in
+        let c = C.{ default with memory; manifest } in
 
         IO.catch
           (Engine.launch ~suspend_every:frame_period ~suspension:handle_event c)
