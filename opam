@@ -14,14 +14,14 @@ build-doc: [
   [make "doc"]
 ]
 depends: [
-  "cmdliner" { = "0.9.7" }
-  "ctypes" { = "0.4.1" }
-  "ctypes-foreign" { = "0.4.0" }
-  "ocamlfind" {build & = "1.5.5" }
-  "ounit" {test & = "2.0.0" }
-  "ppx_deriving" { = "2.2" }
-  "tsdl" { = "0.8.1" }
-  "utop" { = "1.18" }
+  "cmdliner" { >= "0.9.7" }
+  "ctypes" { >= "0.4.1" }
+  "ctypes-foreign" { >= "0.4.0" }
+  "ocamlfind" {build & >= "1.5.5" }
+  "ounit" {test & >= "2.0.0" }
+  "ppx_deriving" { >= "2.2" }
+  "tsdl" { >= "0.8.1" }
+  "utop" { >= "1.18" }
 ]
 available: [
   ocaml-version >= "4.02.3"
