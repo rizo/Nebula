@@ -5,7 +5,9 @@ open Prelude
 
 open Unsigned
 
+module C = Computer
 module Cs = Computer_state
+module Ic = Interrupt_control
 module P = Program
 
 type t =
@@ -21,11 +23,11 @@ let encoded_size = function
   | Unary (code, a) -> 1 + Address.extra_encoded_size a
 
 let rec execute ins =
-  let open Computer_state.Monad in
+  let open Cs.Monad in
 
-  Computer_state.of_program (P.get_flag Cpu.Flag.Skip_next) >>= fun skipping ->
-  if skipping then Computer_state.of_program begin
-      let open Program.Monad in
+  Cs.of_program (P.get_flag Cpu.Flag.Skip_next) >>= fun skipping ->
+  if skipping then Cs.of_program begin
+      let open P.Monad in
 
       P.read_special Special.PC >>= fun pc ->
       P.write_special Special.PC Word.(pc + word (encoded_size ins) - word 1) >>= fun () ->
@@ -37,8 +39,8 @@ let rec execute ins =
     | Unary (code, address_a) -> execute_unary code address_a
 
 and execute_binary code address_b address_a =
-  let open Computer_state.Functor in
-  let open Computer_state.Monad in
+  let open Cs.Functor in
+  let open Cs.Monad in
 
   Address.target_of address_a >>= fun ta ->
   Address.target_of address_b >>= fun tb ->
@@ -185,7 +187,7 @@ and execute_binary code address_b address_a =
       Address.Target.get ta >>= fun y ->
       Address.Target.set y tb >>= fun () ->
       Cs.of_program begin
-        let open Program.Monad in
+        let open P.Monad in
         P.read_register Reg.I >>= fun i ->
         P.write_register Reg.I Word.(i + word 1) >>= fun () ->
         P.read_register Reg.J >>= fun j ->
@@ -196,7 +198,7 @@ and execute_binary code address_b address_a =
       Address.Target.get ta >>= fun y ->
       Address.Target.set y tb >>= fun () ->
       Cs.of_program begin
-        let open Program.Monad in
+        let open P.Monad in
         P.read_register Reg.I >>= fun i ->
         P.read_register Reg.J >>= fun j ->
         P.write_register Reg.I Word.(i + word 1) >>= fun () ->
@@ -206,7 +208,7 @@ and execute_binary code address_b address_a =
 
 and execute_unary code address_a =
   let open Computer in
-  let open Computer_state.Monad in
+  let open Cs.Monad in
 
   Address.target_of address_a >>= fun ta ->
   Address.Target.get ta >>= fun a ->
@@ -214,7 +216,7 @@ and execute_unary code address_a =
   match code with
   | Special_code.Jsr -> begin
       Cs.of_program begin
-        let open Program.Monad in
+        let open P.Monad in
         P.read_special Special.PC >>= P.push >>= fun () ->
         P.write_special Special.PC a
       end
@@ -236,13 +238,13 @@ and execute_unary code address_a =
     end
   | Special_code.Rfi -> begin
       Cs.of_program begin
-        let open Program.Monad in
+        let open P.Monad in
         P.pop >>= P.write_register Reg.A >>= fun () ->
         P.pop >>= P.write_special Special.PC
       end >>= fun () ->
       Cs.modify begin function
         | { interrupt_ctrl; _ } as c ->
-          { c with interrupt_ctrl = Interrupt_control.enable_dequeuing interrupt_ctrl }
+          { c with interrupt_ctrl = Ic.enable_dequeuing interrupt_ctrl }
       end
     end
   | Special_code.Iaq -> begin
@@ -251,8 +253,8 @@ and execute_unary code address_a =
           { c with
             interrupt_ctrl =
               (if a <> word 0 then
-                Interrupt_control.disable_dequeuing
-              else Interrupt_control.enable_dequeuing) interrupt_ctrl }
+                Ic.disable_dequeuing
+              else Ic.enable_dequeuing) interrupt_ctrl }
       end
     end
   | Special_code.Hwn -> begin
@@ -265,7 +267,7 @@ and execute_unary code address_a =
       Cs.get >>= fun c ->
       let info = Manifest.query index c.manifest in
       Cs.of_program begin
-        let open Program.Monad in
+        let open P.Monad in
         P.write_register Reg.A Device.Info.(snd info.id) >>= fun () ->
         P.write_register Reg.B Device.Info.(fst info.id) >>= fun () ->
         P.write_register Reg.C Device.Info.(info.version) >>= fun () ->
@@ -278,14 +280,14 @@ and execute_unary code address_a =
           { interrupt_ctrl; _ } as c ->
           { c with
             interrupt_ctrl =
-              Interrupt_control.trigger (Interrupt.Trigger.Hardware a) interrupt_ctrl
+              Ic.trigger (Interrupt.Trigger.Hardware a) interrupt_ctrl
           }
       end
     end
   | Special_code.Abt -> begin
       Cs.of_program begin
-        let open Program.Functor in
-        let open Program.Monad in
+        let open P.Functor in
+        let open P.Monad in
 
         P.read_memory a |> map Word.to_int >>= fun error_length ->
         P.read_extent Word.(a + word 1) error_length >>= fun message_words ->
