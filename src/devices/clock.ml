@@ -12,13 +12,13 @@ type t = {
   on : bool;
   divider : word;
   elapsed_ticks : word;
-  last_tick_time : int;
+  last_tick_time : int64;
   interrupt_message : word option;
 }
 
 (** The simulated clock period, in nanoseconds. *)
 let base_clock_period =
-  16666666
+  Duration.of_nanoseconds 16666666L
 
 let make =
   Precision_clock.get_time |> IO.Functor.map (fun time -> {
@@ -38,9 +38,10 @@ let on_tick t =
   if not t.on then IO.unit (t, None)
   else
     Precision_clock.get_time |> map (fun time ->
-        let since_last_tick = time - t.last_tick_time in
-        let effective_period = (Word.to_int t.divider) * base_clock_period in
-
+        let since_last_tick = Int64.sub time t.last_tick_time in
+        let effective_period =
+          Int64.mul (Word.to_int t.divider |> Int64.of_int) (Duration.nanoseconds base_clock_period)
+        in
         if since_last_tick >= effective_period then
           ({ t with
              last_tick_time = time;

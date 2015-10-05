@@ -5,6 +5,7 @@ Code
 Cpu
 Decode
 Device
+Duration
 Engine
 Functional
 Input_event

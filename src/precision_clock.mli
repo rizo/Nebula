@@ -9,4 +9,4 @@ open Functional
 
     The meaning of the value of this time-stamp is platform dependent, so its
     primary use is to compute the duration {b between} invocations. *)
-val get_time : int IO.t
+val get_time : int64 IO.t

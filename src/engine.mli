@@ -40,7 +40,7 @@ val tick_devices : Computer.t -> Computer.t IO.t
      Control is suspended every [suspend_every] nanoseconds to [suspension]. Otherwise, this
      computation will never terminate unless it throws. *)
 val launch :
-  suspend_every : int ->
+  suspend_every : Duration.t ->
   suspension : (Computer.t -> Computer.t IO.t) ->
   Computer.t ->
   'a IO.t

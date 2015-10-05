@@ -115,7 +115,7 @@ let launch ~suspend_every ~suspension c =
     tick_devices c >>= step >>= fun c ->
 
     Precision_clock.get_time >>= fun now ->
-    let elapsed = now - last_suspension_time in
+    let elapsed = Duration.of_nanoseconds (Int64.sub now last_suspension_time) in
 
     let next =
       if elapsed >= suspend_every then

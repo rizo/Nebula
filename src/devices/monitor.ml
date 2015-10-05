@@ -16,13 +16,13 @@ module P = Program
 
 type state =
   | Stopped
-  | Starting of int (** Time at which monitor was started. *)
+  | Starting of int64 (** Time at which monitor was started. *)
   | Running
 
 type t = {
   window : Visual.Window.t;
   state : state;
-  last_blink_time : int;
+  last_blink_time : int64;
   blink_visible : bool;
   border_color_index : uint8;
   video_memory_offset : word;
@@ -211,13 +211,13 @@ let total_width =
 let total_height =
   height + (2 * border_height)
 
-(** Duration of time between blinking characters, in nanoseconds. *)
+(** Duration of time between blinking characters. *)
 let blink_period =
-  1000000000
+  Duration.of_nanoseconds 1000000000L
 
-(** Duration of time that the start-up screen appears, in nanoseconds. *)
+(** Duration of time that the start-up screen appears. *)
 let start_up_duration =
-  1300000000
+  Duration.of_nanoseconds 1300000000L
 
 (** Default color palette.
 
@@ -408,7 +408,7 @@ let on_tick t =
 
   Precision_clock.get_time >>= fun now ->
 
-  let elapsed_since_blink = now - t.last_blink_time in
+  let elapsed_since_blink = Duration.of_nanoseconds (Int64.sub now t.last_blink_time) in
 
   let t =
     if elapsed_since_blink >= blink_period then
@@ -419,8 +419,7 @@ let on_tick t =
   let t =
     match t.state with
     | Starting start_time -> begin
-        let elapsed_since_starting = now - start_time in
-
+        let elapsed_since_starting = Duration.of_nanoseconds (Int64.sub now start_time) in
         if elapsed_since_starting >= start_up_duration then { t with state = Running }
         else t
       end

@@ -70,10 +70,9 @@ let make_monitor_window =
     ~height:Devices.Monitor.total_height
     ~title:"DCPU-16 Monitor"
 
-(** The period between rendering graphics and processing input events. Expressed
-    in nanoseconds. *)
+(** The period between rendering graphics and processing input events. *)
 let frame_period =
-  30000000
+  Duration.of_nanoseconds 30000000L
 
 let main file_name =
   IO.main begin

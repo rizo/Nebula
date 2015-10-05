@@ -4,6 +4,7 @@
  */
 
 #include <caml/alloc.h>
+#include <caml/memory.h>
 #include <caml/mlvalues.h>
 
 #include <time.h>
@@ -14,7 +15,9 @@
 
 #define NANOSECONDS_PER_SECOND 1000000000
 
-CAMLprim value nebula_precision_clock_get_time(void) {
+CAMLprim value nebula_precision_clock_get_time(value unit) {
+  CAMLparam1(unit);
+
   long nanoseconds;
 
 #ifdef __MACH__
@@ -28,5 +31,5 @@ CAMLprim value nebula_precision_clock_get_time(void) {
   nanoseconds = (NANOSECONDS_PER_SECOND * ts.tv_sec) + ts.tv_nsec;
 #endif
 
-  return Val_long(nanoseconds);
+  CAMLreturn(caml_copy_int64(nanoseconds));
 }
