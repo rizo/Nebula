@@ -46,8 +46,6 @@ end
 let make_instance (type a) (module D : S with type t = a) this index =
   (module struct
     module Device = D
-
     let index = index
-
     let this = this
   end : Instance)

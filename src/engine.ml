@@ -124,7 +124,6 @@ let launch ~suspend_every ~suspension c =
         IO.unit (last_suspension_time, c)
     in
     next >>= fun (time, c) ->
-
     loop time c
   in
   Precision_clock.get_time >>= fun now -> loop now c

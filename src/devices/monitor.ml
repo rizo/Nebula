@@ -12,6 +12,8 @@ open Prelude
 
 open Unsigned
 
+module P = Program
+
 type state =
   | Stopped
   | Starting of int (** Time at which monitor was started. *)
@@ -433,14 +435,13 @@ let on_interrupt t =
   Precision_clock.get_time >>= fun now ->
 
   IO.unit begin
-    let open Program in
     let open Program.Functor in
     let open Program.Monad in
 
-    read_register Reg.B >>= fun b ->
-    read_register Reg.A |> map Word.to_int >>= function
+    P.read_register Reg.B >>= fun b ->
+    P.read_register Reg.A |> map Word.to_int >>= function
     | 0 -> begin (* MEM_MAP_SCREEN *)
-        Program.Return {
+        P.Return {
           t with
           video_memory_offset = b;
           state =
@@ -450,39 +451,39 @@ let on_interrupt t =
         }
       end
     | 1 -> begin (* MEM_MAP_FONT *)
-        Program.Return { t with font_memory_offset = b }
+        P.Return { t with font_memory_offset = b }
       end
     | 2 -> begin (* MEM_MAP_PALETTE *)
-        Program.Return { t with palette_memory_offset = b }
+        P.Return { t with palette_memory_offset = b }
       end
     | 3 -> begin (* SET_BORDER_COLOR *)
-        Program.Return {
+        P.Return {
           t with
           border_color_index = UInt8.of_int (Word.(b land word 0xf |> to_int))
         }
       end
     | 4 -> begin (* MEM_DUMP_FONT *)
         let rec loop offset =
-          if offset >= Array.length default_font then Program.Return t
+          if offset >= Array.length default_font then P.Return t
           else
             let (w1, w2) = default_font.(offset) in
             let v = Word.(b + (word 2 * word offset)) in
-            Program.write_memory v w1 >>= fun () ->
-            Program.write_memory Word.(v + word 1) w2 >>= fun () ->
+            P.write_memory v w1 >>= fun () ->
+            P.write_memory Word.(v + word 1) w2 >>= fun () ->
             loop (offset + 1)
         in
         loop 0
       end
     | 5 -> begin (* MEM_DUMP_PALETTE *)
         let rec loop offset =
-          if offset >= Array.length default_palette then Program.Return t
+          if offset >= Array.length default_palette then P.Return t
           else
-            Program.write_memory Word.(b + word offset) default_palette.(offset) >>= fun () ->
+            P.write_memory Word.(b + word offset) default_palette.(offset) >>= fun () ->
             loop (offset + 1)
         in
         loop 0
       end
-    | _ -> Program.Return t
+    | _ -> P.Return t
   end
 
 let on_interaction device_input memory t =
