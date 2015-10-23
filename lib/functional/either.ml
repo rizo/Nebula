@@ -8,9 +8,7 @@ open Prelude
 type ('a, 'b) t = ('a, 'b) either
 
 (** Computations which fail short-circuit execution. *)
-module Monad_instance (E : sig type t end)
-  : (Monad_class.S with type 'a t = (E.t, 'a) either) =
-struct
+module Monad_instance (E : sig type t end) = struct
   type error = E.t
 
   type 'a t = (error, 'a) either
