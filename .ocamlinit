@@ -1,6 +1,7 @@
 #utop_prompt_simple ;;
 
 #directory "src" ;;
+#directory "lib" ;;
 #directory "_build/src" ;;
 #directory "_build/lib" ;;
 
