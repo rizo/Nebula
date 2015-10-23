@@ -1,4 +1,6 @@
-(** @author Jesse Haber-Kucharsky
+(** Operation codes for special instructions.
+
+    @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
 type t =

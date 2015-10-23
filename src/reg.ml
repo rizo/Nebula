@@ -1,4 +1,6 @@
-(** @author Jesse Haber-Kucharsky
+(** Simulated hardware registers.
+
+    @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
 type t =
