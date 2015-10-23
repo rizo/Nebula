@@ -1,10 +1,12 @@
 S src
 S src/devices
-S src/functional
+S lib
+S lib/functional
 S test
 B _build/src
 B _build/src/devices
-B _build/src/functional
+B _build/lib
+B _build/lib/functional
 B +threads
 PKG cmdliner
 PKG ctypes.foreign

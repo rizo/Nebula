@@ -1,6 +1,8 @@
 <src>: include
 <src/devices/*.cmx>: for-pack(Devices)
-<src/functional/*.cmx>: for-pack(Functional)
+
+<lib>: include
+<lib/functional/*.cmx>: for-pack(Functional)
 
 true: safe_string, bin_annot, thread, warn_error(+8)
 

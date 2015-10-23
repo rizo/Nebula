@@ -34,14 +34,15 @@ doc: lib
 
 	ocamlfind ocamldoc \
 		-I _build/src \
-		-I _build/src/functional \
 		-I _build/src/devices \
+    -I _build/lib \
+		-I _build/lib/functional \
 		-colorize-code \
 		-html -d doc \
 		-package cmdliner \
 		-package ppx_deriving.std \
 		-package tsdl \
-		$(shell echo src/*.{mli,ml} src/devices/*.ml src/functional/*.{mli,ml})
+		$(shell echo src/*.{mli,ml} src/devices/*.ml lib/functional/*.{mli,ml})
 
 .PHONY: clean
 

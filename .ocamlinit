@@ -2,8 +2,9 @@
 
 #directory "src" ;;
 #directory "_build/src" ;;
+#directory "_build/lib" ;;
 
-#load "nebula.cma" ;;
+#load_rec "nebula.cma" ;;
 
 #install_printer Word.pp ;;
 
