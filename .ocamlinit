@@ -1,9 +1,14 @@
 #utop_prompt_simple ;;
 
 #directory "src" ;;
+#directory "src/devices" ;;
 #directory "lib" ;;
+#directory "lib/functional" ;;
+
 #directory "_build/src" ;;
+#directory "_build/src/devices" ;;
 #directory "_build/lib" ;;
+#directory "_build/lib/functional" ;;
 
 #load_rec "nebula.cma" ;;
 

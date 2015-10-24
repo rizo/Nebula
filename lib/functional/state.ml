@@ -17,6 +17,9 @@ module type S = sig
 
   module Functor : module type of Functor_class.Extend(Functor_instance)
 
+  (** Lift a function returning a result and a new state. *)
+  val lift : (state -> state * 'a) -> 'a t
+
   (** Run the computation producing a new state and a value. *)
   val run : state -> 'a t -> state * 'a
 
@@ -43,6 +46,9 @@ module Make (K : sig type t end) : (S with type state := K.t) = struct
   end
 
   type 'a t = 'a Run.t
+
+  let lift f:(K.t -> K.t * 'a) =
+    f
 
   let run k ma =
     ma k

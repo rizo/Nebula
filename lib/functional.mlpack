@@ -2,6 +2,7 @@ Applicative_class
 Either    
 Free
 Functor_class
+Lazy_list
 IO
 Monad_class
 Option
