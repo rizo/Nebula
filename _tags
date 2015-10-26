@@ -6,12 +6,17 @@
 
 true: safe_string, bin_annot, thread, warn_error(+8)
 
-true: package(cmdliner), \
-      package(ctypes), \
-      package(ctypes.foreign), \
-      package(ppx_deriving.std), \
-      package(tsdl)
+<src/**>: package(cmdliner), \
+          package(ctypes), \
+          package(ctypes.foreign), \
+          package(ppx_deriving.std), \
+          package(tsdl)
+
+<top/**>: package(cmdliner), \
+          package(ctypes), \
+          package(ctypes.foreign), \
+          package(ppx_deriving.std), \
+          package(tsdl), \
+          package(utop)
 
 <test/*>: debug, package(oUnit)
-
-<top/*>: package(utop)

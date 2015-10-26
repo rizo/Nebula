@@ -241,7 +241,7 @@ end
 module Simple_prop = struct
   include Prop.Make(Simple_gen)
 
-  let run_io test_cases max_size t =
+  let run_io ~test_cases ~max_size t =
     IO.lift begin fun () ->
       let seed = Random.bits () in
       t |> run (Default_random_engine.with_seed seed) test_cases max_size
