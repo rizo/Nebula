@@ -10,21 +10,21 @@ OCAMLBUILD = ocamlbuild -use-ocamlfind
 
 default: nebula top
 
-nebula: stubs
-	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.native
+# Nebula
 
-profiled: stubs
-	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.p.native
+top: nebula
+	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
 
-test: lib
+test: nebula
 	$(OCAMLBUILD) test/nebula_test.byte
 	./nebula_test.byte
 
-top: lib
-	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
-
-lib: stubs
+nebula: stubs libraries
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/nebula.cma
+	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.native
+
+nebula_profiled: stubs
+	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.p.native
 
 stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)
@@ -43,6 +43,18 @@ doc: lib
 		-package ppx_deriving.std \
 		-package tsdl \
 		$(shell echo src/*.{mli,ml} src/devices/*.ml lib/functional/*.{mli,ml})
+
+# Support libraries
+
+libraries: functional properties
+
+functional:
+	$(OCAMLBUILD) lib/functional.cma
+	$(OCAMLBUILD) lib/functional.cmxa
+
+properties: functional
+	$(OCAMLBUILD) lib/properties.cmo
+	$(OCAMLBUILD) lib/properties.cmx
 
 .PHONY: clean
 
