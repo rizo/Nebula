@@ -12,11 +12,11 @@ true: safe_string, bin_annot, thread, warn_error(+8)
           package(ppx_deriving.std), \
           package(tsdl)
 
-<top/**>: package(cmdliner), \
+<top/**>: package(utop), \
+          package(cmdliner), \
           package(ctypes), \
           package(ctypes.foreign), \
           package(ppx_deriving.std), \
-          package(tsdl), \
-          package(utop)
+          package(tsdl)
 
 <test/*>: debug, package(oUnit)
