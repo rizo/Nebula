@@ -305,12 +305,14 @@ end
 module Examples = struct
   open Dsl
 
-  let int_zero =
-    for_all Gen.int (fun x -> x + 0 = x)
-
-  let int_associate =
-    for_all Gen.(int |> pair) (fun (x, y) -> x + y = y + x)
-
   let int =
-    group "int" [int_zero; int_associate]
+    group "int" [
+      for_all ~label:"zero"
+        Gen.int
+        (fun x -> x + 0 = x);
+
+      for_all ~label:"associate"
+        Gen.(int |> pair)
+        (fun (x, y) -> x + y >= 0);
+    ]
 end
