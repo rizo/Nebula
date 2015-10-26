@@ -10,6 +10,8 @@
 #directory "_build/lib" ;;
 #directory "_build/lib/functional" ;;
 
+#load_rec "functional.cmo" ;;
+#load_rec "properties.cmo" ;;
 #load_rec "nebula.cma" ;;
 
 #install_printer Word.pp ;;
