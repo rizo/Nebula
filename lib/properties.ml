@@ -128,11 +128,11 @@ module Result = struct
   type t =
     | Falsified of failed_case option * success_count
     | Proved
-    | Passed
+    | Passed of success_count
 
   let falsified = function
     | Falsified(_, _) -> true
-    | Proved | Passed -> false
+    | Proved | Passed _ -> false
 end
 
 module Prop = struct
@@ -161,7 +161,7 @@ module Prop = struct
       -> ('a -> bool)
       -> t
 
-    val run : engine -> test_cases -> max_size -> t -> Result.t
+    val run : ?test_cases:test_cases -> ?max_size:max_size -> engine -> t -> Result.t
   end
 
   module Make (G : Gen.S)
@@ -175,7 +175,7 @@ module Prop = struct
     type t = engine -> test_cases -> max_size -> Result.t
 
     let pass : t =
-      fun _ _ _ -> Result.Passed
+      fun _ _ _ -> Result.Passed 0
 
     let proved : t =
       fun _ _ _ -> Result.Proved
@@ -188,13 +188,13 @@ module Prop = struct
     let random_values gen engine =
       L.unfold engine (fun engine -> Some (G.sample engine gen))
 
-    let run engine n max t =
-      t engine n max
+    let run ?(test_cases = 100) ?(max_size = 100) engine t =
+      t engine test_cases max_size
 
     let pand p1 p2 =
-      fun engine n max ->
-        let r = p1 |> run engine n max in
-        if Result.falsified r then r else p2 |> run engine n max
+      fun engine test_cases max_size ->
+        let r = p1 |> run ~test_cases ~max_size engine in
+        if Result.falsified r then r else p2 |> run ~test_cases ~max_size engine
 
     let ( && ) p1 p2 =
       pand p1 p2
@@ -204,27 +204,27 @@ module Prop = struct
         L.zip (L.enum_from 0) (random_values gen engine)
         |> L.take n
         |> L.map (fun (index, a) ->
-              if p a then Result.Passed else Result.Falsified (label, index))
+              if p a then Result.Passed index else Result.Falsified (label, index))
         |> L.find Result.falsified
-        |> Option.get_or_else (lazy Result.Passed)
+        |> Option.get_or_else (lazy (Result.Passed n))
 
     let for_all_sizes ?label sgen p =
       let module Infix = struct let ( && ) = pand end in
 
-      fun engine n max ->
-        let cases_per_size = (n + (max - 1)) / max in
+      fun engine test_cases max_size ->
+        let cases_per_size = (test_cases + (max_size - 1)) / max_size in
         let props =
           L.enum_from 0
-          |> L.take ((min n max) + 1)
+          |> L.take ((min test_cases max_size) + 1)
           |> L.map (fun i -> for_all ?label (sgen i) p)
         in
         let combined =
           props
           |> L.map (fun p ->
-              fun engine _ max -> p |> run engine cases_per_size max)
+              fun engine _ max_size -> p |> run ~test_cases:cases_per_size ~max_size engine)
           |> L.fold_right (lazy pass) (fun a lb -> Infix.(a && (Lazy.force lb)))
         in
-        combined |> run engine n max
+        combined |> run ~test_cases ~max_size engine
   end
 end
 
@@ -241,10 +241,10 @@ end
 module Simple_prop = struct
   include Prop.Make(Simple_gen)
 
-  let run_io ~test_cases ~max_size t =
+  let run_io ?test_cases ?max_size t =
     IO.lift begin fun () ->
       let seed = Random.bits () in
-      t |> run (Default_random_engine.with_seed seed) test_cases max_size
+      t |> run ?test_cases ?max_size (Default_random_engine.with_seed seed)
     end
 end
 
@@ -252,17 +252,21 @@ module Suite = struct
   type t =
     | Single of Simple_prop.t
     | Group of string * t list
+
+  let rec to_props = function
+    | Single p -> [p]
+    | Group (_, ps) -> List.map to_props ps |> List.flatten
 end
 
 module Runner = struct
   open IO.Monad
 
-  let exec ?(test_cases = 100) ?(max_size = 100) s =
+  let exec ?test_cases ?max_size s =
     let sprintf = Printf.sprintf in
 
     let rec loop depth = function
       | Suite.Single prop -> begin
-          Simple_prop.run_io test_cases max_size prop >>= function
+          Simple_prop.run_io ?test_cases ?max_size prop >>= function
           | Result.Falsified (message, n) -> begin
               IO.put_string
                 (sprintf "! Falsified after %d passed tests%s\n"
@@ -270,7 +274,7 @@ module Runner = struct
                    (match message with None -> "" | Some m -> ": \"" ^ m ^ "\""))
             end
           | Result.Proved -> IO.put_string "+ OK. Proved property.\n"
-          | Result.Passed -> IO.put_string (sprintf "+ OK. Passed %d tests.\n" test_cases)
+          | Result.Passed success_count -> IO.put_string (sprintf "+ OK. Passed %d tests.\n" success_count)
         end
       | Suite.Group (label, props) -> begin
           let header = String.make depth ':' in
@@ -282,7 +286,11 @@ module Runner = struct
 end
 
 module Dsl = struct
+  module Engine = Default_random_engine
+
   module Gen = Simple_gen
+
+  module Prop = Simple_prop
 
   module Suite = Suite
 

@@ -66,7 +66,7 @@ module Result : sig
   type t =
     | Falsified of failed_case option * success_count
     | Proved
-    | Passed
+    | Passed of success_count
 
   val falsified : t -> bool
 end
@@ -97,7 +97,7 @@ module Prop : sig
       -> ('a -> bool)
       -> t
 
-    val run : engine -> test_cases -> max_size -> t -> Result.t
+    val run : ?test_cases:test_cases -> ?max_size:max_size -> engine -> t -> Result.t
   end
 
   module Make : functor (G : Gen.S)
@@ -114,17 +114,23 @@ end
 module Simple_prop : sig
   include module type of Prop.Make(Simple_gen)
 
-  val run_io : test_cases:test_cases -> max_size:max_size -> t -> Result.t IO.t
+  val run_io : ?test_cases:test_cases -> ?max_size:max_size -> t -> Result.t IO.t
 end
 
 module Suite : sig
   type t =
     | Single of Simple_prop.t
     | Group of string * t list
+
+  val to_props : t -> Simple_prop.t list
 end
 
 module Dsl : sig
+  module Engine = Default_random_engine
+
   module Gen = Simple_gen
+
+  module Prop = Simple_prop
 
   module Suite = Suite
 
@@ -137,4 +143,8 @@ module Dsl : sig
   val group : string -> Suite.t list -> Suite.t
 
   val run : ?test_cases:int -> ?max_size:int -> Suite.t -> unit IO.t
+end
+
+module Examples : sig
+  val int : Suite.t
 end
