@@ -321,6 +321,9 @@ module Examples = struct
 
       for_all ~label:"associate"
         Gen.(int |> pair)
-        (fun (x, y) -> x + y >= 0);
+        (fun (x, y) -> x + y = y + x);
+
+      check ~label:"add"
+        (fun () -> 2 + 3 = 5)
     ]
 end
