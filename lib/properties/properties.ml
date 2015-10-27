@@ -45,6 +45,8 @@ module Gen = struct
 
     val union : 'a t -> 'a t -> 'a t
 
+    val choice : 'a t list -> 'a t option
+
     module Functor_instance : Functor_class.S with type 'a t = 'a t
 
     module Functor : module type of Functor_class.Extend(Functor_instance)
@@ -80,7 +82,7 @@ module Gen = struct
       non_negative_int |> map (fun x -> (x mod (high - low)) + low)
 
     let bool =
-      int |> map (fun x -> x mod 1 = 0)
+      int |> map (fun x -> x mod 2 = 0)
 
     let pair g =
       g >>= fun x ->
@@ -105,6 +107,9 @@ module Gen = struct
       bool >>= function
       | true -> x
       | false -> y
+
+    let choice gs =
+      gs |> L.of_list |> L.reduce (fun g lg -> union g (Lazy.force lg))
 
     module Functor_instance = Random.Functor_instance
 

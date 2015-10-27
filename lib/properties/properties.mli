@@ -42,6 +42,8 @@ module Gen : sig
 
     val union : 'a t -> 'a t -> 'a t
 
+    val choice : 'a t list -> 'a t option
+
     module Functor_instance : Functor_class.S with type 'a t = 'a t
 
     module Functor : module type of Functor_class.Extend(Functor_instance)
