@@ -1,7 +1,6 @@
 true: safe_string, bin_annot, thread, warn_error(+8)
 
 <src>: include
-<src/Devices>: include
 <src/Devices/*.cmx>: for-pack(Devices)
 
 <src/**> or <top/**> or <test/**>: \
@@ -15,5 +14,5 @@ true: safe_string, bin_annot, thread, warn_error(+8)
 
 <test/**>: package(oUnit)
 
-<lib/functional>: traverse, include
-<lib/properties>: traverse, include
+<lib/functional>: include, traverse
+<lib/properties>: include, traverse

@@ -1,6 +1,6 @@
 open OUnit2
 
-open Prelude
+open Common
 open Spec
 
 let suite =

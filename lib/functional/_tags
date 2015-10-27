@@ -1,2 +1,1 @@
-<Functional>: include
 <Functional/*.cmx>: for-pack(Functional)

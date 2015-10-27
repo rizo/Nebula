@@ -224,10 +224,10 @@ and execute_unary code address_a =
   | Special_code.Int -> begin
       let open Interrupt_control in
       Cs.modify begin function
-          { interrupt_ctrl; _ } as c ->
+          { ic; _ } as c ->
           { c with
-            interrupt_ctrl =
-              trigger (Interrupt.Trigger.Software a) interrupt_ctrl
+            ic =
+              trigger (Interrupt.Trigger.Software a) ic
           }
       end
     end
@@ -243,18 +243,18 @@ and execute_unary code address_a =
         P.pop >>= P.write_special Special.PC
       end >>= fun () ->
       Cs.modify begin function
-        | { interrupt_ctrl; _ } as c ->
-          { c with interrupt_ctrl = Ic.enable_dequeuing interrupt_ctrl }
+        | { ic; _ } as c ->
+          { c with ic = Ic.enable_dequeuing ic }
       end
     end
   | Special_code.Iaq -> begin
       Cs.modify begin function
-        | { interrupt_ctrl; _ } as c ->
+        | { ic; _ } as c ->
           { c with
-            interrupt_ctrl =
+            ic =
               (if a <> word 0 then
                 Ic.disable_dequeuing
-              else Ic.enable_dequeuing) interrupt_ctrl }
+              else Ic.enable_dequeuing) ic }
       end
     end
   | Special_code.Hwn -> begin
@@ -277,10 +277,10 @@ and execute_unary code address_a =
     end
   | Special_code.Hwi -> begin
       Cs.modify begin function
-          { interrupt_ctrl; _ } as c ->
+          { ic; _ } as c ->
           { c with
-            interrupt_ctrl =
-              Ic.trigger (Interrupt.Trigger.Hardware a) interrupt_ctrl
+            ic =
+              Ic.trigger (Interrupt.Trigger.Hardware a) ic
           }
       end
     end

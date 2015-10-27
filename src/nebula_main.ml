@@ -3,8 +3,12 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
+open Common
+
 open Functional
-open Prelude
+open Functional.Prelude
+open Functional.IO.Functor
+open Functional.IO.Monad
 
 open Unsigned
 
@@ -12,14 +16,11 @@ open Printf
 
 module C = Computer
 
-open IO.Functor
-open IO.Monad
-
 (** Must be called at the beginning of Nebula's execution. *)
 let initialize =
   Sdl.lift "Initializing: %s" (fun () -> Sdl.init Sdl.Init.(video + events))
 
-let show_error_and_exit ?computer message =
+let show_failure_and_exit ?computer message =
   IO.put_string (sprintf "Error: %s\n" message) >>= fun () ->
 
   (match computer with
@@ -32,15 +33,15 @@ let show_error_and_exit ?computer message =
 let handle_error error =
   match error with
   | Engine.Bad_decoding (w, computer) -> begin
-      show_error_and_exit
+      show_failure_and_exit
         (sprintf "Failed to decode word %s." (Word.show w)) ~computer
     end
   | Engine.No_such_device (index, computer) -> begin
-      show_error_and_exit
+      show_failure_and_exit
         (sprintf "Index %s is not associated with a device." (Word.show index))
         ~computer
     end
-  | _ -> show_error_and_exit
+  | _ -> show_failure_and_exit
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
 let interact_with_devices device_input c =
@@ -77,7 +78,7 @@ let frame_period =
 let main file_name =
   IO.main begin
     Mem.of_file file_name >>= function
-    | Left (`Bad_memory_file message) -> show_error_and_exit ("Reading memory file " ^ message)
+    | Left (`Bad_memory_file message) -> show_failure_and_exit ("Reading memory file " ^ message)
     | Right memory -> begin
         initialize >>= fun () ->
         make_monitor_window >>= fun window ->

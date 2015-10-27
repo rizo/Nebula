@@ -40,12 +40,12 @@ functional_test: functional
 	./functional_spec.byte
 
 functional:
-	$(OCAMLBUILD) functional.cma
-	$(OCAMLBUILD) functional.cmxa
+	$(OCAMLBUILD) lib/functional/functional.cma
+	$(OCAMLBUILD) lib/functional/functional.cmxa
 
 properties: functional
-	$(OCAMLBUILD) properties.cma
-	$(OCAMLBUILD) properties.cmxa
+	$(OCAMLBUILD) lib/properties/properties.cma
+	$(OCAMLBUILD) lib/properties/properties.cmxa
 
 .PHONY: clean
 

@@ -23,7 +23,7 @@ let jump_to_handler (Interrupt.Message message) c =
     P.read_special Special.IA >>= P.write_special Special.PC >>= fun () ->
     P.write_register Reg.A message
   end
-  |> Cs.run { c with C.interrupt_ctrl = Ic.disable_dequeuing c.C.interrupt_ctrl }
+  |> Cs.run { c with C.ic = Ic.disable_dequeuing c.C.ic }
   |> fst
 
 let execute_trigger trigger c =
@@ -32,8 +32,8 @@ let execute_trigger trigger c =
 
   match trigger with
   | Interrupt.Trigger.Software message -> begin
-      let interrupt_ctrl = Ic.enqueue (Interrupt.Message message) c.C.interrupt_ctrl in
-      IO.unit C.{ c with interrupt_ctrl }
+      let ic = Ic.enqueue (Interrupt.Message message) c.C.ic in
+      IO.unit C.{ c with ic }
     end
   | Interrupt.Trigger.Hardware index -> begin
       IO.lift begin fun () ->
@@ -59,11 +59,11 @@ let step c =
 
     let c =
       if Cpu.read_special Special.IA c.C.cpu != word 0 then
-        match Ic.handle c.C.interrupt_ctrl with
+        match Ic.handle c.C.ic with
         | None -> c
-        | Some (interrupt, interrupt_ctrl) -> jump_to_handler
-                                                interrupt
-                                                C.{ c with interrupt_ctrl }
+        | Some (interrupt, ic) -> jump_to_handler
+                                    interrupt
+                                    C.{ c with ic }
       else c
     in
 
@@ -78,9 +78,9 @@ let step c =
       in
       Cs.run c s |> fst
     end >>= fun c ->
-    match Ic.triggered c.C.interrupt_ctrl with
+    match Ic.triggered c.C.ic with
     | None -> IO.unit c
-    | Some (trigger, interrupt_ctrl) -> execute_trigger trigger C.{ c with interrupt_ctrl }
+    | Some (trigger, ic) -> execute_trigger trigger C.{ c with ic }
   in
 
   IO.catch (unsafe_step c)
@@ -98,12 +98,12 @@ let tick_devices c =
             (Device.make_instance (module I.Device) updated_this I.index)
             c.C.manifest
         in
-        let interrupt_ctrl =
+        let ic =
           match generated_interrupt with
-          | Some interrupt -> Ic.enqueue interrupt c.C.interrupt_ctrl
-          | None -> c.C.interrupt_ctrl
+          | Some interrupt -> Ic.enqueue interrupt c.C.ic
+          | None -> c.C.ic
         in
-        C.{ c with manifest; interrupt_ctrl })
+        C.{ c with manifest; ic })
   in
   let instances = Manifest.all c.C.manifest in
   IO.Monad.fold tick_instance c instances

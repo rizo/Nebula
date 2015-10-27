@@ -6,12 +6,12 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Prelude
+open Common
 
 type t = {
   memory : Mem.t;
   cpu : Cpu.t;
-  interrupt_ctrl : Interrupt_control.t;
+  ic : Interrupt_control.t;
   manifest : Manifest.t;
 }
 

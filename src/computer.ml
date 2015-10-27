@@ -4,14 +4,14 @@
 type t = {
   memory : Mem.t;
   cpu : Cpu.t;
-  interrupt_ctrl : Interrupt_control.t;
+  ic : Interrupt_control.t;
   manifest : Manifest.t;
 }
 
 let default = {
   memory = Mem.empty;
   cpu = Cpu.empty;
-  interrupt_ctrl = Interrupt_control.empty;
+  ic = Interrupt_control.empty;
   manifest = Manifest.empty;
 }
 
