@@ -7,7 +7,6 @@ let run_io =
 
 let suite =
   group "IO" [
-    for_all ~label:"unit"
-      Gen.int
-      (fun x -> IO.unit x |> run_io = x);
+    check ~label:"unit"
+      (fun () -> IO.unit 2 |> run_io = 2);
   ]

@@ -1,3 +1,8 @@
+(** Property-based testing libraries.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 open Functional
 
 module type RANDOM_ENGINE = sig
