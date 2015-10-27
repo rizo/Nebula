@@ -15,7 +15,7 @@ default: nebula top
 top: nebula
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
 
-test: nebula
+test: nebula libraries_test
 	$(OCAMLBUILD) test/nebula_test.byte
 	./nebula_test.byte
 
@@ -31,7 +31,13 @@ stubs: $(STUB_SOURCES)
 
 # Support libraries.
 
+libraries_test: functional_test
+
 libraries: functional properties
+
+functional_test: functional
+	$(OCAMLBUILD) lib/functional/test/functional_spec.byte
+	./functional_spec.byte
 
 functional:
 	$(OCAMLBUILD) functional.cma
