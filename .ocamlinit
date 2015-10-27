@@ -1,7 +1,7 @@
 #utop_prompt_simple ;;
 
 #directory "src" ;;
-#directory "src/devices" ;;
+#directory "src/Devices" ;;
 
 #directory "lib" ;;
 #directory "lib/functional" ;;
@@ -19,3 +19,5 @@
 open Common
 
 open Functional
+
+#install_printer Word.pp
