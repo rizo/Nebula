@@ -17,7 +17,7 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Prelude
+open Common
 
 (** A message from a hardware device to the DCPU-16.contents
 

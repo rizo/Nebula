@@ -23,41 +23,25 @@ nebula: stubs libraries
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/nebula.cma
 	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.native
 
-nebula_profiled: stubs
+nebula_profiled: stubs libraries
 	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/nebula_main.p.native
 
 stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)
 
-doc: lib
-	mkdir -p doc
-
-	ocamlfind ocamldoc \
-		-I _build/src \
-		-I _build/src/devices \
-    -I _build/lib \
-		-I _build/lib/functional \
-		-colorize-code \
-		-html -d doc \
-		-package cmdliner \
-		-package ppx_deriving.std \
-		-package tsdl \
-		$(shell echo src/*.{mli,ml} src/devices/*.ml lib/functional/*.{mli,ml})
-
-# Support libraries
+# Support libraries.
 
 libraries: functional properties
 
 functional:
-	$(OCAMLBUILD) lib/functional.cma
-	$(OCAMLBUILD) lib/functional.cmxa
+	$(OCAMLBUILD) functional.cma
+	$(OCAMLBUILD) functional.cmxa
 
 properties: functional
-	$(OCAMLBUILD) lib/properties.cmo
-	$(OCAMLBUILD) lib/properties.cmx
+	$(OCAMLBUILD) properties.cma
+	$(OCAMLBUILD) properties.cmxa
 
 .PHONY: clean
 
 clean:
-	rm -rf doc
 	ocamlbuild -clean

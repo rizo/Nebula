@@ -1,7 +1,7 @@
-open OUnit2
-
-open Prelude
+open Common
 open Spec
+
+open OUnit2
 
 let suite =
   let open Program in

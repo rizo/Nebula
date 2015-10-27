@@ -5,8 +5,7 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Functional
-open Prelude
+open Common
 
 (** The address context.
 

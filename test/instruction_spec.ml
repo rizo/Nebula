@@ -1,6 +1,6 @@
-open OUnit2
+open Common
 
-open Prelude
+open OUnit2
 
 let suit =
   let open Computer in

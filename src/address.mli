@@ -10,7 +10,7 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Prelude
+open Common
 
 (** An address. *)
 type t =

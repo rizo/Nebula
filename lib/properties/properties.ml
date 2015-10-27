@@ -149,7 +149,7 @@ module Prop = struct
 
     val ( && ) : t -> t -> t
 
-    val check : ?label:string -> bool Lazy.t -> t
+    val check : ?label:string -> (unit -> bool) -> t
 
     val for_all : ?label:string
       -> 'a generator
@@ -182,7 +182,7 @@ module Prop = struct
 
     let check ?label p =
       fun _ _ _ ->
-        if (Lazy.force p) then Result.Proved
+        if (p ()) then Result.Proved
         else Result.Falsified (label, 0)
 
     let random_values gen engine =

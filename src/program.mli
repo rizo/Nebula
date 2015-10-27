@@ -11,8 +11,9 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
+open Common
+
 open Functional
-open Prelude
 
 module Op : sig
   type 'a t =

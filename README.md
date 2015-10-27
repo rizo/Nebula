@@ -94,10 +94,9 @@ In addition to requiring the opam package manager, Nebula depends on two package
 
 Nebula is built by invoking the `make` command with one of the following targets:
 
-- `doc`: Development documentation.
 - `top`: Interactive OCaml top-level REPL for Nebula's sources.
-- `lib`: The Nebula library that is used for the top-level, the main executable, and tests.
-- `test`: Build unit tests.
+- `libraries`: Nebula's support libraries.
+- `test`: Unit tests (also runs tests)
 - `nebula`: The main executable.
 
 ### Testing

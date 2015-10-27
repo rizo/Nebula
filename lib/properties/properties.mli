@@ -85,7 +85,7 @@ module Prop : sig
 
     val ( && ) : t -> t -> t
 
-    val check : ?label:string -> bool Lazy.t -> t
+    val check : ?label:string -> (unit -> bool) -> t
 
     val for_all : ?label:string
       -> 'a generator
@@ -134,7 +134,7 @@ module Dsl : sig
 
   module Suite = Suite
 
-  val check : ?label:string -> bool Lazy.t -> Suite.t
+  val check : ?label:string -> (unit -> bool) -> Suite.t
 
   val for_all : ?label:string -> 'a Gen.t -> ('a -> bool) -> Suite.t
 

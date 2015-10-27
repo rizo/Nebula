@@ -1,6 +1,6 @@
-open OUnit2
+open Common
 
-open Prelude
+open OUnit2
 
 let suite =
   let open Cpu in

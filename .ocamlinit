@@ -2,19 +2,20 @@
 
 #directory "src" ;;
 #directory "src/devices" ;;
+
 #directory "lib" ;;
 #directory "lib/functional" ;;
+#directory "lib/properties" ;;
 
 #directory "_build/src" ;;
-#directory "_build/src/devices" ;;
-#directory "_build/lib" ;;
+#directory "_build/src/Devices" ;;
+
 #directory "_build/lib/functional" ;;
+#directory "_build/lib/properties" ;;
 
-#load_rec "functional.cmo" ;;
-#load_rec "properties.cmo" ;;
-#load_rec "nebula.cma" ;;
+#load_rec "functional.cma" ;;
+#load_rec "properties.cma" ;;
 
-#install_printer Word.pp ;;
+open Common
 
-open Functional ;;
-open Prelude ;;
+open Functional

@@ -3,8 +3,9 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
+open Common
+
 open Functional
-open Prelude
 
 (** A {! word} could not be decoded by the DCPU-16. *)
 exception Bad_decoding of word * Computer.t

@@ -1,22 +1,19 @@
-<src>: include
-<src/devices/*.cmx>: for-pack(Devices)
-
-<lib>: include
-<lib/functional/*.cmx>: for-pack(Functional)
-
 true: safe_string, bin_annot, thread, warn_error(+8)
 
-<src/**>: package(cmdliner), \
-          package(ctypes), \
-          package(ctypes.foreign), \
-          package(ppx_deriving.std), \
-          package(tsdl)
+<src>: include
+<src/Devices>: include
+<src/Devices/*.cmx>: for-pack(Devices)
 
-<top/**>: package(utop), \
-          package(cmdliner), \
-          package(ctypes), \
-          package(ctypes.foreign), \
-          package(ppx_deriving.std), \
-          package(tsdl)
+<src/**> or <top/**> or <test/**>: \
+      package(cmdliner), \
+      package(ctypes), \
+      package(ctypes.foreign), \
+      package(ppx_deriving.std), \
+      package(tsdl)
 
-<test/*>: debug, package(oUnit)
+<top/**>: package(utop)
+
+<test/**>: package(oUnit)
+
+<lib/functional>: traverse, include
+<lib/properties>: traverse, include

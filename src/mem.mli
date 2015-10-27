@@ -3,8 +3,10 @@
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Prelude
+open Common
+
 open Functional
+open Functional.Prelude
 
 type t
 

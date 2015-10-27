@@ -1,7 +1,7 @@
 (** @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Prelude
+open Common
 
 module Reg_map = Map.Make(Reg)
 
