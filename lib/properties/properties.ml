@@ -85,7 +85,7 @@ module Gen = struct
     let pair g =
       g >>= fun x ->
       g >>= fun y ->
-      Random.unit (x, y)
+      unit (x, y)
 
     let fill n a =
       let rec loop accum i =
