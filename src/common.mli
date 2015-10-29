@@ -14,3 +14,9 @@ type device_index = word
 
 (** The contents of an interrupt. *)
 type message = word
+
+module Time_stamp : sig
+  type t = int64
+
+  val ( - ) : t -> t -> t
+end

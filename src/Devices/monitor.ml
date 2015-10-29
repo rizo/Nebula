@@ -17,13 +17,13 @@ module P = Program
 
 type state =
   | Stopped
-  | Starting of int64 (** Time at which monitor was started. *)
+  | Starting of Time_stamp.t (** Time at which monitor was started. *)
   | Running
 
 type t = {
   window : Visual.Window.t;
   state : state;
-  last_blink_time : int64;
+  last_blink_time : Time_stamp.t;
   blink_visible : bool;
   border_color_index : uint8;
   video_memory_offset : word;
@@ -408,8 +408,7 @@ let on_tick t =
   let open IO.Monad in
 
   Precision_clock.get_time >>= fun now ->
-
-  let elapsed_since_blink = Duration.of_nanoseconds (Int64.sub now t.last_blink_time) in
+  let elapsed_since_blink = Duration.of_nanoseconds Time_stamp.(now - t.last_blink_time) in
 
   let t =
     if elapsed_since_blink >= blink_period then
@@ -420,13 +419,12 @@ let on_tick t =
   let t =
     match t.state with
     | Starting start_time -> begin
-        let elapsed_since_starting = Duration.of_nanoseconds (Int64.sub now start_time) in
+        let elapsed_since_starting = Duration.of_nanoseconds Time_stamp.(now - start_time) in
         if elapsed_since_starting >= start_up_duration then { t with state = Running }
         else t
       end
     | Stopped | Running -> t
   in
-
   IO.unit (t, None)
 
 let on_interrupt t =

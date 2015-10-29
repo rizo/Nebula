@@ -13,7 +13,7 @@ type t = {
   on : bool;
   divider : word;
   elapsed_ticks : word;
-  last_tick_time : int64;
+  last_tick_time : Time_stamp.t;
   interrupt_message : word option;
 }
 
@@ -36,10 +36,11 @@ let on_interaction device_input memory t =
 let on_tick t =
   let open IO.Monad in
   let open IO.Functor in
+
   if not t.on then IO.unit (t, None)
   else
     Precision_clock.get_time |> map (fun time ->
-        let since_last_tick = Int64.sub time t.last_tick_time in
+        let since_last_tick = Time_stamp.(time - t.last_tick_time) in
         let effective_period =
           Int64.mul (Word.to_int t.divider |> Int64.of_int) (Duration.nanoseconds base_clock_period)
         in

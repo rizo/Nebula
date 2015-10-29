@@ -9,3 +9,10 @@ let word =
 type device_index = word
 
 type message = word
+
+module Time_stamp = struct
+  type t = int64
+
+  let ( - ) a b =
+    Int64.sub a b
+end
