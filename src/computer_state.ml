@@ -1,48 +1,58 @@
 (** @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Common
+type t = {
+  memory : Mem.t;
+  cpu : Cpu.t;
+  ic : Interrupt_control.t;
+  manifest : Manifest.t;
+}
 
-open Functional
+let default = {
+  memory = Mem.empty;
+  cpu = Cpu.empty;
+  ic = Interrupt_control.empty;
+  manifest = Manifest.empty;
+}
 
-include State.Make(Computer)
+let show t =
+  let open Printf in
 
-module C = Computer
+  let format name value =
+    sprintf "%s: %s [%s]\n" name (Word.show value) (Word.show (Mem.read value t.memory))
+  in
 
-let rec of_program t =
-  let open Monad in
+  let register name r =
+    let value = Cpu.read_register r t.cpu in
+    format name value
+  in
 
-  match t with
-  | Program.Suspend (Program.Op.Read_register (r, next)) -> begin
-      gets (fun t -> Cpu.read_register r t.C.cpu) >>= fun value ->
-      of_program (next value)
-    end
-  | Program.Suspend (Program.Op.Write_register (r, v, next)) -> begin
-      modify (fun t -> C.{ t with cpu = Cpu.write_register r v t.cpu }) >>= fun () ->
-      of_program next
-    end
-  | Program.Suspend (Program.Op.Read_special (s, next)) -> begin
-      gets (fun t -> Cpu.read_special s t.C.cpu) >>= fun value ->
-      of_program (next value)
-    end
-  | Program.Suspend (Program.Op.Write_special (s, v, next)) -> begin
-      modify (fun t -> C.{ t with cpu = Cpu.write_special s v t.cpu }) >>= fun () ->
-      of_program next
-    end
-  | Program.Suspend (Program.Op.Read_memory (o, next)) -> begin
-      gets (fun t -> Mem.read o t.C.memory) >>= fun value ->
-      of_program (next value)
-    end
-  | Program.Suspend (Program.Op.Write_memory (o, v, next)) -> begin
-      modify (fun t -> C.{ t with memory = Mem.write o v t.memory }) >>= fun () ->
-      of_program next
-    end
-  | Program.Suspend (Program.Op.Get_flag (flag, next)) -> begin
-      gets (fun t -> Cpu.get_flag flag t.C.cpu) >>= fun value ->
-      of_program (next value)
-    end
-  | Program.Suspend (Program.Op.Set_flag (flag, v, next)) -> begin
-      modify (fun t -> C.{ t with cpu = Cpu.set_flag flag v t.cpu }) >>= fun () ->
-      of_program next
-    end
-  | Program.Return v -> unit v
+  let special name s =
+    let value = Cpu.read_special s t.cpu in
+    format name value
+  in
+
+  let buffer = Buffer.create 20 in
+
+  Buffer.add_string buffer (special "PC" Special.PC);
+  Buffer.add_string buffer (special "SP" Special.SP);
+  Buffer.add_string buffer (special "EX" Special.EX);
+  Buffer.add_string buffer (special "IA" Special.IA);
+
+  Buffer.add_string buffer "\n";
+
+  Buffer.add_string buffer (register "A" Reg.A);
+  Buffer.add_string buffer (register "B" Reg.B);
+  Buffer.add_string buffer (register "C" Reg.B);
+  Buffer.add_string buffer (register "X" Reg.X);
+  Buffer.add_string buffer (register "Y" Reg.Y);
+  Buffer.add_string buffer (register "Z" Reg.Z);
+  Buffer.add_string buffer (register "I" Reg.I);
+  Buffer.add_string buffer (register "J" Reg.J);
+
+  Buffer.add_string buffer "\n";
+
+  Buffer.add_string buffer ("Skip_next: " ^ string_of_bool (Cpu.get_flag Cpu.Flag.Skip_next t.cpu));
+
+  Buffer.add_string buffer "\n";
+  Buffer.contents buffer

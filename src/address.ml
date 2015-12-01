@@ -4,7 +4,6 @@
 open Common
 
 module P = Program
-module C = Computer
 
 type t =
   | Reg_direct of Reg.t
@@ -50,7 +49,7 @@ module Target = struct
     | Value of word
 
   let get t =
-    Computer_state.of_program begin
+    Computer.of_program begin
       match t with
         | Reg r -> P.read_register r
         | Special s -> P.read_special s
@@ -61,7 +60,7 @@ module Target = struct
     end
 
   let set v t =
-    Computer_state.of_program begin
+    Computer.of_program begin
       match t with
       | Reg r -> P.write_register r v
       | Special s -> P.write_special s v
@@ -75,7 +74,7 @@ end
 let target_of t =
   let open Program.Monad in
 
-  Computer_state.of_program begin
+  Computer.of_program begin
     match t with
     | Reg_direct r -> P.Return (Target.Reg r)
     | Reg_indirect r -> P.read_register r >>= fun w -> P.Return (Target.Offset w)

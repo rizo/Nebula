@@ -61,12 +61,12 @@ module Target : sig
     | Value of word
 
   (** Read the value from the target. *)
-  val get : t -> word Computer_state.t
+  val get : t -> word Computer.t
 
   (** Set a value at the target. *)
-  val set : word -> t -> unit Computer_state.t
+  val set : word -> t -> unit Computer.t
 end
 
 (** Resolve a relative address to an absolute location based on the current
     computer state. *)
-val target_of : t -> Target.t Computer_state.t
+val target_of : t -> Target.t Computer.t

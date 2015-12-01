@@ -21,4 +21,4 @@ val conditional : t -> bool
 val encoded_size : t -> int
 
 (** Execute the instruction. *)
-val execute : t -> unit Computer_state.t
+val execute : t -> unit Computer.t

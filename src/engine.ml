@@ -10,20 +10,20 @@ module Cs = Computer_state
 module Ic = Interrupt_control
 module P = Program
 
-exception Bad_decoding of word * Computer.t
+exception Bad_decoding of word * Computer_state.t
 
-exception No_such_device of word * Computer.t
+exception No_such_device of word * Computer_state.t
 
 let jump_to_handler (Interrupt.Message message) c =
   let open P.Monad in
 
-  Cs.of_program begin
+  C.of_program begin
     P.read_special Special.PC >>= P.push >>= fun () ->
     P.read_register Reg.A >>= P.push >>= fun () ->
     P.read_special Special.IA >>= P.write_special Special.PC >>= fun () ->
     P.write_register Reg.A message
   end
-  |> Cs.run { c with C.ic = Ic.disable_dequeuing c.C.ic }
+  |> C.run { c with Cs.ic = Ic.disable_dequeuing c.Cs.ic }
   |> fst
 
 let execute_trigger trigger c =
@@ -32,25 +32,25 @@ let execute_trigger trigger c =
 
   match trigger with
   | Interrupt.Trigger.Software message -> begin
-      let ic = Ic.enqueue (Interrupt.Message message) c.C.ic in
-      IO.unit C.{ c with ic }
+      let ic = Ic.enqueue (Interrupt.Message message) c.Cs.ic in
+      IO.unit Cs.{ c with ic }
     end
   | Interrupt.Trigger.Hardware index -> begin
       IO.lift begin fun () ->
-        Manifest.instance index c.C.manifest
+        Manifest.instance index c.Cs.manifest
       end >>= fun (module I : Device.Instance) ->
       I.Device.on_interrupt I.this
       |> IO.Functor.map (fun program ->
           program
-          |> Cs.of_program
-          |> Cs.run c
+          |> C.of_program
+          |> C.run c
           |> fun (c, device) ->
-          C.{ c with
-            manifest =
-              Manifest.update
-                (Device.make_instance (module I.Device) device I.index)
-                c.manifest
-          })
+          Cs.{ c with
+               manifest =
+                 Manifest.update
+                   (Device.make_instance (module I.Device) device I.index)
+                   c.manifest
+             })
     end
 
 let step c =
@@ -58,29 +58,29 @@ let step c =
     let open IO.Monad in
 
     let c =
-      if Cpu.read_special Special.IA c.C.cpu != word 0 then
-        match Ic.handle c.C.ic with
+      if Cpu.read_special Special.IA c.Cs.cpu != word 0 then
+        match Ic.handle c.Cs.ic with
         | None -> c
         | Some (interrupt, ic) -> jump_to_handler
                                     interrupt
-                                    C.{ c with ic }
+                                    Cs.{ c with ic }
       else c
     in
 
     IO.lift begin fun () ->
-      let open Cs.Monad in
-      let open Cs.Functor in
+      let open C.Monad in
+      let open C.Functor in
 
-      let s = Cs.of_program P.next_word >>= fun w ->
+      let s = C.of_program P.next_word >>= fun w ->
         match Decode.instruction w with
         | None -> raise (Bad_decoding (w, c))
         | Some ins -> Instruction.execute ins
       in
-      Cs.run c s |> fst
+      C.run c s |> fst
     end >>= fun c ->
-    match Ic.triggered c.C.ic with
+    match Ic.triggered c.Cs.ic with
     | None -> IO.unit c
-    | Some (trigger, ic) -> execute_trigger trigger C.{ c with ic }
+    | Some (trigger, ic) -> execute_trigger trigger Cs.{ c with ic }
   in
 
   IO.catch (unsafe_step c)
@@ -96,16 +96,16 @@ let tick_devices c =
         let manifest =
           Manifest.update
             (Device.make_instance (module I.Device) updated_this I.index)
-            c.C.manifest
+            c.Cs.manifest
         in
         let ic =
           match generated_interrupt with
-          | Some interrupt -> Ic.enqueue interrupt c.C.ic
-          | None -> c.C.ic
+          | Some interrupt -> Ic.enqueue interrupt c.Cs.ic
+          | None -> c.Cs.ic
         in
-        C.{ c with manifest; ic })
+        Cs.{ c with manifest; ic })
   in
-  let instances = Manifest.all c.C.manifest in
+  let instances = Manifest.all c.Cs.manifest in
   IO.Monad.fold tick_instance c instances
 
 let launch ~suspend_every ~suspension c =

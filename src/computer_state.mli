@@ -1,12 +1,23 @@
-(** {! Computer} operations interpretted in the context of the {! State} monad.
+(** Pure computer state.
+
+    This structure encompasses the entire state of the DCPU-16 including the
+    processor, the memory, and interrupt handling.
 
     @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-open Functional
-open Prelude
+open Common
 
-include module type of State.Make(Computer)
+type t = {
+  memory : Mem.t;
+  cpu : Cpu.t;
+  ic : Interrupt_control.t;
+  manifest : Manifest.t;
+}
 
-(** Interpret a {! Program} in the {! Computer_state} context. *)
-val of_program : 'a Program.t -> 'a t
+(** The default computer state, with everything initially in its "empty"
+    state. *)
+val default : t
+
+(** Display the values of registers and where they point to in memory. *)
+val show : t -> string
