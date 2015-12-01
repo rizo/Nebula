@@ -3,12 +3,10 @@ open OUnit2
 open Common
 open Spec
 
+module C = Computer
+
 let suite =
-  let open Address in
-  let open Computer in
-  let open Computer_state.Monad in
-  let open Reg in
-  let open Special in
+  let open Computer.Monad in
 
   "address" >::: [
     "register direct" >:: (fun ctx -> todo "New addressing implementation.");
