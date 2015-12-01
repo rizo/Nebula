@@ -36,11 +36,11 @@ val unit : 'a -> 'a t
 
 module Monad_instance : Monad_class.S with type 'a t = 'a t
 
-module Monad : module type of Monad_class.Extend(Monad_instance)
+module Monad : module type of Monad_class.Extend (Monad_instance)
 
 module Functor_instance : Functor_class.S with type 'a t = 'a t
 
-module Functor : module type of Functor_class.Extend(Functor_instance)
+module Functor : module type of Functor_class.Extend (Functor_instance)
 
 (** Unwrap an impure computation.
 

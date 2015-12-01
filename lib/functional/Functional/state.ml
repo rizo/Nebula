@@ -11,11 +11,11 @@ module type S = sig
 
   module Monad_instance : Monad_class.S with type 'a t = 'a t
 
-  module Monad : module type of Monad_class.Extend(Monad_instance)
+  module Monad : module type of Monad_class.Extend (Monad_instance)
 
-  module Functor_instance : module type of Functor_class.Of_monad(Monad_instance)
+  module Functor_instance : module type of Functor_class.Of_monad (Monad_instance)
 
-  module Functor : module type of Functor_class.Extend(Functor_instance)
+  module Functor : module type of Functor_class.Extend (Functor_instance)
 
   (** Lift a function returning a result and a new state. *)
   val lift : (state -> state * 'a) -> 'a t
@@ -65,11 +65,11 @@ module Make (K : sig type t end) : (S with type state := K.t) = struct
         (f a) k2
   end
 
-  module Monad = Monad_class.Extend(Monad_instance)
+  module Monad = Monad_class.Extend (Monad_instance)
 
-  module Functor_instance = Functor_class.Of_monad(Monad_instance)
+  module Functor_instance = Functor_class.Of_monad (Monad_instance)
 
-  module Functor = Functor_class.Extend(Functor_instance)
+  module Functor = Functor_class.Extend (Functor_instance)
 
   let get =
     fun k -> (k, k)

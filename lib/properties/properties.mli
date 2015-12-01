@@ -51,11 +51,11 @@ module Gen : sig
 
     module Functor_instance : Functor_class.S with type 'a t = 'a t
 
-    module Functor : module type of Functor_class.Extend(Functor_instance)
+    module Functor : module type of Functor_class.Extend (Functor_instance)
 
     module Monad_instance : Monad_class.S with type 'a t = 'a t
 
-    module Monad : module type of Monad_class.Extend(Monad_instance)
+    module Monad : module type of Monad_class.Extend (Monad_instance)
   end
 
   module Make : functor (R : RANDOM_ENGINE) -> S with type engine = R.t
@@ -113,13 +113,13 @@ module Prop : sig
 end
 
 module Simple_gen : sig
-  include module type of Gen.Make(Default_random_engine)
+  include module type of Gen.Make (Default_random_engine)
 
   val sample_io : 'a t -> 'a IO.t
 end
 
 module Simple_prop : sig
-  include module type of Prop.Make(Simple_gen)
+  include module type of Prop.Make (Simple_gen)
 
   val run_io : ?test_cases:test_cases -> ?max_size:max_size -> t -> Result.t IO.t
 end

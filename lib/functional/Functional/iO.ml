@@ -13,7 +13,7 @@ module Block = struct
     | Exception e -> Exception e
 end
 
-module F = Free.Make(Block)
+module F = Free.Make (Block)
 
 type 'a t = 'a F.t
 

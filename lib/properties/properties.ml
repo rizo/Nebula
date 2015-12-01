@@ -52,17 +52,17 @@ module Gen = struct
 
     module Functor_instance : Functor_class.S with type 'a t = 'a t
 
-    module Functor : module type of Functor_class.Extend(Functor_instance)
+    module Functor : module type of Functor_class.Extend (Functor_instance)
 
     module Monad_instance : Monad_class.S with type 'a t = 'a t
 
-    module Monad : module type of Monad_class.Extend(Monad_instance)
+    module Monad : module type of Monad_class.Extend (Monad_instance)
   end
 
   module Make (R : RANDOM_ENGINE) : (S with type engine = R.t) = struct
     type engine = R.t
 
-    module Random = State.Make(R)
+    module Random = State.Make (R)
 
     open Random.Monad
     open Random.Functor
@@ -237,7 +237,7 @@ module Prop = struct
 end
 
 module Simple_gen = struct
-  include Gen.Make(Default_random_engine)
+  include Gen.Make (Default_random_engine)
 
   let sample_io t =
     IO.lift begin fun () ->
@@ -247,7 +247,7 @@ module Simple_gen = struct
 end
 
 module Simple_prop = struct
-  include Prop.Make(Simple_gen)
+  include Prop.Make (Simple_gen)
 
   let run_io ?test_cases ?max_size t =
     IO.lift begin fun () ->

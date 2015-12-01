@@ -1,7 +1,7 @@
 (** @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
-module Make(F : Functor_class.S) = struct
+module Make (F : Functor_class.S) = struct
   module Self = struct
     type 'a t =
       | Return of 'a
@@ -26,9 +26,9 @@ module Make(F : Functor_class.S) = struct
       | Suspend x -> Suspend (F.map (bind f) x)
   end
 
-  module Monad = Monad_class.Extend(Monad_instance)
+  module Monad = Monad_class.Extend (Monad_instance)
 
-  module Functor_instance = Functor_class.Of_monad(Monad_instance)
+  module Functor_instance = Functor_class.Of_monad (Monad_instance)
 
-  module Functor = Functor_class.Extend(Functor_instance)
+  module Functor = Functor_class.Extend (Functor_instance)
 end

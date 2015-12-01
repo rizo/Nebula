@@ -40,7 +40,7 @@ module Of_monad (M : Monad_class.S) : (S with type 'a t = 'a M.t) = struct
   let pure =
     M.pure
 
-  module Monad = Monad_class.Extend(M)
+  module Monad = Monad_class.Extend (M)
 
   let ap fab fa =
     let open Monad in
@@ -52,7 +52,7 @@ end
 module Extend (F : S) : (EXTENSION with type 'a t := 'a F.t) = struct
   include F
 
-  module Functor = To_functor(F)
+  module Functor = To_functor (F)
 
   let ( <*> ) fab fa =
     F.ap fab fa

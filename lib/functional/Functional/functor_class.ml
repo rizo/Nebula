@@ -9,7 +9,7 @@ module type S = sig
   val map : ('a -> 'b) -> 'a t -> 'b t
 end
 
-module Of_monad(M : Monad_class.S) : (S with type 'a t = 'a M.t) = struct
+module Of_monad (M : Monad_class.S) : (S with type 'a t = 'a M.t) = struct
   type 'a t = 'a M.t
 
   let map f ma =
@@ -24,7 +24,7 @@ module type EXTENSION = sig
   val ( <$> ) : ('a -> 'b) -> 'a t -> 'b t
 end
 
-module Extend(F : S) : (EXTENSION with type 'a t := 'a F.t) = struct
+module Extend (F : S) : (EXTENSION with type 'a t := 'a F.t) = struct
   include F
 
   let ( <$> ) f ma =
