@@ -6,16 +6,6 @@ let suite =
   let open Gen.Monad in
 
   group "prelude" [
-    for_all ~label:"const"
-      Gen.(int >>= fun a ->
-           int |> where (fun b -> b <> a) >>= fun b ->
-           unit (a, b))
-      (fun (a, b) -> Prelude.const a b = a);
-
-    for_all ~label:"id"
-      Gen.int
-      (fun a -> Prelude.id a = a);
-
     group "enum_from_to" [
       check ~label:"simple"
         (fun () ->
@@ -33,4 +23,14 @@ let suite =
              unit (low, high))
         (fun (low, high) -> Prelude.enum_from_to low high |> List.length = 0);
     ];
+
+    for_all ~label:"const"
+      Gen.(int >>= fun a ->
+           int |> where (fun b -> b <> a) >>= fun b ->
+           unit (a, b))
+      (fun (a, b) -> Prelude.const a b = a);
+
+    for_all ~label:"id"
+      Gen.int
+      (fun a -> Prelude.id a = a);
   ]

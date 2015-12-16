@@ -281,6 +281,7 @@ module Runner = struct
 
     let rec loop depth = function
       | Suite.Single prop -> begin
+          IO.put_string (String.make depth ' ') >>= fun () ->
           Simple_prop.run_io ?test_cases ?max_size prop >>= function
           | Result.Falsified (message, n) -> begin
               IO.put_string
@@ -292,9 +293,10 @@ module Runner = struct
           | Result.Passed success_count -> IO.put_string (sprintf "+ OK. Passed %d tests.\n" success_count)
         end
       | Suite.Group (label, props) -> begin
-          let header = String.make depth ':' in
+          let header = String.make depth ' ' ^ String.make depth ':' in
           IO.put_string (header ^ " " ^ label ^ "\n") >>= fun () ->
-          IO.Monad.sequence_unit (List.map (loop (depth + 1)) props)
+          IO.Monad.sequence_unit (List.map (loop (depth + 1)) props) >>= fun () ->
+          IO.put_string "\n"
         end
     in
     loop 1 s
