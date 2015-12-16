@@ -15,6 +15,7 @@
 
 #load_rec "functional.cma" ;;
 #load_rec "properties.cma" ;;
+#load_rec "nebula.cma" ;;
 
 open Common
 
