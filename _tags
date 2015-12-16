@@ -1,7 +1,6 @@
 true: safe_string, bin_annot, thread, warn_error(+8)
 
-<src>: include
-<src/Devices/*.cmx>: for-pack(Devices)
+<src>: include, traverse
 
 <src/**> or <top/**> or <test/**>: \
       package(cmdliner), \
