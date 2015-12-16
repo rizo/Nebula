@@ -6,7 +6,7 @@ open Common
 open Functional
 open Functional.Prelude
 
-module Cells = Map.Make(Word)
+module Cells = Map.Make (Word)
 
 type t = word Cells.t
 
