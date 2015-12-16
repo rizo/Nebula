@@ -36,6 +36,8 @@ module Gen = struct
 
     val int : int t
 
+    val non_negative_int : int t
+
     val choose_int : low:int -> high:int -> int t
 
     val bool : bool t
@@ -49,6 +51,8 @@ module Gen = struct
     val union : 'a t -> 'a t -> 'a t
 
     val choice : 'a t list -> 'a t option
+
+    val where : ('a -> bool) -> 'a t -> 'a t
 
     module Functor_instance : Functor_class.S with type 'a t = 'a t
 
@@ -113,6 +117,9 @@ module Gen = struct
 
     let choice gs =
       gs |> L.of_list |> L.reduce (fun g lg -> union g (Lazy.force lg))
+
+    let rec where p t =
+      t >>= fun a -> if p a then unit a else where p t
 
     module Functor_instance = Random.Functor_instance
 

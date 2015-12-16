@@ -35,6 +35,8 @@ module Gen : sig
 
     val int : int t
 
+    val non_negative_int : int t
+
     val choose_int : low:int -> high:int -> int t
 
     val bool : bool t
@@ -48,6 +50,8 @@ module Gen : sig
     val union : 'a t -> 'a t -> 'a t
 
     val choice : 'a t list -> 'a t option
+
+    val where : ('a -> bool) -> 'a t -> 'a t
 
     module Functor_instance : Functor_class.S with type 'a t = 'a t
 
