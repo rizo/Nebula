@@ -57,9 +57,7 @@ let step c =
       if Cpu.read_special Special.IA c.Cs.cpu != word 0 then
         match Ic.handle c.Cs.ic with
         | None -> c
-        | Some (interrupt, ic) -> jump_to_handler
-                                    interrupt
-                                    Cs.{ c with ic }
+        | Some (interrupt, ic) -> jump_to_handler interrupt Cs.{ c with ic }
       else c
     in
 
