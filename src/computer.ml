@@ -7,7 +7,7 @@ open Functional
 
 module Cs = Computer_state
 
-include State.Make(Computer_state)
+include State.Make (Computer_state)
 
 let rec of_program t =
   let open Monad in
