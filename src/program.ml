@@ -28,7 +28,7 @@ module Op = struct
     | Get_flag (flag, next) -> Get_flag (flag, fun v -> f (next v))
 end
 
-include Free.Make(Op)
+include Free.Make (Op)
 
 let read_memory offset =
   lift (Op.Read_memory (offset, id))
