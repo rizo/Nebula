@@ -36,21 +36,17 @@ let execute_trigger trigger c =
       IO.unit Cs.{ c with ic }
     end
   | Interrupt.Trigger.Hardware index -> begin
-      IO.lift begin fun () ->
-        Manifest.instance index c.Cs.manifest
-      end >>= fun (module I : Device.Instance) ->
-      I.Device.on_interrupt I.this
-      |> IO.Functor.map (fun program ->
+      IO.lift (fun () -> Manifest.get_record index c.Cs.manifest) >>= fun r ->
+
+      r.Manifest.Record.device#on_interrupt
+      |> IO.Functor.map begin fun program ->
           program
           |> C.of_program
           |> C.run c
           |> fun (c, device) ->
           Cs.{ c with
-               manifest =
-                 Manifest.update
-                   (Device.make_instance (module I.Device) device I.index)
-                   c.manifest
-             })
+               manifest = Manifest.update Manifest.Record.{ r with device } c.manifest }
+      end
     end
 
 let step c =
@@ -91,13 +87,9 @@ let step c =
 let tick_devices c =
   let open IO.Functor in
 
-  let tick_instance c (module I : Device.Instance) =
-    I.Device.on_tick I.this |> map (fun (updated_this, generated_interrupt) ->
-        let manifest =
-          Manifest.update
-            (Device.make_instance (module I.Device) updated_this I.index)
-            c.Cs.manifest
-        in
+  let tick_device c r =
+    r.Manifest.Record.device#on_tick |> map (fun (device, generated_interrupt) ->
+        let manifest = Manifest.update Manifest.Record.{ r with device } c.Cs.manifest in
         let ic =
           match generated_interrupt with
           | Some interrupt -> Ic.enqueue interrupt c.Cs.ic
@@ -106,7 +98,7 @@ let tick_devices c =
         Cs.{ c with manifest; ic })
   in
   let instances = Manifest.all c.Cs.manifest in
-  IO.Monad.fold tick_instance c instances
+  IO.Monad.fold tick_device c instances
 
 let launch ~suspend_every ~suspension c =
   let open IO.Monad in

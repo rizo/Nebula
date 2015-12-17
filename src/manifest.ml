@@ -3,45 +3,49 @@
 
 open Common
 
-module Table = Map.Make(Word)
+module Table = Map.Make (Word)
 
 exception No_such_device of word
 
+module Record = struct
+  type t = {
+    index : device_index;
+    device : Device.t
+  }
+end
+
 type t = {
-  instances : (module Device.Instance) Table.t;
-  next_index : word;
+  records : Record.t Table.t;
+  next_index : device_index;
 }
 
 let empty = {
-  instances = Table.empty;
-  next_index = word 0;
+  records = Table.empty;
+  next_index = word 0
 }
 
-let register (type a) (module D : Device.S with type t = a) device t =
-  let instance = Device.make_instance (module D) device t.next_index in
-  {
-    instances = Table.add t.next_index instance t.instances;
-    next_index = Word.(t.next_index + word 1);
-  }
+let register device t = {
+  records = Table.add t.next_index Record.{ device; index = t.next_index } t.records;
+  next_index = Word.(t.next_index + word 1)
+}
 
-let instance index t =
+let get_record index t =
   try
-    Table.find index t.instances
+    Table.find index t.records
   with
   | Not_found -> raise (No_such_device index)
 
-let update ((module I : Device.Instance) as instance) t =
-  if not (Table.mem I.index t.instances) then
+let update r t =
+  if not (Table.mem r.Record.index t.records) then
     t
   else
-    { t with instances = Table.add I.index instance t.instances }
+    { t with records = Table.add r.Record.index r t.records }
 
 let all t =
-  t.instances |> Table.bindings |> List.map snd
+  t.records |> Table.bindings |> List.map snd
 
 let query index t =
-  let (module I : Device.Instance) = instance index t in
-  I.Device.info
+  (get_record index t).Record.device#info
 
 let size t =
   Word.to_int t.next_index

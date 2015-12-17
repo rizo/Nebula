@@ -45,17 +45,14 @@ let handle_error error =
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
 let interact_with_devices device_input c =
-  let interact_with_instance c (module I : Device.Instance) =
-    I.Device.on_interaction device_input c.Cs.memory I.this |> map (fun updated_this ->
-        let manifest =
-          Manifest.update
-            (Device.make_instance (module I.Device) updated_this I.index)
-            c.Cs.manifest
-        in
-        Cs.{ c with manifest })
+  let interact_with_device c r =
+    r.Manifest.Record.device#on_interaction device_input c.Cs.memory |> map begin fun device ->
+        let manifest = Manifest.update Manifest.Record.{ r with device } c.Cs.manifest in
+        Cs.{ c with manifest }
+    end
   in
-  let instances = Manifest.all c.Cs.manifest in
-  IO.Monad.fold interact_with_instance c instances
+  let records = Manifest.all c.Cs.manifest in
+  IO.Monad.fold interact_with_device c records
 
 let handle_event c =
   Input_event.poll >>= function
@@ -89,9 +86,9 @@ let main file_name =
 
         let manifest = Manifest.(
             empty
-            |> register (module Devices.Clock) clock
-            |> register (module Devices.Keyboard) keyboard
-            |> register (module Devices.Monitor) monitor)
+            |> register clock
+            |> register keyboard
+            |> register monitor)
         in
 
         let c = Cs.{ default with memory; manifest } in

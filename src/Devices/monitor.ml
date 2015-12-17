@@ -22,7 +22,7 @@ type state =
 
 type t = {
   window : Visual.Window.t;
-  state : state;
+  running_state : state;
   last_blink_time : Time_stamp.t;
   blink_visible : bool;
   border_color_index : uint8;
@@ -383,113 +383,128 @@ let render memory t =
     set_color window Color.black;
     clear window;
 
-    (match t.state with
+    (match t.running_state with
      | Stopped -> IO.unit ()
      | Starting _ -> draw_startup_screen window >>= fun () -> draw_border memory t
      | Running -> draw_from_memory memory t >>= fun () -> draw_border memory t);
 
     render window
-  ]
+    ]
 
-let make window =
+let make window : Device.t IO.t =
   let open IO.Functor in
-  Precision_clock.get_time |> map (fun now ->
-  { window;
-    state = Stopped;
-    last_blink_time = now;
-    blink_visible = true;
-    border_color_index = UInt8.of_int 1;
-    video_memory_offset = word 0;
-    font_memory_offset = word 0;
-    palette_memory_offset = word 0;
-  })
 
-let on_tick t =
-  let open IO.Monad in
+  Precision_clock.get_time |> map begin fun now ->
+    object (self)
+      val state = {
+        window;
+        running_state = Stopped;
+        last_blink_time = now;
+        blink_visible = true;
+        border_color_index = UInt8.of_int 1;
+        video_memory_offset = word 0;
+        font_memory_offset = word 0;
+        palette_memory_offset = word 0;
+      }
 
-  Precision_clock.get_time >>= fun now ->
-  let elapsed_since_blink = Duration.of_nanoseconds Time_stamp.(now - t.last_blink_time) in
+      method on_tick =
+        let open IO.Monad in
 
-  let t =
-    if elapsed_since_blink >= blink_period then
-      { t with last_blink_time = now; blink_visible = not t.blink_visible }
-    else t
-  in
+        Precision_clock.get_time >>= fun now ->
 
-  let t =
-    match t.state with
-    | Starting start_time -> begin
-        let elapsed_since_starting = Duration.of_nanoseconds Time_stamp.(now - start_time) in
-        if elapsed_since_starting >= start_up_duration then { t with state = Running }
-        else t
-      end
-    | Stopped | Running -> t
-  in
-  IO.unit (t, None)
-
-let on_interrupt t =
-  let open IO.Monad in
-
-  Precision_clock.get_time >>= fun now ->
-
-  IO.unit begin
-    let open Program.Functor in
-    let open Program.Monad in
-
-    P.read_register Reg.B >>= fun b ->
-    P.read_register Reg.A |> map Word.to_int >>= function
-    | 0 -> begin (* MEM_MAP_SCREEN *)
-        P.Return {
-          t with
-          video_memory_offset = b;
-          state =
-            if (b <> word 0) then
-              if t.state = Stopped then Starting now else Running
-            else Stopped
-        }
-      end
-    | 1 -> begin (* MEM_MAP_FONT *)
-        P.Return { t with font_memory_offset = b }
-      end
-    | 2 -> begin (* MEM_MAP_PALETTE *)
-        P.Return { t with palette_memory_offset = b }
-      end
-    | 3 -> begin (* SET_BORDER_COLOR *)
-        P.Return {
-          t with
-          border_color_index = UInt8.of_int (Word.(b land word 0xf |> to_int))
-        }
-      end
-    | 4 -> begin (* MEM_DUMP_FONT *)
-        let rec loop offset =
-          if offset >= Array.length default_font then P.Return t
-          else
-            let (w1, w2) = default_font.(offset) in
-            let v = Word.(b + (word 2 * word offset)) in
-            P.write_memory v w1 >>= fun () ->
-            P.write_memory Word.(v + word 1) w2 >>= fun () ->
-            loop (offset + 1)
+        let elapsed_since_blink =
+          Duration.of_nanoseconds Time_stamp.(now - state.last_blink_time)
         in
-        loop 0
-      end
-    | 5 -> begin (* MEM_DUMP_PALETTE *)
-        let rec loop offset =
-          if offset >= Array.length default_palette then P.Return t
-          else
-            P.write_memory Word.(b + word offset) default_palette.(offset) >>= fun () ->
-            loop (offset + 1)
+
+        let state =
+          if elapsed_since_blink >= blink_period then
+            { state with last_blink_time = now; blink_visible = not state.blink_visible }
+          else state
         in
-        loop 0
-      end
-    | _ -> P.Return t
-  end
 
-let on_interaction device_input memory t =
-  IO.Monad.(render memory t >>= fun () -> IO.unit t)
+        let state =
+          match state.running_state with
+          | Starting start_time -> begin
+              let elapsed_since_starting = Duration.of_nanoseconds Time_stamp.(now - start_time) in
 
-let info =
-  Device.Info.{
-    id = (word 0x7349, word 0xf615);
-    manufacturer = (word 0x1c6c, word 0x8b36);
-    version = word 0x1802
-  }
+              if elapsed_since_starting >= start_up_duration then
+                { state with running_state = Running }
+              else
+                state
+            end
+          | Stopped | Running -> state
+        in
+        IO.unit ({< state = state >}, None)
+
+      method on_interrupt =
+        let open IO.Monad in
+
+        Precision_clock.get_time >>= fun now ->
+
+        IO.unit begin
+          let open Program.Functor in
+          let open Program.Monad in
+
+          P.read_register Reg.B >>= fun b ->
+          P.read_register Reg.A |> map Word.to_int >>= function
+          | 0 -> begin (* MEM_MAP_SCREEN *)
+              P.Return begin
+                {< state =
+                     { state with
+                       video_memory_offset = b;
+                       running_state =
+                         if (b <> word 0) then
+                           if state.running_state = Stopped then Starting now else Running
+                         else Stopped
+                     } >}
+              end
+            end
+          | 1 -> begin (* MEM_MAP_FONT *)
+              P.Return {< state = { state with font_memory_offset = b } >}
+            end
+          | 2 -> begin (* MEM_MAP_PALETTE *)
+              P.Return {< state = { state with palette_memory_offset = b } >}
+            end
+          | 3 -> begin (* SET_BORDER_COLOR *)
+              P.Return begin
+                {< state =
+                     { state with
+                       border_color_index = UInt8.of_int (Word.(b land word 0xf |> to_int))
+                     } >}
+              end
+            end
+          | 4 -> begin (* MEM_DUMP_FONT *)
+              let rec loop offset =
+                if offset >= Array.length default_font then P.Return self
+                else
+                  let (w1, w2) = default_font.(offset) in
+                  let v = Word.(b + (word 2 * word offset)) in
+                  P.write_memory v w1 >>= fun () ->
+                  P.write_memory Word.(v + word 1) w2 >>= fun () ->
+                  loop (offset + 1)
+              in
+              loop 0
+            end
+          | 5 -> begin (* MEM_DUMP_PALETTE *)
+              let rec loop offset =
+                if offset >= Array.length default_palette then P.Return self
+                else
+                  P.write_memory Word.(b + word offset) default_palette.(offset) >>= fun () ->
+                  loop (offset + 1)
+              in
+              loop 0
+            end
+          | _ -> P.Return self
+        end
+
+      method on_interaction device_input memory =
+        IO.Monad.(render memory state >>= fun () -> IO.unit self)
+
+      method info =
+        Device.Info.{
+          id = (word 0x7349, word 0xf615);
+          manufacturer = (word 0x1c6c, word 0x8b36);
+          version = word 0x1802
+        }
+    end
+end
