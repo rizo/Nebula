@@ -7,14 +7,15 @@ open Common
 
 open Functional
 open Functional.Prelude
-open Functional.IO.Functor
-open Functional.IO.Monad
 
 open Unsigned
 
 open Printf
 
 module Cs = Computer_state
+
+open Functional.IO.Functor
+open Functional.IO.Monad
 
 (** Must be called at the beginning of Nebula's execution. *)
 let initialize =
