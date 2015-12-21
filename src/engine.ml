@@ -98,6 +98,19 @@ let tick_devices c =
   let instances = Manifest.all c.Cs.manifest in
   IO.Monad.fold tick_device c instances
 
+let interact_with_devices device_input c =
+  let open IO.Functor in
+
+  let interact_with_device c r =
+    r.Manifest.Record.device#on_interaction device_input c.Cs.memory
+    |> map begin fun device ->
+        let manifest = Manifest.update Manifest.Record.{ r with device } c.Cs.manifest in
+        Cs.{ c with manifest }
+    end
+  in
+  let records = Manifest.all c.Cs.manifest in
+  IO.Monad.fold interact_with_device c records
+
 let launch ~suspend_every ~suspension c =
   let open IO.Monad in
   let open IO.Functor in

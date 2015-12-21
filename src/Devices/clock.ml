@@ -21,6 +21,11 @@ type t = {
 let base_clock_period =
   Duration.of_nanoseconds 16666666L
 
+let effective_period t =
+  Int64.mul
+    (Word.to_int t.divider |> Int64.of_int)
+    (Duration.nanoseconds base_clock_period)
+
 let make : Device.t IO.t =
   Precision_clock.get_time |> IO.Functor.map begin fun time ->
     object (self)
@@ -41,13 +46,7 @@ let make : Device.t IO.t =
           Precision_clock.get_time |> map begin fun time ->
             let since_last_tick = Time_stamp.(time - state.last_tick_time) in
 
-            let effective_period =
-              Int64.mul
-                (Word.to_int state.divider |> Int64.of_int)
-                (Duration.nanoseconds base_clock_period)
-            in
-
-            if since_last_tick >= effective_period then
+            if since_last_tick >= effective_period state then
               ({< state = {
                    state with
                    last_tick_time = time;

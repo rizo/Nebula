@@ -45,23 +45,13 @@ let handle_error error =
   | _ -> show_failure_and_exit
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
-let interact_with_devices device_input c =
-  let interact_with_device c r =
-    r.Manifest.Record.device#on_interaction device_input c.Cs.memory |> map begin fun device ->
-        let manifest = Manifest.update Manifest.Record.{ r with device } c.Cs.manifest in
-        Cs.{ c with manifest }
-    end
-  in
-  let records = Manifest.all c.Cs.manifest in
-  IO.Monad.fold interact_with_device c records
-
 let handle_event c =
   Input_event.poll >>= function
   | Some Input_event.Quit -> IO.terminate 0
-  | Some Input_event.Key_down code -> interact_with_devices
-                                        Device.Input.{ key_code = Some code }
-                                        c
-  | _ -> interact_with_devices Device.Input.none c
+  | Some Input_event.Key_down code -> begin
+      Engine.interact_with_devices Device.Input.{ key_code = Some code } c
+    end
+  | _ -> Engine.interact_with_devices Device.Input.none c
 
 let make_monitor_window =
   Visual.Window.make
@@ -76,7 +66,9 @@ let frame_period =
 let main file_name =
   IO.main begin
     Mem.of_file file_name >>= function
-    | Left (`Bad_memory_file message) -> show_failure_and_exit ("Reading memory file " ^ message)
+    | Left (`Bad_memory_file message) -> begin
+        show_failure_and_exit ("Reading memory file " ^ message)
+      end
     | Right memory -> begin
         initialize >>= fun () ->
         make_monitor_window >>= fun window ->

@@ -25,7 +25,8 @@ val execute_trigger : Interrupt.Trigger.t -> Computer_state.t -> Computer_state.
 
 (** Execute an iteration of the DCPU-16.
 
-    First, dequeue an interrupt (if one is waiting) and transfer control to the interrupt handler.
+    First, dequeue an interrupt (if one is waiting) and transfer control to the
+    interrupt handler.
 
     Next, decode the next instruction from memory at the program counter.
 
@@ -35,6 +36,9 @@ val step : Computer_state.t -> Computer_state.t IO.t
 
 (** "Tick" all devices in the manifest. *)
 val tick_devices : Computer_state.t -> Computer_state.t IO.t
+
+(** Pass any user input to the devices in the manifest. *)
+val interact_with_devices : Device.Input.t -> Computer_state.t -> Computer_state.t IO.t
 
 (**  Launch a DCPU-16.
 
