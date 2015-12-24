@@ -268,7 +268,9 @@ let draw_border memory t =
 
       (* Bottom. *)
       rectangle
-        ~origin:(0, total_height - border_height) ~width:total_width ~height:border_height window;
+        ~origin:(0, total_height - border_height)
+        ~width:total_width
+        ~height:border_height window;
     ]
 
 let draw_atom window ~x_atom ~y_atom =
@@ -281,7 +283,13 @@ let draw_atom window ~x_atom ~y_atom =
     ~height:atom_size
     window
 
-let draw_cell ~x_cell ~y_cell ~character_index ~fg_color_index ~bg_color_index ~blink memory t =
+let draw_cell
+    ~x_cell ~y_cell
+    ~character_index
+    ~fg_color_index ~bg_color_index
+    ~blink memory
+    t
+  =
   let open IO.Monad in
 
   IO.lift begin fun () ->
@@ -327,7 +335,10 @@ let draw_from_memory memory t =
   IO.lift begin fun () ->
     let draw ~x_cell ~y_cell =
       let memory_offset =
-        Word.((word y_cell * word cells_per_monitor_width) + (word x_cell) + t.video_memory_offset)
+        Word.(
+          (word y_cell * word cells_per_monitor_width) +
+          (word x_cell) +
+          t.video_memory_offset)
       in
 
       let w = Mem.read memory_offset memory in
@@ -380,21 +391,21 @@ let render memory t =
   let window = t.window in
 
   IO.Monad.sequence_unit Visual.[
-    set_color window Color.black;
-    clear window;
+      set_color window Color.black;
+      clear window;
 
-    (match t.running_state with
-     | Stopped -> IO.unit ()
-     | Starting _ -> draw_startup_screen window >>= fun () -> draw_border memory t
-     | Running -> draw_from_memory memory t >>= fun () -> draw_border memory t);
+      (match t.running_state with
+       | Stopped -> IO.unit ()
+       | Starting _ -> draw_startup_screen window >>= fun () -> draw_border memory t
+       | Running -> draw_from_memory memory t >>= fun () -> draw_border memory t);
 
-    render window
+      render window
     ]
 
-let make window : Device.t IO.t =
+let make (module C : Clock.S) window : Device.t IO.t =
   let open IO.Functor in
 
-  Precision_clock.get_time |> map begin fun now ->
+  C.get_time |> map begin fun now ->
     object (self)
       val state = {
         window;
@@ -410,7 +421,7 @@ let make window : Device.t IO.t =
       method on_tick =
         let open IO.Monad in
 
-        Precision_clock.get_time >>= fun now ->
+        C.get_time >>= fun now ->
 
         let elapsed_since_blink =
           Duration.of_nanoseconds Time_stamp.(now - state.last_blink_time)
@@ -425,7 +436,9 @@ let make window : Device.t IO.t =
         let state =
           match state.running_state with
           | Starting start_time -> begin
-              let elapsed_since_starting = Duration.of_nanoseconds Time_stamp.(now - start_time) in
+              let elapsed_since_starting =
+                Duration.of_nanoseconds Time_stamp.(now - start_time)
+              in
 
               if elapsed_since_starting >= start_up_duration then
                 { state with running_state = Running }
@@ -439,7 +452,7 @@ let make window : Device.t IO.t =
       method on_interrupt =
         let open IO.Monad in
 
-        Precision_clock.get_time >>= fun now ->
+        C.get_time >>= fun now ->
 
         IO.unit begin
           let open Program.Functor in
@@ -507,4 +520,4 @@ let make window : Device.t IO.t =
           version = word 0x1802
         }
     end
-end
+  end

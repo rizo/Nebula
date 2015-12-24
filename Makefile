@@ -1,7 +1,7 @@
 SHELL=bash
 
-STUB_SOURCES = src/precision_clock_stub.c
-STUB_OBJECTS = src/precision_clock_stub.o
+STUB_SOURCES = src/clock_precision_stub.c
+STUB_OBJECTS = src/clock_precision_stub.o
 
 NATIVE_LINKER_FLAGS = -lflags $(STUB_OBJECTS)
 BYTE_LINKER_FLAGS = -lflags -custom,$(STUB_OBJECTS)

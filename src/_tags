@@ -1,1 +1,1 @@
-<Devices/*.cmx>: for-pack(Devices)
+<devices>: include

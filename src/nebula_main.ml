@@ -10,12 +10,13 @@ open Functional.Prelude
 
 open Unsigned
 
-open Printf
-
 module Cs = Computer_state
 
 open Functional.IO.Functor
 open Functional.IO.Monad
+
+let sprintf =
+  Printf.sprintf
 
 (** Must be called at the beginning of Nebula's execution. *)
 let initialize =
@@ -45,54 +46,59 @@ let handle_error error =
   | _ -> show_failure_and_exit
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
-let handle_event c =
-  Input_event.poll >>= function
-  | Some Input_event.Quit -> IO.terminate 0
-  | Some Input_event.Key_down code -> begin
-      Engine.interact_with_devices Device.Input.{ key_code = Some code } c
-    end
-  | _ -> Engine.interact_with_devices Device.Input.none c
-
 let make_monitor_window =
   Visual.Window.make
-    ~width:Devices.Monitor.total_width
-    ~height:Devices.Monitor.total_height
+    ~width:Device_monitor.total_width
+    ~height:Device_monitor.total_height
     ~title:"DCPU-16 Monitor"
 
 (** The period between rendering graphics and processing input events. *)
 let frame_period =
   Duration.of_nanoseconds 30000000L
 
-let main file_name =
-  IO.main begin
-    Mem.of_file file_name >>= function
-    | Left (`Bad_memory_file message) -> begin
-        show_failure_and_exit ("Reading memory file " ^ message)
+module Make (E : Engine.S) = struct
+  let handle_event c =
+    Input_event.poll >>= function
+    | Some Input_event.Quit -> IO.terminate 0
+    | Some Input_event.Key_down code -> begin
+        E.interact_with_devices Device.Input.{ key_code = Some code } c
       end
-    | Right memory -> begin
-        initialize >>= fun () ->
-        make_monitor_window >>= fun window ->
+    | _ -> E.interact_with_devices Device.Input.none c
 
-        let keyboard = Devices.Keyboard.make in
-        Devices.Clock.make >>= fun clock ->
-        Devices.Monitor.make window >>= fun monitor ->
+  let init ~file_name =
+    IO.main begin
+      Mem.of_file file_name >>= function
+      | Left (`Bad_memory_file message) -> begin
+          show_failure_and_exit ("Reading memory file " ^ message)
+        end
+      | Right memory -> begin
+          initialize >>= fun () ->
+          make_monitor_window >>= fun window ->
 
-        let manifest = Manifest.(
-            empty
-            |> register clock
-            |> register keyboard
-            |> register monitor)
-        in
+          let keyboard = Device_keyboard.make in
+          Device_clock.make (module Clock.Precision) >>= fun clock ->
+          Device_monitor.make (module Clock.Precision) window >>= fun monitor ->
 
-        let c = Cs.{ default with memory; manifest } in
+          let manifest = Manifest.(
+              empty
+              |> register clock
+              |> register keyboard
+              |> register monitor)
+          in
 
-        IO.catch
-          (Engine.launch ~suspend_every:frame_period ~suspension:handle_event c)
-          handle_error
-      end
-  end
+          let c = Cs.{ default with memory; manifest } in
+
+          IO.catch
+            (E.launch ~suspend_every:frame_period ~suspension:handle_event c)
+            handle_error
+        end
+    end
+end
 
 let () =
-  match Cli.parse_to main with
+  let module E = Engine.Make (Clock.Precision) in
+  let module M = Make (E) in
+
+  match Cli.parse_to (fun file_name -> M.init ~file_name) with
   | `Error _ -> exit 1
   | _ -> exit 0

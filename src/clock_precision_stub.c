@@ -15,7 +15,7 @@
 
 #define NANOSECONDS_PER_SECOND 1000000000
 
-CAMLprim value nebula_precision_clock_get_time(value unit) {
+CAMLprim value nebula_clock_precision_get_time(value unit) {
   CAMLparam1(unit);
 
   long nanoseconds;

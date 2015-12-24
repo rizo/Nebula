@@ -23,7 +23,9 @@ let throw exn =
 let rec catch t recovery =
   match t with
   | F.Suspend (Block.Exception exn) -> recovery exn
-  | F.Suspend (Block.Next n) -> F.Suspend (Block.map (fun b -> catch b recovery) (Block.Next n))
+  | F.Suspend (Block.Next n) -> begin
+      F.Suspend (Block.map (fun b -> catch b recovery) (Block.Next n))
+    end
   | F.Return _ as r -> r
 
 module Monad_instance = F.Monad_instance

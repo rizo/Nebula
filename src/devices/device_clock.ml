@@ -26,8 +26,8 @@ let effective_period t =
     (Word.to_int t.divider |> Int64.of_int)
     (Duration.nanoseconds base_clock_period)
 
-let make : Device.t IO.t =
-  Precision_clock.get_time |> IO.Functor.map begin fun time ->
+let make (module C : Clock.S) : Device.t IO.t =
+  C.get_time |> IO.Functor.map begin fun time ->
     object (self)
       val state = {
         on = true;
@@ -43,7 +43,7 @@ let make : Device.t IO.t =
 
         if not state.on then IO.unit (self, None)
         else
-          Precision_clock.get_time |> map begin fun time ->
+          C.get_time |> map begin fun time ->
             let since_last_tick = Time_stamp.(time - state.last_tick_time) in
 
             if since_last_tick >= effective_period state then
@@ -92,4 +92,4 @@ let make : Device.t IO.t =
           version = word 1
         }
     end
-end
+  end

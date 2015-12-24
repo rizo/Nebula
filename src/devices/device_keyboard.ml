@@ -31,14 +31,17 @@ let make : Device.t =
       IO.unit begin
         match device_input.key_code with
         | None -> self
-        | Some key -> {< state = { state with key_buffer = Some key; interrupt_sent = false } >}
+        | Some key -> {< state =
+                           { state with key_buffer = Some key; interrupt_sent = false } >}
       end
 
     method on_tick =
       IO.unit begin
         match (state.key_buffer, state.interrupt_message) with
         | (Some key, Some message) when not state.interrupt_sent -> begin
-            ({< state = { state with interrupt_sent = true } >}, Some (Interrupt.Message message))
+            ({< state =
+                  { state with interrupt_sent = true } >},
+             Some (Interrupt.Message message))
           end
         | _ -> (self, None)
       end
@@ -77,9 +80,7 @@ let make : Device.t =
             P.Return begin
               {< state =
                    { state with
-                     interrupt_message = if b = word 0 then None else Some b
-                   }
-              >}
+                     interrupt_message = if b = word 0 then None else Some b } >}
             end
           end
         | _ -> P.Return self

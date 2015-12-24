@@ -1,4 +1,5 @@
 Address
+Clock
 Common
 Computer
 Computer_state
@@ -6,6 +7,9 @@ Code
 Cpu
 Decode
 Device
+Device_clock
+Device_keyboard
+Device_monitor
 Duration
 Engine
 Functional
@@ -16,7 +20,6 @@ Interrupt_control
 Manifest
 Mem
 Persistent_queue
-Precision_clock
 Program
 Reg
 Sdl
