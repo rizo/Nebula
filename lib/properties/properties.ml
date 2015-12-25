@@ -160,6 +160,8 @@ end
 
 type failed_case = string
 
+type failing_sample = string
+
 type test_cases = int
 
 type success_count = int
@@ -168,12 +170,12 @@ type max_size = int
 
 module Result = struct
   type t =
-    | Falsified of failed_case option * success_count
+    | Falsified of failed_case option * failing_sample option * success_count
     | Proved
     | Passed of success_count
 
   let falsified = function
-    | Falsified(_, _) -> true
+    | Falsified (_, _, _) -> true
     | Proved | Passed _ -> false
 end
 
@@ -193,7 +195,7 @@ module Prop = struct
 
     val check : ?label:string -> (unit -> bool) -> t
 
-    val for_all : ?label:string
+    val for_all : ?label:string -> ?show:('a -> string)
       -> 'a generator
       -> ('a -> bool)
       -> t
@@ -225,7 +227,7 @@ module Prop = struct
     let check ?label p =
       fun _ _ _ ->
         if (p ()) then Result.Proved
-        else Result.Falsified (label, 0)
+        else Result.Falsified (label, None, 0)
 
     let random_values gen engine =
       L.unfold engine (fun engine -> Some (G.sample engine gen))
@@ -241,12 +243,17 @@ module Prop = struct
     let ( && ) p1 p2 =
       pand p1 p2
 
-    let for_all ?label gen p =
+    let for_all ?label ?show gen p =
       fun engine n _ ->
         L.zip (L.enum_from 0) (random_values gen engine)
         |> L.take n
         |> L.map (fun (index, a) ->
-              if p a then Result.Passed index else Result.Falsified (label, index))
+            if p a then Result.Passed index
+            else
+              Result.Falsified (
+                label,
+                (match show with None -> None | Some f -> Some (f a)),
+                index))
         |> L.find Result.falsified
         |> Option.get_or_else (lazy (Result.Passed n))
 
@@ -310,14 +317,18 @@ module Runner = struct
       | Suite.Single prop -> begin
           IO.put_string (String.make depth ' ') >>= fun () ->
           Simple_prop.run_io ?test_cases ?max_size prop >>= function
-          | Result.Falsified (message, n) -> begin
+          | Result.Falsified (message, case, n) -> begin
               IO.put_string
-                (sprintf "! Falsified after %d passed tests%s\n"
+                (sprintf "! Falsified%s after %d passed tests%s\n"
+                   (match case with None -> " " | Some a -> " by `" ^ a ^ "`")
                    n
-                   (match message with None -> "" | Some m -> ": \"" ^ m ^ "\""))
+                   (match message with None -> "" | Some m -> ": \"" ^ m ^ "\" ")
+                   )
             end
           | Result.Proved -> IO.put_string "+ OK. Proved property.\n"
-          | Result.Passed success_count -> IO.put_string (sprintf "+ OK. Passed %d tests.\n" success_count)
+          | Result.Passed success_count -> begin
+              IO.put_string (sprintf "+ OK. Passed %d tests.\n" success_count)
+            end
         end
       | Suite.Group (label, props) -> begin
           let header = String.make depth ' ' ^ String.make depth ':' in
@@ -341,8 +352,8 @@ module Dsl = struct
   let check ?label p =
     Suite.Single (Simple_prop.check ?label p)
 
-  let for_all ?label gen p =
-    Suite.Single (Simple_prop.for_all ?label gen p)
+  let for_all ?label ?show gen p =
+    Suite.Single (Simple_prop.for_all ?label ?show gen p)
 
   let for_all_sizes ?label sgen p =
     Suite.Single (Simple_prop.for_all_sizes ?label sgen p)
@@ -352,6 +363,9 @@ module Dsl = struct
 
   let run ?test_cases ?max_size s =
     Runner.exec ?test_cases s
+
+  let show_int =
+    string_of_int
 end
 
 module Examples = struct

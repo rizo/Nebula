@@ -73,6 +73,8 @@ end
 
 type failed_case = string
 
+type failing_sample = string
+
 type test_cases = int
 
 type success_count = int
@@ -81,7 +83,7 @@ type max_size = int
 
 module Result : sig
   type t =
-    | Falsified of failed_case option * success_count
+    | Falsified of failed_case option * failing_sample option * success_count
     | Proved
     | Passed of success_count
 
@@ -104,7 +106,7 @@ module Prop : sig
 
     val check : ?label:string -> (unit -> bool) -> t
 
-    val for_all : ?label:string
+    val for_all : ?label:string -> ?show:('a -> string)
       -> 'a generator
       -> ('a -> bool)
       -> t
@@ -153,13 +155,18 @@ module Dsl : sig
 
   val check : ?label:string -> (unit -> bool) -> Suite.t
 
-  val for_all : ?label:string -> 'a Gen.t -> ('a -> bool) -> Suite.t
+  val for_all : ?label:string -> ?show:('a -> string)
+    -> 'a Gen.t
+    -> ('a -> bool)
+    -> Suite.t
 
   val for_all_sizes : ?label:string -> (int -> 'a Gen.t) -> ('a -> bool) -> Suite.t
 
   val group : string -> Suite.t list -> Suite.t
 
   val run : ?test_cases:int -> ?max_size:int -> Suite.t -> unit IO.t
+
+  val show_int : int -> string
 end
 
 module Examples : sig
