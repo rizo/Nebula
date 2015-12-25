@@ -1,4 +1,6 @@
-(** @author Jesse Haber-Kucharsky
+(** Property-based testing libraries.
+
+    @author Jesse Haber-Kucharsky
     @see 'LICENSE' License details *)
 
 open Functional
@@ -6,8 +8,10 @@ open Functional
 module L = Lazy_list
 
 module type RANDOM_ENGINE = sig
+  (** State of the random engine. *)
   type t
 
+  (** Generate a random {! int64 } and the updated state. *)
   val next_int64 : t -> t * int64
 end
 
