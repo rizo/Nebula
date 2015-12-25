@@ -1,41 +1,45 @@
 open Common
 
-open OUnit2
+open Properties.Dsl
+
+let gen_bounded_int =
+  Gen.choose_int 0 (0xffff + 1)
+
+let gen_word =
+  gen_bounded_int |> Gen.Functor.map word
 
 let suite =
-  let open Word in
+  group "word" [
+    for_all ~label:"integral conversion in valid range" ~show:show_int
+      gen_bounded_int
+      (fun i -> Word.to_int (word i) = i);
 
-  "word" >::: [
-    "converts from an integer within the word size" >:: (fun ctx ->
-        assert_equal (to_int (word 2)) 2);
+    for_all ~label:"discards beyond the word size on conversion" ~show:show_int
+      (Gen.choose_int 0x10000 max_int)
+      (fun i ->
+         let lower_part = i land 0xffff in
+         Word.to_int (word i) = lower_part);
 
-    "converts to an integer" >:: (fun ctx ->
-        assert_equal (to_int (word 45)) 45;
-        assert_equal (to_int (word 0)) 0;
-        assert_equal (to_int (word 0xffff)) 0xffff);
+    check ~label:"addition"
+      (fun () -> Word.(word 3 + word 2) = word 5);
 
-    "discards anything above the word size on conversion" >:: (fun ctx ->
-        let w = word 0x12345678 in
-        assert_equal (to_int w) 0x5678);
+    check ~label:"subtraction"
+      (fun () -> Word.(word 5 - word 3) = word 2);
 
-    "supports addition" >:: (fun ctx ->
-        assert_equal (word 3 + word 2) (word 5));
+    check ~label:"overflow cycle"
+      (fun () -> Word.(word 0xfffe + word 2) = word 0);
 
-    "supports subtration" >:: (fun ctx ->
-        assert_equal (word 5 - word 3) (word 2));
+    check ~label:"underflow cycle"
+      (fun () -> Word.(word 1 - word 3) = word 0xfffe);
 
-    "cycles on overflow" >:: (fun ctx ->
-        assert_equal (word 0xfffe + word 2) (word 0));
+    check ~label:"comparison"
+      (fun () ->
+         Word.(compare (word 4) (word 10)) < 0 &&
+         Word.(compare (word 200) (word 0)) > 0 &&
+         Word.(compare (word 5) (word 5) = 0));
 
-    "cycles on underflow" >:: (fun ctx ->
-        assert_equal (word 1 - word 3) (word 0xfffe));
-
-    "compares" >:: (fun ctx ->
-        assert_equal (Word.(compare (word 4) (word 10)) < 0) true;
-        assert_equal (Word.(compare (word 200) (word 0)) > 0) true;
-        assert_equal (Word.(compare (word 5) (word 5)) = 0) true);
-
-    "displays as a hexadecimal literal" >:: (fun ctx ->
-        assert_equal (show (word 2)) "0x0002";
-        assert_equal (show (word 0xdead)) "0xdead");
+    check ~label:"hexadecimal literal"
+      (fun () ->
+         Word.show (word 2) = "0x0002" &&
+         Word.show (word 0xdead) = "0xdead");
   ]

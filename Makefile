@@ -1,4 +1,4 @@
-SHELL=bash
+SHELL = bash
 
 STUB_SOURCES = src/clock_precision_stub.c
 STUB_OBJECTS = src/clock_precision_stub.o
@@ -16,8 +16,8 @@ top: nebula
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/nebula.top
 
 test: nebula libraries_test
-	$(OCAMLBUILD) test/nebula_test.byte
-	./nebula_test.byte
+	$(OCAMLBUILD) test/nebula_spec.byte
+	./nebula_spec.byte
 
 nebula: stubs libraries
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/nebula.cma
