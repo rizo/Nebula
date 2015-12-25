@@ -35,6 +35,8 @@ module Gen : sig
 
     val int : int t
 
+    val alpha : char t
+
     val non_negative_int : int t
 
     val choose_int : low:int -> high:int -> int t
@@ -46,6 +48,10 @@ module Gen : sig
     val list_of_n : int -> 'a t -> 'a list t
 
     val list_of : 'a t -> (int -> 'a list t)
+
+    val string_of_n : int -> char t -> string t
+
+    val string_of : char t -> (int -> string t)
 
     val union : 'a t -> 'a t -> 'a t
 

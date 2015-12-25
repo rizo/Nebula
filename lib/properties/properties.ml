@@ -36,6 +36,8 @@ module Gen = struct
 
     val int : int t
 
+    val alpha : char t
+
     val non_negative_int : int t
 
     val choose_int : low:int -> high:int -> int t
@@ -47,6 +49,10 @@ module Gen = struct
     val list_of_n : int -> 'a t -> 'a list t
 
     val list_of : 'a t -> (int -> 'a list t)
+
+    val string_of_n : int -> char t -> string t
+
+    val string_of : char t -> (int -> string t)
 
     val union : 'a t -> 'a t -> 'a t
 
@@ -103,12 +109,24 @@ module Gen = struct
       in
       loop [] 0
 
+    let string_of_char ch =
+      String.make 1 ch
+
     let list_of_n n t =
       Random.Monad.sequence (fill n t)
 
     let list_of t =
       fun n ->
         list_of_n n t
+
+    let string_of_n n g =
+      fill n (map string_of_char g)
+      |> sequence
+      |> map (String.concat "")
+
+    let string_of g =
+      fun n ->
+        string_of_n n g
 
     let union x y =
       bool >>= function
@@ -120,6 +138,15 @@ module Gen = struct
 
     let rec where p t =
       t >>= fun a -> if p a then unit a else where p t
+
+    let alpha =
+      let lowercase = Char.code 'a' in
+      let uppercase = Char.code 'A' in
+
+      union
+        (choose_int lowercase (lowercase + 26))
+        (choose_int uppercase (uppercase + 26))
+      |> map Char.chr
 
     module Functor_instance = Random.Functor_instance
 
