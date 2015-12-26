@@ -10,3 +10,5 @@ Functional/Option
 Functional/Or_exn
 Functional/Prelude
 Functional/State
+Functional/Task
+Functional/Thread
