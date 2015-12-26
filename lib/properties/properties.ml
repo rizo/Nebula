@@ -179,7 +179,7 @@ module Result = struct
     | Passed of success_count
 
   let falsified = function
-    | Falsified (_, _, _) -> true
+    | Falsified _ -> true
     | Proved | Passed _ -> false
 end
 
@@ -314,20 +314,28 @@ end
 module Runner = struct
   open IO.Monad
 
+  module Outcome = struct
+    type t =
+      | All_passed
+      | Failures
+  end
+
   let exec ?test_cases ?max_size s =
     let sprintf = Printf.sprintf in
+
+    IO_ref.make Outcome.All_passed >>= fun status_ref ->
 
     let rec loop depth = function
       | Suite.Single prop -> begin
           IO.put_string (String.make depth ' ') >>= fun () ->
           Simple_prop.run_io ?test_cases ?max_size prop >>= function
           | Result.Falsified (message, case, n) -> begin
+              IO_ref.set Outcome.Failures status_ref >>= fun () ->
               IO.put_string
                 (sprintf "! Falsified%s after %d passed tests%s\n"
                    (match case with None -> " " | Some a -> " by `" ^ a ^ "`")
                    n
-                   (match message with None -> "" | Some m -> ": \"" ^ m ^ "\" ")
-                   )
+                   (match message with None -> "" | Some m -> ": \"" ^ m ^ "\" "))
             end
           | Result.Proved -> IO.put_string "+ OK. Proved property.\n"
           | Result.Passed success_count -> begin
@@ -341,7 +349,7 @@ module Runner = struct
           IO.put_string "\n"
         end
     in
-    loop 1 s
+    loop 1 s >>= fun () -> IO_ref.get status_ref
 end
 
 module Dsl = struct
@@ -352,6 +360,8 @@ module Dsl = struct
   module Prop = Simple_prop
 
   module Suite = Suite
+
+  module Outcome = Runner.Outcome
 
   let check ?label p =
     Suite.Single (Simple_prop.check ?label p)
@@ -367,6 +377,13 @@ module Dsl = struct
 
   let run ?test_cases ?max_size s =
     Runner.exec ?test_cases s
+
+  let run_and_terminate ?test_cases ?max_size s =
+    let open IO.Monad in
+
+    run ?test_cases ?max_size s >>= function
+    | Outcome.Failures -> IO.terminate 1
+    | Outcome.All_passed -> IO.terminate 0
 
   let show_int =
     string_of_int

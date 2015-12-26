@@ -4,6 +4,7 @@ Functional/Free
 Functional/Functor_class
 Functional/Lazy_list
 Functional/IO
+Functional/IO_ref
 Functional/Monad_class
 Functional/Option
 Functional/Or_exn

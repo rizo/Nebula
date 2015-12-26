@@ -11,4 +11,4 @@ let suite =
   ]
 
 let () =
-  IO.main (run suite)
+  IO.main (run_and_terminate suite)
