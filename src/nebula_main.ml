@@ -56,7 +56,7 @@ let make_monitor_window =
 let frame_period =
   Duration.of_nanoseconds 30000000L
 
-module Make (E : Engine.S) = struct
+module Make (C : Clock.S) (E : Engine.S) = struct
   let handle_event c =
     Input_event.poll >>= function
     | Some Input_event.Quit -> IO.terminate 0
@@ -76,8 +76,8 @@ module Make (E : Engine.S) = struct
           make_monitor_window >>= fun window ->
 
           let keyboard = Device_keyboard.make in
-          Device_clock.make (module Clock.Precision) >>= fun clock ->
-          Device_monitor.make (module Clock.Precision) window >>= fun monitor ->
+          Device_clock.make (module C) >>= fun clock ->
+          Device_monitor.make (module C) window >>= fun monitor ->
 
           let manifest = Manifest.(
               empty
@@ -96,8 +96,9 @@ module Make (E : Engine.S) = struct
 end
 
 let () =
-  let module E = Engine.Make (Clock.Precision) in
-  let module M = Make (E) in
+  let module C = Clock.Precision in
+  let module E = Engine.Make (C) in
+  let module M = Make (C) (E) in
 
   match Cli.parse_to (fun file_name -> M.init ~file_name) with
   | `Error _ -> exit 1
