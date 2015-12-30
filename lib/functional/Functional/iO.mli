@@ -31,6 +31,8 @@ val catch : 'a t -> (exn -> 'a t) -> 'a t
     This is useful for correctly wrapping an impure API. *)
 val lift : (unit -> 'a) -> 'a t
 
+val async : (('a -> unit) -> unit) -> 'a t
+
 (** Lift a pure value into the IO context. *)
 val unit : 'a -> 'a t
 

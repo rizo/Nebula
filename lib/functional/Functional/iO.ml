@@ -50,6 +50,21 @@ let lift f =
     | Right v -> unit v
   end
 
+let async (f : (('a -> unit) -> unit)) =
+  let open Monad in
+
+  let result = ref None in
+  f (fun a -> result := Some a);
+
+  let rec go () =
+    lift begin fun () ->
+      match !result with
+      | Some a -> result := None; unit a
+      | None -> lift id >>= go >>= id
+    end
+  in
+  go () >>= id
+
 let rec unsafe_perform = function
   | F.Return a -> a
   | F.Suspend (Block.Next n) -> unsafe_perform (n ())
