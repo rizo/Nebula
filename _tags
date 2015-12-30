@@ -1,4 +1,4 @@
-true: safe_string, bin_annot, thread, warn_error(+8)
+true: safe_string, bin_annot, thread, warn_error(+8), package(unix)
 
 <src>: include, traverse
 

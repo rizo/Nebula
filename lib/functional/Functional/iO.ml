@@ -50,7 +50,7 @@ let lift f =
     | Right v -> unit v
   end
 
-let async (f : (('a -> unit) -> unit)) =
+let lift_async (f : (('a -> unit) -> unit)) =
   let open Monad in
 
   let result = ref None in
@@ -65,6 +65,22 @@ let async (f : (('a -> unit) -> unit)) =
   in
   go () >>= id
 
+let rec interleave t1 t2 =
+  let open Monad in
+
+  match (t1, t2) with
+  | (F.Return a, _) -> t2 >>= fun b -> unit (a, b)
+  | (_, F.Return b) -> t1 >>= fun a -> unit (a, b)
+  | (F.Suspend (Block.Exception e), _) | (_, F.Suspend (Block.Exception e)) -> throw e
+  | (F.Suspend (Block.Next n1), F.Suspend (Block.Next n2)) -> begin
+      lift n1 >>= fun ta ->
+      lift n2 >>= fun tb ->
+      interleave ta tb
+    end
+
+let rec forever t =
+  Monad.(t >>= fun () -> forever t)
+
 let rec unsafe_perform = function
   | F.Return a -> a
   | F.Suspend (Block.Next n) -> unsafe_perform (n ())
@@ -78,3 +94,13 @@ let terminate status =
 
 let put_string s =
   lift (fun () -> print_string s)
+
+let sleep ~seconds =
+  let on_alarm f = Sys.set_signal Sys.sigalrm (Sys.Signal_handle f) in
+  let alarm_action = lift_async (fun register -> on_alarm (fun _ -> register ())) in
+
+  let set_alarm = lift begin fun () ->
+      Unix.setitimer Unix.ITIMER_REAL Unix.{ it_value = seconds; it_interval = 0.0 }
+    end
+  in
+  Monad.(set_alarm >>= fun _ -> alarm_action)

@@ -31,10 +31,12 @@ val catch : 'a t -> (exn -> 'a t) -> 'a t
     This is useful for correctly wrapping an impure API. *)
 val lift : (unit -> 'a) -> 'a t
 
-val async : (('a -> unit) -> unit) -> 'a t
+val lift_async : (('a -> unit) -> unit) -> 'a t
 
 (** Lift a pure value into the IO context. *)
 val unit : 'a -> 'a t
+
+val interleave : 'a t -> 'b t -> ('a * 'b) t
 
 module Monad_instance : Monad_class.S with type 'a t = 'a t
 
@@ -43,6 +45,8 @@ module Monad : module type of Monad_class.Extend (Monad_instance)
 module Functor_instance : Functor_class.S with type 'a t = 'a t
 
 module Functor : module type of Functor_class.Extend (Functor_instance)
+
+val forever : unit t -> 'a t
 
 (** Unwrap an impure computation.
 
@@ -62,3 +66,11 @@ val terminate : int -> 'a t
 
 (** Output a string to the standard output device. *)
 val put_string : string -> unit t
+
+(** Sleep for {! seconds} seconds.
+
+    Due to limtiations in the implementation, multiple actions which {! sleep}
+    cannot be executed concurrently via {! interleave}.
+
+    More than anything, this is a (limited) demo of using {! lift_async}. *)
+val sleep : seconds : float -> unit t

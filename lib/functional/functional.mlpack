@@ -1,5 +1,5 @@
 Functional/Applicative_class
-Functional/Either    
+Functional/Either
 Functional/Free
 Functional/Functor_class
 Functional/Lazy_list
@@ -10,5 +10,3 @@ Functional/Option
 Functional/Or_exn
 Functional/Prelude
 Functional/State
-Functional/Task
-Functional/Thread
