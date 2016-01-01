@@ -65,18 +65,49 @@ let lift_async (f : (('a -> unit) -> unit)) =
   in
   go () >>= id
 
-let rec interleave t1 t2 =
+let partition_map p ts =
+    let rec go matching other = function
+      | [] -> (matching, other)
+      | t :: ts -> begin
+          match p t with
+          | Some a -> go (a :: matching) other ts
+          | None -> go matching (t :: other) ts
+        end
+    in
+    go [] [] ts
+
+let filter_map p ts =
+  let rec go keep = function
+    | [] -> keep
+    | t :: ts -> match p t with Some a -> go (a :: keep) ts | None -> go keep ts
+  in
+  go [] ts
+
+let gather ts =
   let open Monad in
 
-  match (t1, t2) with
-  | (F.Return a, _) -> t2 >>= fun b -> unit (a, b)
-  | (_, F.Return b) -> t1 >>= fun a -> unit (a, b)
-  | (F.Suspend (Block.Exception e), _) | (_, F.Suspend (Block.Exception e)) -> throw e
-  | (F.Suspend (Block.Next n1), F.Suspend (Block.Next n2)) -> begin
-      lift n1 >>= fun ta ->
-      lift n2 >>= fun tb ->
-      interleave ta tb
-    end
+  let rec loop results remaining =
+    match remaining with
+    | [] -> unit results
+    | ts -> begin
+        match List.find_all (function F.Suspend (Block.Exception _) -> true | _ -> false) ts with
+        | F.Suspend (Block.Exception e) :: _ -> throw e
+        | _ -> begin
+            let (finished, remaining) =
+              partition_map (function F.Return a -> Some a | _ -> None) ts
+            in
+
+            remaining
+            |> filter_map (function F.Suspend (Block.Next n) -> Some (lift n) | _ -> None)
+            |> sequence >>= fun nexts ->
+            loop (List.append finished results) nexts
+          end
+      end
+  in
+  loop [] ts
+
+let gather_unit ts =
+  Monad.(gather ts >>= fun _ -> unit ())
 
 let rec forever t =
   Monad.(t >>= fun () -> forever t)

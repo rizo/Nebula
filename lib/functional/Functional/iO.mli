@@ -36,7 +36,9 @@ val lift_async : (('a -> unit) -> unit) -> 'a t
 (** Lift a pure value into the IO context. *)
 val unit : 'a -> 'a t
 
-val interleave : 'a t -> 'b t -> ('a * 'b) t
+val gather : 'a t list -> 'a list t
+
+val gather_unit : 'a t list -> unit t
 
 module Monad_instance : Monad_class.S with type 'a t = 'a t
 
