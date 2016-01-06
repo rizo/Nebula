@@ -18,9 +18,11 @@ emulator_top: nebula_emulator
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula_emulator.top
 	mv nebula_emulator.top shell/emulator
 
-test: nebula libraries_test
-	$(OCAMLBUILD) test/emulator/nebula_spec.byte
-	./nebula_spec.byte
+test: nebula_emulator_test libraries_test
+
+nebula_emulator_test: nebula_emulator
+	$(OCAMLBUILD) test/emulator/emulator_spec.byte
+	./emulator_spec.byte
 
 nebula_emulator: stubs libraries
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/emulator/emulator.cma
