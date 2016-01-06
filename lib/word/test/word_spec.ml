@@ -1,6 +1,8 @@
-open Common
-
+open Functional
 open Properties.Dsl
+
+let word =
+  Word.of_int
 
 let gen_bounded_int =
   Gen.choose_int 0 (0xffff + 1)
@@ -43,3 +45,6 @@ let suite =
          Word.show (word 2) = "0x0002" &&
          Word.show (word 0xdead) = "0xdead");
   ]
+
+let () =
+  IO.main (run_and_terminate suite)

@@ -1,23 +1,24 @@
 #utop_prompt_simple ;;
 
-#directory "src" ;;
-#directory "src/Devices" ;;
+#directory "src/emulator" ;;
+#directory "src/emulator/devices" ;;
 
 #directory "lib" ;;
 #directory "lib/functional" ;;
 #directory "lib/properties" ;;
+#directory "lib/word" ;;
 
-#directory "_build/src" ;;
-#directory "_build/src/Devices" ;;
+#directory "_build/src/emulator" ;;
+#directory "_build/src/emulator/devices" ;;
 
 #directory "_build/lib/functional" ;;
 #directory "_build/lib/properties" ;;
+#directory "_build/lib/word" ;;
 
 #load_rec "functional.cma" ;;
 #load_rec "properties.cma" ;;
+#load_rec "word.cma" ;;
 #load_rec "nebula.cma" ;;
-
-open Common
 
 open Functional
 

@@ -9,7 +9,6 @@ let suites =
     Memory_spec.suite;
     Persistent_queue_spec.suite;
     Program_spec.suite;
-    Word_spec.suite;
   ]
 
 let () =
