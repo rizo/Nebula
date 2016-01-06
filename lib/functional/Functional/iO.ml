@@ -50,6 +50,68 @@ let lift f =
     | Right v -> unit v
   end
 
+let lift_async (f : (('a -> unit) -> unit)) =
+  let open Monad in
+
+  let result = ref None in
+  f (fun a -> result := Some a);
+
+  let rec go () =
+    lift begin fun () ->
+      match !result with
+      | Some a -> result := None; unit a
+      | None -> lift id >>= go >>= id
+    end
+  in
+  go () >>= id
+
+let partition_map p ts =
+    let rec go matching other = function
+      | [] -> (matching, other)
+      | t :: ts -> begin
+          match p t with
+          | Some a -> go (a :: matching) other ts
+          | None -> go matching (t :: other) ts
+        end
+    in
+    go [] [] ts
+
+let filter_map p ts =
+  let rec go keep = function
+    | [] -> keep
+    | t :: ts -> match p t with Some a -> go (a :: keep) ts | None -> go keep ts
+  in
+  go [] ts
+
+let gather ts =
+  let open Monad in
+
+  let rec loop results remaining =
+    match remaining with
+    | [] -> unit results
+    | ts -> begin
+        match List.find_all (function F.Suspend (Block.Exception _) -> true | _ -> false) ts with
+        | F.Suspend (Block.Exception e) :: _ -> throw e
+        | _ -> begin
+            let (finished, remaining) =
+              partition_map (function F.Return a -> Some a | _ -> None) ts
+            in
+
+            remaining
+            |> filter_map (function F.Suspend (Block.Next n) -> Some (lift n) | _ -> None)
+            |> sequence >>= fun nexts ->
+            loop (List.append finished results) nexts
+          end
+      end
+  in
+  loop [] ts
+
+let gather_unit ts =
+  Monad.(gather ts >>= fun _ -> unit ())
+
+let rec forever t =
+  Monad.(t >>= fun () -> forever t)
+
 let rec unsafe_perform = function
   | F.Return a -> a
   | F.Suspend (Block.Next n) -> unsafe_perform (n ())
@@ -63,3 +125,13 @@ let terminate status =
 
 let put_string s =
   lift (fun () -> print_string s)
+
+let sleep ~seconds =
+  let on_alarm f = Sys.set_signal Sys.sigalrm (Sys.Signal_handle f) in
+  let alarm_action = lift_async (fun register -> on_alarm (fun _ -> register ())) in
+
+  let set_alarm = lift begin fun () ->
+      Unix.setitimer Unix.ITIMER_REAL Unix.{ it_value = seconds; it_interval = 0.0 }
+    end
+  in
+  Monad.(set_alarm >>= fun _ -> alarm_action)
