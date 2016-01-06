@@ -14,6 +14,7 @@ default: nebula top
 
 top: nebula
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula.top
+	mv nebula.top shell/emulator
 
 test: nebula libraries_test
 	$(OCAMLBUILD) test/emulator/nebula_spec.byte
