@@ -1,18 +1,24 @@
 #utop_prompt_simple ;;
 
+#directory "../../_build/lib/functional" ;;
+#directory "../../_build/lib/properties" ;;
+#directory "../../_build/lib/word" ;;
+
 #directory "../../lib" ;;
 #directory "../../lib/functional" ;;
 #directory "../../lib/properties" ;;
 #directory "../../lib/word" ;;
-
-#directory "../../_build/lib/functional" ;;
-#directory "../../_build/lib/properties" ;;
-#directory "../../_build/lib/word" ;;
 
 #load_rec "functional.cma" ;;
 #load_rec "properties.cma" ;;
 #load_rec "word.cma" ;;
 
 #install_printer Word.pp
+
+#directory "../../_build/src/asm" ;;
+
+#directory "../../src/asm" ;;
+
+#load_rec "asm.cma" ;;
 
 open Functional

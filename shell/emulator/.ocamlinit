@@ -1,13 +1,13 @@
 #utop_prompt_simple ;;
 
+#directory "../../_build/lib/functional" ;;
+#directory "../../_build/lib/properties" ;;
+#directory "../../_build/lib/word" ;;
+
 #directory "../../lib" ;;
 #directory "../../lib/functional" ;;
 #directory "../../lib/properties" ;;
 #directory "../../lib/word" ;;
-
-#directory "../../_build/lib/functional" ;;
-#directory "../../_build/lib/properties" ;;
-#directory "../../_build/lib/word" ;;
 
 #load_rec "functional.cma" ;;
 #load_rec "properties.cma" ;;
@@ -15,11 +15,11 @@
 
 #install_printer Word.pp
 
-#directory "../../src/emulator" ;;
-#directory "../../src/emulator/devices" ;;
-
 #directory "../../_build/src/emulator" ;;
 #directory "../../_build/src/emulator/devices" ;;
+
+#directory "../../src/emulator" ;;
+#directory "../../src/emulator/devices" ;;
 
 #load_rec "emulator.cma" ;;
 

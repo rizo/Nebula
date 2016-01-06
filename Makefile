@@ -12,19 +12,22 @@ default: nebula_emulator top
 
 top: emulator_top asm_top
 
+test: nebula_emulator_test libraries_test
+
 # Assembler
 
-asm_top:
+asm_top: nebula_asm
 	$(OCAMLBUILD) top/asm/nebula_asm.top
 	mv nebula_asm.top shell/asm
+
+nebula_asm:
+	$(OCAMLBUILD) src/asm/asm.cma
 
 # Emulator
 
 emulator_top: nebula_emulator
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula_emulator.top
 	mv nebula_emulator.top shell/emulator
-
-test: nebula_emulator_test libraries_test
 
 nebula_emulator_test: nebula_emulator
 	$(OCAMLBUILD) test/emulator/emulator_spec.byte

@@ -1,6 +1,7 @@
 true: safe_string, bin_annot, thread, warn_error(+8), \
       package(ctypes), \
-      package(ctypes.foreign)
+      package(ctypes.foreign), \
+      package(result)
 
 # Emulator
 
