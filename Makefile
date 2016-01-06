@@ -10,9 +10,15 @@ OCAMLBUILD = ocamlbuild -use-ocamlfind
 
 default: nebula_emulator top
 
-# Nebula
+top: emulator_top asm_top
 
-top: emulator_top
+# Assembler
+
+asm_top:
+	$(OCAMLBUILD) top/asm/nebula_asm.top
+	mv nebula_asm.top shell/asm
+
+# Emulator
 
 emulator_top: nebula_emulator
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula_emulator.top
@@ -28,8 +34,8 @@ nebula_emulator: stubs libraries
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/emulator/emulator.cma
 	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_emulator.native
 
-nebula_profiled: stubs libraries
-	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_main.p.native
+nebula_emulator_profiled: stubs libraries
+	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_emulator.p.native
 
 stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)
@@ -44,21 +50,21 @@ functional_test: functional
 	$(OCAMLBUILD) lib/functional/test/functional_spec.byte
 	./functional_spec.byte
 
-word_test: word
-	$(OCAMLBUILD) lib/word/test/word_spec.byte
-	./word_spec.byte
-
 functional:
 	$(OCAMLBUILD) lib/functional/functional.cma
 	$(OCAMLBUILD) lib/functional/functional.cmxa
 
-properties: functional
-	$(OCAMLBUILD) lib/properties/properties.cma
-	$(OCAMLBUILD) lib/properties/properties.cmxa
+word_test: word
+	$(OCAMLBUILD) lib/word/test/word_spec.byte
+	./word_spec.byte
 
 word: functional
 	$(OCAMLBUILD) lib/word/word.cma
 	$(OCAMLBUILD) lib/word/word.cmxa
+
+properties: functional
+	$(OCAMLBUILD) lib/properties/properties.cma
+	$(OCAMLBUILD) lib/properties/properties.cmxa
 
 .PHONY: clean
 

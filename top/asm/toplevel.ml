@@ -1,2 +1,2 @@
 let () =
-  Utop_main.main ()
+  UTop_main.main ()

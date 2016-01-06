@@ -1,4 +1,6 @@
-true: safe_string, bin_annot, thread, warn_error(+8)
+true: safe_string, bin_annot, thread, warn_error(+8), \
+      package(ctypes), \
+      package(ctypes.foreign)
 
 # Emulator
 
@@ -9,10 +11,20 @@ true: safe_string, bin_annot, thread, warn_error(+8)
       package(ppx_deriving.std), \
       package(tsdl)
 
-<top/emulator/**> or <top/asm/**>: package(utop)
+<top/emulator/**>: package(utop)
 
 <test/emulator/**>: package(oUnit)
 
+# Assembler
+
+<src/asm>: include, traverse
+
+<top/asm/**>: package(utop)
+
+# Libraries
+
 <lib/functional>: include, traverse
+
 <lib/properties>: include, traverse
+
 <lib/word>: include, traverse

@@ -1,6 +1,8 @@
 S src/emulator
 S src/emulator/devices
 
+S src/asm
+
 S lib/functional
 S lib/functional/Functional
 S lib/properties
