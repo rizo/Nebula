@@ -1,15 +1,21 @@
-S src
-S src/Devices
+S src/emulator
+S src/emulator/devices
+
 S lib/functional
 S lib/functional/Functional
 S lib/properties
+S lib/word
+
 S test
 
-B _build/src
-B _build/src/Devices
+B _build/src/emulator
+B _build/src/emulator/devices
+
 B _build/lib/functional
 B _build/lib/functional/Functional
 B _build/lib/properties
+B _buidl/lib/word
+
 B +threads
 
 PKG cmdliner
