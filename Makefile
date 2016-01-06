@@ -8,21 +8,23 @@ BYTE_LINKER_FLAGS = -lflags -custom,$(STUB_OBJECTS)
 
 OCAMLBUILD = ocamlbuild -use-ocamlfind
 
-default: nebula top
+default: nebula_emulator top
 
 # Nebula
 
-top: nebula
-	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula.top
-	mv nebula.top shell/emulator
+top: emulator_top
+
+emulator_top: nebula_emulator
+	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula_emulator.top
+	mv nebula_emulator.top shell/emulator
 
 test: nebula libraries_test
 	$(OCAMLBUILD) test/emulator/nebula_spec.byte
 	./nebula_spec.byte
 
-nebula: stubs libraries
-	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/emulator/nebula.cma
-	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_main.native
+nebula_emulator: stubs libraries
+	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/emulator/emulator.cma
+	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_emulator.native
 
 nebula_profiled: stubs libraries
 	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_main.p.native

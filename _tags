@@ -1,15 +1,15 @@
 true: safe_string, bin_annot, thread, warn_error(+8)
 
-<src/emulator>: include, traverse
-
 # Emulator
+
+<src/emulator>: include, traverse
 
 <src/emulator/**> or <top/emulator/**> or <test/emulator/**>: \
       package(cmdliner), \
       package(ppx_deriving.std), \
       package(tsdl)
 
-<top/emulator/**>: package(utop)
+<top/emulator/**> or <top/asm/**>: package(utop)
 
 <test/emulator/**>: package(oUnit)
 

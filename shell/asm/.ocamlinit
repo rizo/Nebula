@@ -15,14 +15,4 @@
 
 #install_printer Word.pp
 
-#directory "../../src/emulator" ;;
-#directory "../../src/emulator/devices" ;;
-
-#directory "../../_build/src/emulator" ;;
-#directory "../../_build/src/emulator/devices" ;;
-
-#load_rec "emulator.cma" ;;
-
-open Common
-
 open Functional
