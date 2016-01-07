@@ -1,8 +1,6 @@
 include Value
 
-module I = Instruction
+let add b a = Inst.(Binary (Code.Add, b, a))
 
-let add b a = I.Binary (I.Code.Add, b, a)
-
-let a = R Register.A
-let b = R Register.B
+let a = R Reg.A
+let b = R Reg.B

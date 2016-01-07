@@ -1,5 +1,6 @@
 Functional/Applicative_class
 Functional/Either
+Functional/Either_trans
 Functional/Free
 Functional/Functor_class
 Functional/Lazy_list

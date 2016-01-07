@@ -4,11 +4,18 @@ type offset
 type stack
 type special
 
+module Reg = struct
+  type t =
+    | A | B | C
+    | X | Y | Z
+    | I | J
+end
+
 type (_, _) t =
   | I : Word.t -> (direct, Word.t) t
-  | R : Register.t -> (direct, Register.t) t
+  | R : Reg.t -> (direct, Reg.t) t
   | A : (direct, 'a) t -> (indirect, 'a) t
-  | D : (direct, Register.t) t * Word.t -> (offset, Register.t) t
+  | D : (direct, Reg.t) t * Word.t -> (offset, Reg.t) t
   | Push : (stack, unit) t
   | Pop : (stack, unit) t
   | Peek : (special, unit) t
