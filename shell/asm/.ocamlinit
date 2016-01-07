@@ -21,4 +21,6 @@
 
 #load_rec "asm.cma" ;;
 
+open Dsl
+
 open Functional

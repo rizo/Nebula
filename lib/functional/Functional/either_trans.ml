@@ -17,13 +17,17 @@ module type S = sig
 
   val recover : (error -> 'a t) -> 'a t -> 'a t
 
+  module Functor_instance : Functor_class.S with type 'a t = 'a t
+
+  module Functor : module type of Functor_class.Extend (Functor_instance)
+
   module Monad_instance : Monad_class.S with type 'a t = 'a t
 
   module Monad : module type of Monad_class.Extend (Monad_instance)
 
-  module Functor_instance : Functor_class.S with type 'a t = 'a t
+  module Applicative_instance : Applicative_class.S with type 'a t = 'a t
 
-  module Functor : module type of Functor_class.Extend (Functor_instance)
+  module Applicative : module type of Applicative_class.Extend (Applicative_instance)
 end
 
 module Make (E : sig type t end) (M : Monad_class.S)
@@ -88,4 +92,8 @@ struct
           | Right a -> M.pure (lazy (Right a)))
         (run t)
     end
+
+  module Applicative_instance = Applicative_class.Of_monad (Monad_instance)
+
+  module Applicative = Applicative_class.Extend (Applicative_instance)
 end

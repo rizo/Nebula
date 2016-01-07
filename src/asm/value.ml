@@ -23,3 +23,5 @@ type (_, _) t =
   | Sp : (special, unit) t
   | Pc : (special, unit) t
   | Ex : (special, unit) t
+
+type address = (indirect, Word.t) t
