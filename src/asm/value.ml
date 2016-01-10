@@ -15,6 +15,7 @@ type (_, _) t =
   | I : Word.t -> (direct, Word.t) t
   | R : Reg.t -> (direct, Reg.t) t
   | A : (direct, 'a) t -> (indirect, 'a) t
+  | U : string -> (direct, Word.t) t
   | D : (direct, Reg.t) t * Word.t -> (offset, Reg.t) t
   | Push : (stack, unit) t
   | Pop : (stack, unit) t

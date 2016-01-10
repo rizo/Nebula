@@ -19,3 +19,9 @@ let addr i = A (imm i)
 let at a = A a
 
 let add b a = Inst.(Binary (Code.Add, b, a))
+
+let ( >> ) x y =
+  x >>= fun () -> y
+
+let void t =
+  t >>= fun _ -> Dcpu16.unit ()

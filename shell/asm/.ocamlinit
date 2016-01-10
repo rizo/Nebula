@@ -22,5 +22,6 @@
 #load_rec "asm.cma" ;;
 
 open Dsl
+open Dcpu16
 
 open Functional
