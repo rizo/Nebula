@@ -7,6 +7,11 @@ if [ "$#" -ne "1" ]; then
     exit 1
 fi
 
+if [ ! -f $1 ]; then
+    echo "The file $1 does not exist."
+    exit 1
+fi
+
 INPUT_BASE=$(basename $1 .ml)
 BYTE_FILE="${INPUT_BASE}.byte"
 
