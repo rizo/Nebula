@@ -15,5 +15,5 @@ fi
 INPUT_BASE=$(basename $1 .ml)
 BYTE_FILE="${INPUT_BASE}.byte"
 
-ocamlbuild -use-ocamlfind -package nebula.asm $BYTE_FILE
+ocamlbuild -quiet -use-ocamlfind -package nebula.asm $BYTE_FILE
 exec ./$BYTE_FILE
