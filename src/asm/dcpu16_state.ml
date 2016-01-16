@@ -1,9 +1,11 @@
 module String_map = Map.Make (String)
 
+type label_map = Label_loc.t String_map.t
+
 type t = {
   pc : Word.t;
   encoded : Assembled.t list;
-  labels : Label_loc.t String_map.t;
+  labels : label_map;
 }
 
 let beginning_at pc =

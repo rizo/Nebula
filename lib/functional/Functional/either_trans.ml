@@ -13,6 +13,8 @@ module type S = sig
 
   val lift : 'a monad -> 'a t
 
+  val of_either : (error, 'a) Either.t -> 'a t
+
   val error : error -> 'a t
 
   val recover : (error -> 'a t) -> 'a t -> 'a t
@@ -80,6 +82,9 @@ struct
 
   let lift ma =
     Run (F.map (fun a -> Right a) ma)
+
+  let of_either e =
+    Run (M.pure (lazy e))
 
   let error e =
     Run (M.pure (lazy (Left e)))
