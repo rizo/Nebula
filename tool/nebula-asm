@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+if [ "$#" -ne "1" ]; then
+    echo "Usage: nebula-asm FILE"
+    exit 1
+fi
+
+INPUT_BASE=$(basename $1 .ml)
+BYTE_FILE="${INPUT_BASE}.byte"
+
+ocamlbuild -use-ocamlfind -package nebula.asm $BYTE_FILE
+exec ./$BYTE_FILE

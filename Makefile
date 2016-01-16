@@ -8,11 +8,21 @@ BYTE_LINKER_FLAGS = -lflags -custom,$(STUB_OBJECTS)
 
 OCAMLBUILD = ocamlbuild -use-ocamlfind
 
-default: nebula_emulator top
+default: top
 
 top: emulator_top asm_top
 
 test: nebula_emulator_test libraries_test
+
+install: default uninstall libraries nebula_asm
+	ocamlfind install nebula META \
+		_build/lib/functional/{functional.cma,functional.cmxa,functional.cmi} \
+		_build/lib/properties/{properties.cma,properties.cmxa,properties.cmi} \
+		_build/lib/word/{word.cma,word.cmxa,word.cmi} \
+		_build/src/asm/{nebula_asm.cma,nebula_asm.cmxa,nebula_asm.cmi}
+
+uninstall:
+	ocamlfind remove nebula
 
 # Assembler
 
@@ -21,7 +31,8 @@ asm_top: nebula_asm
 	mv nebula_asm.top shell/asm
 
 nebula_asm:
-	$(OCAMLBUILD) src/asm/asm.cma
+	$(OCAMLBUILD) src/asm/nebula_asm.cma
+	$(OCAMLBUILD) src/asm/nebula_asm.cmxa
 
 # Emulator
 
@@ -43,7 +54,7 @@ nebula_emulator_profiled: stubs libraries
 stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)
 
-# Support libraries.
+# Support libraries
 
 libraries_test: functional_test word_test
 
@@ -68,6 +79,8 @@ word: functional
 properties: functional
 	$(OCAMLBUILD) lib/properties/properties.cma
 	$(OCAMLBUILD) lib/properties/properties.cmxa
+
+# Common targets
 
 .PHONY: clean
 

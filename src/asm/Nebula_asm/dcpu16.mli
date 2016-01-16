@@ -34,10 +34,12 @@ val assemble_and_link : ?at:Word.t ->
 
 val emit : Assembled.t list -> unit t
 
-val label : (Value.direct, Word.t) Value.t t
+val label : int t
 
 val define : string -> unit t -> unit t
 
 val assemble_value : (_, _) Value.t -> (Assembled.t * Assembled.t option) t
 
 val assemble_inst : Inst.t -> unit t
+
+val write_file : file_name : string -> Word.t list -> unit IO.t

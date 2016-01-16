@@ -1,3 +1,4 @@
 bin: [
-  "nebula_main.native" {"nebula"}
+  "nebula_emulator.native" {"nebula-emulator"}
+  "tool/nebula-asm" { "nebula-asm" }
 ]

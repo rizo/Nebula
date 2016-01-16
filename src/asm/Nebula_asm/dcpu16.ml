@@ -128,7 +128,7 @@ let emit ws =
   end
 
 let label =
-  lift @@ Inner.gets (fun s -> Value.(I s.Dcpu16_state.pc))
+  lift @@ Inner.gets (fun s -> Word.to_int s.Dcpu16_state.pc)
 
 let define name body =
   let open Monad in
@@ -207,7 +207,8 @@ let assemble_value : type a b. (a, b) Value.t -> (Assembled.t * Assembled.t opti
   | A (I w) -> indirect w
   | A (L name) -> resolve_loc_or_dep indirect name
   | A (R r) -> short Word.(reg_encoding r + of_int 8)
-  | D (R r, o) -> long Word.(reg_encoding r + of_int 0x10) o
+  | D (R r, I w) -> long Word.(reg_encoding r + of_int 0x10) w
+  | D (R r, L name) -> resolve_loc_or_dep (fun w -> long Word.(reg_encoding r + of_int 0x10) w) name
   | Push -> short (Word.of_int 0x18)
   | Pop -> short (Word.of_int 0x18)
   | Peek -> short (Word.of_int 0x19)
@@ -300,3 +301,28 @@ let assemble_inst inst =
           emit (Assembled.Constant result :: list_of_maybes [extraA; extraB])
         end
     end
+
+let write_file ~file_name encoded =
+  let open IO.Monad in
+
+  let size = 2 * List.length encoded in
+
+  IO.lift (fun () -> open_out_bin file_name) >>= fun channel ->
+  IO_ref.make (Bytes.make size (char_of_int 0)) >>= fun buffer_ref ->
+
+  encoded
+  |> List.mapi begin fun list_index w ->
+    let i = Word.to_int w in
+    let lower_order = char_of_int (i land 0xff) in
+    let higher_order = char_of_int ((i land 0xff00) lsr 8) in
+    let index = 2 * list_index in
+
+    IO_ref.get buffer_ref >>= fun buffer ->
+    Bytes.set buffer index higher_order;
+    Bytes.set buffer (index + 1) lower_order;
+    IO.unit ()
+  end
+  |> sequence_unit >>= fun () ->
+  IO_ref.get buffer_ref >>= fun buffer ->
+  IO.lift (fun () -> output_bytes channel buffer) >>= fun () ->
+  IO.lift (fun () -> close_out channel)

@@ -1,0 +1,35 @@
+version = "1.0.0"
+description = "Emulator and assembly tools for the DCPU-16."
+requires = "nebula.functional nebula.properties nebula.word nebula.asm"
+
+package "functional" (
+  version = "1.0.0"
+  archive(byte) = "functional.cma"
+  archive(native) = "functional.cmxa"
+  exists_if = "functional.cma"
+  requires = "unix"
+)
+
+package "properties" (
+  version = "1.0.0"
+  archive(byte) = "properties.cma"
+  archive(native) = "properties.cmxa"
+  exists_if = "properties.cma"
+  requires = "nebula.functional"
+)
+
+package "word" (
+  version = "1.0.0"
+  archive(byte) = "word.cma"
+  archive(native) = "word.cmxa"
+  exists_if = "word.cma"
+  requires = "ctypes ctypes.foreign"
+)
+
+package "asm" (
+  version = "1.0.0"
+  archive(byte) = "nebula_asm.cma"
+  archive(native) = "nebula_asm.cmxa"
+  exists_if = "nebula_asm.cma"
+  requires = "nebula.functional nebula.word"
+)

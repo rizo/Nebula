@@ -1,3 +1,8 @@
+(** Monad transformer for error handling.
+
+    @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 open Prelude
 
 module type S = sig

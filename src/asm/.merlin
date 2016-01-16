@@ -1,5 +1,5 @@
 REC
 
-S .
+S Nebula_asm
 
-B ../../_build/src/asm
+B ../../_build/src/asm/Nebula_asm

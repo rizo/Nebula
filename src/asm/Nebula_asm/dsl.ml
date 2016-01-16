@@ -6,6 +6,11 @@ include Dcpu16.Applicative
 
 let w = Word.of_int
 
+let define = Dcpu16.define
+let label = Dcpu16.label
+let assemble = Dcpu16.assemble
+let assemble_and_link = Dcpu16.assemble_and_link
+
 let push = Push
 let pop = Pop
 let peek = Peek
@@ -24,8 +29,9 @@ let ri = R Reg.I
 let rj = R Reg.J
 
 let imm i = I (w i)
-let addr : type a. (direct, a) Value.t -> (indirect, a) Value.t = fun i -> A i
+let ind : type a. (direct, a) Value.t -> (indirect, a) Value.t = fun i -> A i
 let at a = A a
+let off i r = D (r, i)
 
 let unary special_code = fun a -> Dcpu16.assemble_inst @@ Inst.(Unary (special_code, a))
 let binary code = fun b a -> Dcpu16.assemble_inst @@ Inst.(Binary (code, b, a))
@@ -68,8 +74,46 @@ let hwn a = unary Inst.Special_code.Hwn a
 let hwq a = unary Inst.Special_code.Hwq a
 let hwi a = unary Inst.Special_code.Hwi a
 
+let dat xs = Dcpu16.emit (List.map (fun x -> Assembled.Constant (w x)) xs)
+
+let asciip s =
+  let chars = ref [] in
+  String.iter (fun ch -> chars := int_of_char ch :: !chars) s;
+  dat (String.length s :: (List.rev !chars))
+
 let ( >> ) x y =
   x >>= fun () -> y
 
 let void t =
   t >>= fun _ -> Dcpu16.unit ()
+
+exception Assembly_error of Dcpu16.Error.t
+
+let format_exception exn =
+  let sprintf = Printf.sprintf in
+
+  match exn with
+  | Assembly_error ae -> begin
+      match ae with
+      | Dcpu16.Error.Undefined_labels labels -> begin
+          sprintf "Error: the following labels are never defined: %s."
+            (String.concat "," (List.map (fun label -> "`" ^ label ^ "`") labels))
+        end
+      | Dcpu16.Error.Already_defined_label label -> begin
+          sprintf "Error: the label `%s` is defined multiple times." label
+        end
+    end
+  | _ -> Printexc.to_string exn
+
+let assembly_main ~file_name t =
+  let open Functional in
+  let open Functional.Prelude in
+
+  try
+    begin match Dcpu16.assemble_and_link t with
+      | Left error -> IO.throw (Assembly_error error)
+      | Right encoded -> Dcpu16.write_file ~file_name encoded
+    end
+    |> IO.main
+  with
+  | exn -> prerr_endline (format_exception exn)

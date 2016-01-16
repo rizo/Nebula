@@ -19,9 +19,9 @@
 
 #directory "../../src/asm" ;;
 
-#load_rec "asm.cma" ;;
+#load_rec "nebula_asm.cma" ;;
 
-open Dsl
-open Dcpu16
+open Nebula_asm.Dsl
 
 open Functional
+open Functional.Prelude
