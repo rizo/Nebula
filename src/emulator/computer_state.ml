@@ -6,6 +6,7 @@ type t = {
   cpu : Cpu.t;
   ic : Interrupt_control.t;
   manifest : Manifest.t;
+  state_error : Invalid_operation.t option;
 }
 
 let default = {
@@ -13,7 +14,11 @@ let default = {
   cpu = Cpu.empty;
   ic = Interrupt_control.empty;
   manifest = Manifest.empty;
+  state_error = None;
 }
+
+let set_state_error err t =
+  { t with state_error = Some err }
 
 let show t =
   let open Printf in

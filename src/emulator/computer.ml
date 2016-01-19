@@ -45,4 +45,8 @@ let rec of_program t =
       modify (fun t -> Cs.{ t with cpu = Cpu.set_flag flag v t.cpu }) >>= fun () ->
       of_program next
     end
+  | Program.Suspend (Program.Op.State_error (e, next)) -> begin
+      modify (Cs.set_state_error e) >>= fun () ->
+      of_program next
+    end
   | Program.Return v -> unit v

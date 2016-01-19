@@ -25,6 +25,7 @@ module Op : sig
     | Write_special of Special.t * word * 'a
     | Set_flag of Cpu.Flag.t * bool * 'a
     | Get_flag of Cpu.Flag.t * (bool -> 'a)
+    | State_error of Invalid_operation.t * 'a
 
   val map : ('a -> 'b) -> 'a t -> 'b t
 end
@@ -46,6 +47,8 @@ val write_special : Special.t -> word -> unit t
 val get_flag : Cpu.Flag.t -> bool t
 
 val set_flag : Cpu.Flag.t -> bool -> unit t
+
+val state_error : Invalid_operation.t -> unit t
 
 (** Read the value pointed to by the program counter and increment the program
     counter. *)

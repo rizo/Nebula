@@ -35,14 +35,14 @@ let show_failure_and_exit ?computer message =
 let handle_error error =
   match error with
   | Engine.Bad_decoding (w, computer) -> begin
-      show_failure_and_exit
-        (sprintf "Failed to decode word %s." (Word.show w)) ~computer
+      show_failure_and_exit ~computer
+        (sprintf "Failed to decode word %s." (Word.show w))
     end
   | Engine.No_such_device (index, computer) -> begin
-      show_failure_and_exit
+      show_failure_and_exit ~computer
         (sprintf "Index %s is not associated with a device." (Word.show index))
-        ~computer
     end
+  | Engine.Invalid_operation _ -> show_failure_and_exit "The computer is in an invalid state."
   | _ -> show_failure_and_exit
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
