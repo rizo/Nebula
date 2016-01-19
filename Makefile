@@ -28,7 +28,8 @@ uninstall:
 
 asm_top: nebula_asm
 	$(OCAMLBUILD) top/asm/nebula_asm.top
-	mv nebula_asm.top shell/asm
+	install nebula_asm.top shell/asm
+	rm nebula_asm.top
 
 nebula_asm:
 	$(OCAMLBUILD) src/asm/nebula_asm.cma
@@ -38,7 +39,8 @@ nebula_asm:
 
 emulator_top: nebula_emulator
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula_emulator.top
-	mv nebula_emulator.top shell/emulator
+	install nebula_emulator.top shell/emulator
+	rm nebula_emulator.top
 
 nebula_emulator_test: nebula_emulator
 	$(OCAMLBUILD) test/emulator/emulator_spec.byte
