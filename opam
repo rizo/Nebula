@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "nebula"
-version: "0.2.1"
+version: "1.0.0"
 maintainer: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
 authors: "Jesse Haber-Kucharsky <jesse@haberkucharsky.com>"
 homepage: "https://github.com/hakuch/Nebula"
@@ -10,18 +10,21 @@ dev-repo: "git://github.com/hakuch/Nebula.git"
 build: [
   [make]
 ]
-build-doc: [
-  [make "doc"]
+install: [
+  [make "install"]
+]
+remove: [
+  [make "uninstall"]
 ]
 depends: [
-  "cmdliner" { >= "0.9.7" }
+  "cmdliner" { >= "0.9.8" }
   "ctypes" { >= "0.4.1" }
   "ctypes-foreign" { >= "0.4.0" }
-  "ocamlfind" {build & >= "1.5.5" }
+  "ocamlfind" {build & >= "1.5.6" }
   "ounit" {test & >= "2.0.0" }
-  "ppx_deriving" { >= "2.2" }
-  "tsdl" { >= "0.8.1" }
-  "utop" { >= "1.18" }
+  "ppx_deriving" { >= "3.0" }
+  "tsdl" { >= "0.9.0" }
+  "utop" { >= "1.18.1" }
 ]
 available: [
   ocaml-version >= "4.02.3"

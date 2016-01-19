@@ -18,6 +18,9 @@ exception Bad_decoding of word * Computer_state.t
 (** A device was requested at an index that has not been assigned. *)
 exception No_such_device of word * Computer_state.t
 
+(** The processor was asked to complete an invalid operation. *)
+exception Invalid_operation of Invalid_operation.t
+
 module type S = sig
   (** Jump to the interrupt handler and disable interrupt dequeing. *)
   val jump_to_handler : Interrupt.t -> Computer_state.t -> Computer_state.t
@@ -160,17 +163,21 @@ module  Make (Clock : Clock.S) : S = struct
     let open IO.Functor in
 
     let rec loop last_suspension_time c =
-      tick_devices c >>= step >>= fun c ->
-      Clock.get_time >>= fun now ->
-      let elapsed = Duration.of_nanoseconds Time_stamp.(now - last_suspension_time) in
+      match c.Cs.state_error with
+      | Some err -> IO.throw (Invalid_operation err)
+      | None -> begin
+          tick_devices c >>= step >>= fun c ->
+          Clock.get_time >>= fun now ->
+          let elapsed = Duration.of_nanoseconds Time_stamp.(now - last_suspension_time) in
 
-      let next =
-        if elapsed >= suspend_every then
-          suspension c |> map (fun c -> now, c)
-        else
-          IO.unit (last_suspension_time, c)
-      in
-      next >>= fun (time, c) -> loop time c
+          let next =
+            if elapsed >= suspend_every then
+              suspension c |> map (fun c -> now, c)
+            else
+              IO.unit (last_suspension_time, c)
+          in
+          next >>= fun (time, c) -> loop time c
+        end
     in
     Clock.get_time >>= fun now -> loop now c
 end

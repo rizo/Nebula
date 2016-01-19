@@ -1,15 +1,13 @@
-S src
-S src/Devices
 S lib/functional
 S lib/functional/Functional
 S lib/properties
-S test
+S lib/word
 
-B _build/src
-B _build/src/Devices
 B _build/lib/functional
 B _build/lib/functional/Functional
 B _build/lib/properties
+B _build/lib/word
+
 B +threads
 
 PKG cmdliner
@@ -17,3 +15,4 @@ PKG ctypes.foreign
 PKG ppx_deriving.std
 PKG threads
 PKG tsdl
+PKG result

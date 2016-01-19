@@ -16,6 +16,7 @@ module Op = struct
     | Write_special of Special.t * word * 'a
     | Set_flag of Cpu.Flag.t * bool * 'a
     | Get_flag of Cpu.Flag.t * (bool -> 'a)
+    | State_error of Invalid_operation.t * 'a
 
   let map f = function
     | Read_memory (o, next) -> Read_memory (o, fun w -> f (next w))
@@ -26,6 +27,7 @@ module Op = struct
     | Write_special (s, v, next) -> Write_special (s, v, f next)
     | Set_flag (flag, v, next) -> Set_flag (flag, v, f next)
     | Get_flag (flag, next) -> Get_flag (flag, fun v -> f (next v))
+    | State_error (err, next) -> State_error (err, f next)
 end
 
 include Free.Make (Op)
@@ -53,6 +55,9 @@ let get_flag flag =
 
 let set_flag flag value =
   lift (Op.Set_flag (flag, value, ()))
+
+let state_error err =
+  lift (Op.State_error (err, ()))
 
 let next_word =
   let open Monad in

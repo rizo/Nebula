@@ -20,8 +20,6 @@ type t =
   | Indirect
   | Literal of word
 
-exception Invalid_operation
-
 let extra_encoded_size = function
   | Reg_direct _ -> 0
   | Reg_indirect _ -> 0
@@ -54,7 +52,9 @@ module Target = struct
         | Reg r -> P.read_register r
         | Special s -> P.read_special s
         | Offset o -> P.read_memory o
-        | Push -> raise Invalid_operation
+        | Push -> begin
+            P.Monad.(P.state_error Invalid_operation.Get_push >>= fun () -> P.Return (Word.of_int 0))
+          end
         | Pop -> P.pop
         | Value v -> P.Return v
     end
@@ -66,7 +66,9 @@ module Target = struct
       | Special s -> P.write_special s v
       | Offset o -> P.write_memory o v
       | Push -> P.push v
-      | Pop -> raise Invalid_operation
+      | Pop -> begin
+          P.Monad.(P.state_error Invalid_operation.Set_pop >>= fun () -> P.Return ())
+        end
       | Value _ -> P.Return ()
     end
 end

@@ -28,9 +28,6 @@ type t =
   | Indirect
   | Literal of word
 
-(** An operation was attempted on address that doesn't support it. *)
-exception Invalid_operation
-
 (** The extra encoded size of the address in memory.
 
     Most addresses can be encoded into the same [word] as the opcode, but some
