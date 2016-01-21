@@ -5,7 +5,7 @@
 Nebula is a complete emulator and assembler for the fictional DCPU-16 computer, including its hardware
 peripherals.
 
-More information on the assembler, `nebula-asm`, can be found [here](https://github.com/hakuch/Nebula/src/asm).
+More information on the assembler, `nebula-asm`, can be found [here](https://github.com/hakuch/Nebula/tree/master/src/asm).
 
 Nebula is a part of [DCPU-16 Universe](https://github.com/hakuch/Dcpu16Universe).
 
