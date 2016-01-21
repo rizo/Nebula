@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 type direct
 type indirect
 type offset

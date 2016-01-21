@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 include Value
 
 include Dcpu16.Functor

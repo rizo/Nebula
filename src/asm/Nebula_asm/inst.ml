@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 module Code = struct
   type t =
     | Set

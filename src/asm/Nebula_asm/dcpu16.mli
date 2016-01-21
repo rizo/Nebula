@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 open Functional
 
 module Inner : module type of State.Make (Dcpu16_state)

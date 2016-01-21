@@ -1,3 +1,6 @@
+(** @author Jesse Haber-Kucharsky
+    @see 'LICENSE' License details *)
+
 module String_map = Map.Make (String)
 
 type label_map = Label_loc.t String_map.t
