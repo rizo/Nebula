@@ -7,7 +7,7 @@ let directory_name shell =
 let shell_executable shell =
   "./nebula_" ^ shell ^ ".top"
 
-let usage_string =
+let usage_message =
   "Usage: " ^ Sys.executable_name ^ " [SHELL-NAME]"
 
 let _ =
@@ -29,4 +29,4 @@ let _ =
         exit 1
       end
     end
-  | _ -> prerr_endline usage_string
+  | _ -> prerr_endline usage_message
