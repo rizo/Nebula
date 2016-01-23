@@ -3,6 +3,18 @@ true: safe_string, bin_annot, thread, warn_error(+8), \
       package(ctypes.foreign), \
       package(result)
 
+# Compiler
+
+<src/compiler>: include, traverse
+
+<top/compiler/**>: package(utop)
+
+# Assembler
+
+<src/asm>: include, traverse
+
+<top/asm/**>: package(utop)
+
 # Emulator
 
 <src/emulator>: include, traverse
@@ -15,12 +27,6 @@ true: safe_string, bin_annot, thread, warn_error(+8), \
 <top/emulator/**>: package(utop)
 
 <test/emulator/**>: package(oUnit)
-
-# Assembler
-
-<src/asm>: include, traverse
-
-<top/asm/**>: package(utop)
 
 # Libraries
 

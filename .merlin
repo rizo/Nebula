@@ -1,12 +1,11 @@
-S lib/functional
-S lib/functional/Functional
-S lib/properties
-S lib/word
-
 B _build/lib/functional
 B _build/lib/functional/Functional
 B _build/lib/properties
 B _build/lib/word
+B _build/src/asm
+B _build/src/asm/Nebula_asm
+B _build/src/compiler
+B _build/src/compiler/Nebula_compiler
 
 B +threads
 
