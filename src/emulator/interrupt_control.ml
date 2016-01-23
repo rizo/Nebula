@@ -33,7 +33,7 @@ let triggered t =
   t.trigger
   |> Option.Functor.map (fun tri -> (tri, { t with trigger = None }))
 
-let handle t =
+let dequeue t =
   if t.dequeuing then
     Persistent_queue.pop t.queue
     |> Option.Functor.map (fun (interrupt, q) -> (interrupt, { t with queue = q }))

@@ -42,7 +42,10 @@ let handle_error error =
       show_failure_and_exit ~computer
         (sprintf "Index %s is not associated with a device." (Word.show index))
     end
-  | Engine.Invalid_operation _ -> show_failure_and_exit "The computer is in an invalid state."
+  | Engine.Invalid_operation (_, computer) -> begin
+      show_failure_and_exit ~computer
+        "The computer is in an invalid state."
+    end
   | _ -> show_failure_and_exit
            (sprintf "Unexpected failure: %s\n" (Printexc.to_string error))
 
@@ -56,15 +59,32 @@ let make_monitor_window =
 let frame_period =
   Duration.of_nanoseconds 30000000L
 
-module Make (C : Clock.S) (E : Engine.S) = struct
-  let handle_event c =
+module type HOOK = sig
+  val periodically : Cs.t -> Cs.t IO.t
+end
+
+module Interaction_hook = struct
+  let interact_with_device device_input c r =
+    r.Manifest.Record.device#on_interaction device_input c.Cs.memory
+    |> IO.Functor.map begin fun device ->
+      let manifest = Manifest.(update Record.{ r with device } c.Cs.manifest) in
+      Cs.{ c with manifest }
+    end
+
+  let interact_with_devices device_input c =
+    let records = Manifest.all c.Cs.manifest in
+    IO.Monad.fold (interact_with_device device_input) c records
+
+  let periodically c =
     Input_event.poll >>= function
     | Some Input_event.Quit -> IO.terminate 0
     | Some Input_event.Key_down code -> begin
-        E.interact_with_devices Device.Input.{ key_code = Some code } c
+        interact_with_devices Device.Input.{ key_code = Some code } c
       end
-    | _ -> E.interact_with_devices Device.Input.none c
+    | _ -> interact_with_devices Device.Input.none c
+end
 
+module Make (C : Clock.S) (E : Engine.S) (H : HOOK) = struct
   let init ~file_name =
     IO.main begin
       Mem.of_file file_name >>= function
@@ -89,7 +109,7 @@ module Make (C : Clock.S) (E : Engine.S) = struct
           let c = Cs.{ default with memory; manifest } in
 
           IO.catch
-            (E.launch ~suspend_every:frame_period ~suspension:handle_event c)
+            (E.launch ~suspend_every:frame_period ~suspension:H.periodically c)
             handle_error
         end
     end
@@ -98,7 +118,7 @@ end
 let () =
   let module C = Clock.Precision in
   let module E = Engine.Make (C) in
-  let module M = Make (C) (E) in
+  let module M = Make (C) (E) (Interaction_hook) in
 
   match Cli.parse_to (fun file_name -> M.init ~file_name) with
   | `Error _ -> exit 1

@@ -30,7 +30,7 @@ val enqueue : Interrupt.t -> t -> t
 
 (** Dequeue the next received interrupt from the queue, if there is one and if
     dequeuing is enabled. *)
-val handle : t -> (Interrupt.t * t) option
+val dequeue : t -> (Interrupt.t * t) option
 
 (** Set a new interrupt trigger.
 
