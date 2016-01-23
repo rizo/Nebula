@@ -100,17 +100,19 @@ Nebula comes with an interactive REPL built on top of [utop](https://opam.ocaml.
 
 Once built with `make top`, REPLs exist for both development of `nebula-emulator` and for `nebula-asm`.
 
-The REPL for `nebula-asm` can be invoked as
+The REPLs for `nebula-asm` and `nebula-emulator` can be invoked as
 
 ```bash
-$ ./asm_shell.sh
+$ ./run-shell asm
 ```
 
-and the REPL for `nebula-emulator` can be invoked as
+and
 
 ```bash
-$ ./emulator_shell.sh
+$ ./run-shell emulator
 ```
+
+respectively.
 
 ## Changelog
 

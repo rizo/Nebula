@@ -6,11 +6,15 @@ STUB_OBJECTS = src/emulator/clock_precision_stub.o
 NATIVE_LINKER_FLAGS = -lflags $(STUB_OBJECTS)
 BYTE_LINKER_FLAGS = -lflags -custom,$(STUB_OBJECTS)
 
+SHELL_DIR=shells
+
 OCAMLBUILD = ocamlbuild -use-ocamlfind
 
 default: top
 
 top: emulator_top asm_top compiler_top
+	$(OCAMLBUILD) shell.byte
+	mv shell.byte run-shell
 
 test: nebula_emulator_test libraries_test
 
@@ -28,7 +32,7 @@ uninstall:
 
 compiler_top: nebula_compiler
 	$(OCAMLBUILD) top/compiler/nebula_compiler.top
-	install nebula_compiler.top shell/compiler
+	install nebula_compiler.top $(SHELL_DIR)/compiler
 	rm nebula_compiler.top
 
 nebula_compiler: nebula_asm libraries
@@ -39,7 +43,7 @@ nebula_compiler: nebula_asm libraries
 
 asm_top: nebula_asm
 	$(OCAMLBUILD) top/asm/nebula_asm.top
-	install nebula_asm.top shell/asm
+	install nebula_asm.top $(SHELL_DIR)/asm
 	rm nebula_asm.top
 
 nebula_asm: libraries
@@ -50,7 +54,7 @@ nebula_asm: libraries
 
 emulator_top: nebula_emulator
 	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula_emulator.top
-	install nebula_emulator.top shell/emulator
+	install nebula_emulator.top $(SHELL_DIR)/emulator
 	rm nebula_emulator.top
 
 nebula_emulator_test: nebula_emulator

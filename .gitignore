@@ -1,5 +1,6 @@
 _build
 doc
+run-shell
 *.byte
 *.native
 *.top
