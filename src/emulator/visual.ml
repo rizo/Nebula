@@ -12,22 +12,22 @@ module Color = struct
   type t = Sdl.color
 
   let make ~r ~g ~b =
-    Sdl.Color.create ~r:(UInt8.to_int r) ~g:(UInt8.to_int g) ~b:(UInt8.to_int b) ~a:255
+    UInt8.(Sdl.Color.create ~r:(to_int r) ~g:(to_int g) ~b:(to_int b) ~a:255)
 
   let red =
-    make ~r:(UInt8.of_int 255) ~g:UInt8.zero ~b:UInt8.zero
+    UInt8.(make ~r:(of_int 255) ~g:zero ~b:zero)
 
   let green =
-    make ~r:UInt8.zero ~g:(UInt8.of_int 255) ~b:UInt8.zero
+    UInt8.(make ~r:zero ~g:(of_int 255) ~b:zero)
 
   let blue =
-    make ~r:UInt8.zero ~g:UInt8.zero ~b:(UInt8.of_int 255)
+    UInt8.(make ~r:zero ~g:zero ~b:(of_int 255))
 
   let black =
-    make UInt8.zero UInt8.zero UInt8.zero
+    UInt8.(make zero zero zero)
 
   let white =
-    make (UInt8.of_int 255) (UInt8.of_int 255) (UInt8.of_int 255)
+    UInt8.(make (of_int 255) (of_int 255) (of_int 255))
 end
 
 module Window = struct
@@ -37,10 +37,12 @@ module Window = struct
   }
 
   let make ~title ~width ~height =
-    Sdl.lift "Creating window: %s" (fun () ->
-         Sdl.create_window ~w:width ~h:height title Sdl.Window.windowed) >>= fun window ->
-    Sdl.lift "Creating renderer: %s" (fun () -> Sdl.create_renderer window) >>= fun renderer ->
-    IO.unit { window; renderer }
+    Sdl.lift "Creating window: %s" begin fun () ->
+      Sdl.create_window ~w:width ~h:height title Sdl.Window.windowed
+    end >>= fun window ->
+    Sdl.lift "Creating renderer: %s" begin fun () ->
+      Sdl.create_renderer window
+    end >>= fun renderer -> IO.unit { window; renderer }
 end
 
 let set_color window color =
