@@ -109,7 +109,10 @@ module Make (C : Clock.S) (E : Engine.S) (H : HOOK) = struct
           let c = Cs.{ default with memory; manifest } in
 
           IO.catch
-            (E.launch ~suspend_every:frame_period ~suspension:H.periodically c)
+            (E.launch
+               ~suspend_every:frame_period
+               ~suspension:H.periodically
+               c)
             handle_error
         end
     end

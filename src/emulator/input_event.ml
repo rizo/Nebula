@@ -22,25 +22,37 @@ let code_of_keycode = function
   | n when n = Sdl.K.lctrl || n = Sdl.K.rctrl -> Some (UInt8.of_int 0x91)
   | _ -> None
 
-let poll =
+let get_key_from_keycode event =
   IO.lift begin fun () ->
-    let event = Sdl.Event.create () in
-
-    if Sdl.poll_event (Some event) then
-      let typ = Sdl.Event.(get event typ) in
-
-      if typ = Sdl.Event.quit then Some Quit
-      else if typ = Sdl.Event.key_down then begin
-        let keycode = Sdl.Event.(get event keyboard_keycode) in
-        keycode |> code_of_keycode |> Option.Functor.map (fun c -> Key_down c)
-      end
-      else if typ = Sdl.Event.text_input then begin
-        let text = Sdl.Event.(get event text_input_text) in
-        if String.length text = 1 then
-          let ch = String.get text 0 |> int_of_char in
-          if ch >= 0x20 then Some (Key_down UInt8.(of_int ch)) else None
-        else None
-      end
-      else None
-    else None
+    let keycode = Sdl.Event.(get event keyboard_keycode) in
+    keycode |> code_of_keycode |> Option.Functor.map (fun c -> Key_down c)
   end
+
+let get_key_from_text_input event =
+  IO.lift begin fun () ->
+    let text = Sdl.Event.(get event text_input_text) in
+
+    if String.length text = 1 then
+      let ch = String.get text 0 |> int_of_char in
+      if ch >= 0x20 then Some (Key_down UInt8.(of_int ch))
+      else None
+    else
+      None
+  end
+
+let poll =
+  let open IO.Monad in
+
+  IO.lift Sdl.Event.create >>= fun event ->
+  if Sdl.poll_event (Some event) then
+    let typ = Sdl.Event.(get event typ) in
+
+    if typ = Sdl.Event.quit then IO.unit (Some Quit)
+    else if typ = Sdl.Event.key_down then
+      get_key_from_keycode event
+    else if typ = Sdl.Event.text_input then
+      get_key_from_text_input event
+    else
+      IO.unit None
+  else
+    IO.unit None
