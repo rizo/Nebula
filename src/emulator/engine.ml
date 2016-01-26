@@ -73,7 +73,7 @@ struct
       match c.Cs.state_error with
       | Some err -> IO.throw (Invalid_operation (err, c))
       | None -> begin
-          Control.yield c control_state >>= fun control ->
+          Control.yield c control_state >>= fun control_state ->
           Cycle.invoke c >>= fun c ->
           Clock.get_time >>= fun now ->
 
@@ -81,7 +81,7 @@ struct
             last_suspension_time
             now
             c) >>= fun (last_suspension_time, c) ->
-          loop last_suspension_time control c
+          loop last_suspension_time control_state c
         end
     in
     Clock.get_time >>= fun now ->
