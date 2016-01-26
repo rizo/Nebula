@@ -6,14 +6,6 @@ module S = Dcpu16_state.String_map
 open Functional
 open Functional.Prelude
 
-let list_of_maybes ms =
-  let rec go accum = function
-    | [] -> accum
-    | Some x :: xs -> go (x :: accum) xs
-    | None :: xs -> go accum xs
-  in
-  go [] ms
-
 module Inner = State.Make (Dcpu16_state)
 
 module Error = struct
@@ -43,7 +35,7 @@ module Block = struct
       | Label_loc.Unresolved -> Some name
       | _ -> None
     end
-    |> list_of_maybes
+    |> list_of_options
 
   let is_dependent t =
     List.exists (function Assembled.Dependent _ -> true | _ -> false) t.encoded
@@ -211,7 +203,9 @@ let assemble_value : type a b. (a, b) Value.t -> (Assembled.t * Assembled.t opti
   | A (L name) -> resolve_loc_or_dep indirect name
   | A (R r) -> short Word.(reg_encoding r + of_int 8)
   | D (R r, I w) -> long Word.(reg_encoding r + of_int 0x10) w
-  | D (R r, L name) -> resolve_loc_or_dep (fun w -> long Word.(reg_encoding r + of_int 0x10) w) name
+  | D (R r, L name) -> begin
+      resolve_loc_or_dep (fun w -> long Word.(reg_encoding r + of_int 0x10) w) name
+    end
   | Push -> short (Word.of_int 0x18)
   | Pop -> short (Word.of_int 0x18)
   | Peek -> short (Word.of_int 0x19)
@@ -282,11 +276,14 @@ let assemble_inst inst =
   | Inst.Unary (s, a) -> begin
       assemble_value a >>= fun (asm, extra) ->
       match asm with
-      | Assembled.Dependent _ -> emit (list_of_maybes [Some asm; extra])
+      | Assembled.Dependent _ -> emit (list_of_options [Some asm; extra])
       | Assembled.Constant w -> begin
-          let result = Word.(of_int 0 lor ((special_code_encoding s land of_int 0x1f) lsl 5)) in
+          let result =
+            Word.(of_int 0 lor ((special_code_encoding s land of_int 0x1f) lsl 5))
+          in
+
           let result = Word.(result lor ((w land of_int 0x3f) lsl 10)) in
-          emit (Assembled.Constant result :: list_of_maybes [extra])
+          emit (Assembled.Constant result :: list_of_options [extra])
         end
     end
   | Inst.Binary (c, b, a) -> begin
@@ -295,13 +292,13 @@ let assemble_inst inst =
 
       match (asmA, asmB) with
       | (Assembled.Dependent name, _) | (_, Assembled.Dependent name) -> begin
-          emit (list_of_maybes [Some (Assembled.Dependent name); extraA; extraB])
+          emit (list_of_options [Some (Assembled.Dependent name); extraA; extraB])
         end
       | (Assembled.Constant wa, Assembled.Constant wb) -> begin
           let result = Word.(code_encoding c land of_int 0x1f) in
           let result = Word.(result lor ((wb land of_int 0x1f) lsl 5)) in
           let result = Word.(result lor ((wa land of_int 0x3f) lsl 10)) in
-          emit (Assembled.Constant result :: list_of_maybes [extraA; extraB])
+          emit (Assembled.Constant result :: list_of_options [extraA; extraB])
         end
     end
 

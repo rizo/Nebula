@@ -42,11 +42,13 @@ module Window = struct
     end >>= fun window ->
     Sdl.lift "Creating renderer: %s" begin fun () ->
       Sdl.create_renderer window
-    end >>= fun renderer -> IO.unit { window; renderer }
+    end >>= fun renderer ->
+    IO.unit { window; renderer }
 end
 
 let set_color window color =
   let open Window in
+
   Sdl.lift "Setting drawing color: %s" (fun () ->
       Sdl.set_render_draw_color
         window.renderer

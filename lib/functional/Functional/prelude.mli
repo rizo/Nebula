@@ -12,9 +12,15 @@ val const : 'a -> 'b -> 'a
 (** Identity function. *)
 val id : 'a -> 'a
 
+val list_of_options : 'a option list -> 'a list
+
 (** Populate a {! list} from a lower bound (inclusive) to an upper bound
     (exclusive). *)
 val enum_from_to : int -> int -> int list
+
+val partition_map : ('a -> 'b option) -> 'a list -> 'b list * 'a list
+
+val filter_map : ('a -> 'b option) -> 'a list -> 'b list
 
 type ('a, 'b) either =
   | Left of 'a

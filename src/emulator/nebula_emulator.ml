@@ -26,19 +26,19 @@ let show_failure_and_exit ?computer message =
   IO.put_string (sprintf "Error: %s\n" message) >>= fun () ->
 
   (match computer with
-  | Some c -> IO.put_string ("\n" ^ Cs.show c)
-  | None -> IO.unit ()) >>= fun () ->
+   | Some c -> IO.put_string ("\n" ^ Cs.show c)
+   | None -> IO.unit ()) >>= fun () ->
 
   IO.terminate 1
 
 (** Print a helpful error message and then terminate. *)
 let handle_error error =
   match error with
-  | Engine.Bad_decoding (w, computer) -> begin
+  | Cycle.Bad_decoding (w, computer) -> begin
       show_failure_and_exit ~computer
         (sprintf "Failed to decode word %s." (Word.show w))
     end
-  | Engine.No_such_device (index, computer) -> begin
+  | Cycle.No_such_device (index, computer) -> begin
       show_failure_and_exit ~computer
         (sprintf "Index %s is not associated with a device." (Word.show index))
     end
@@ -54,16 +54,15 @@ let make_monitor_window =
     ~width:Device_monitor.total_width
     ~height:Device_monitor.total_height
     ~title:"DCPU-16 Monitor"
+  >>= fun window ->
+  Visual.set_color window Visual.Color.black >>= fun () ->
+  IO.unit window
 
 (** The period between rendering graphics and processing input events. *)
 let frame_period =
   Duration.of_nanoseconds 30000000L
 
-module type HOOK = sig
-  val periodically : Cs.t -> Cs.t IO.t
-end
-
-module Interaction_hook = struct
+module Interaction = struct
   let interact_with_device device_input c r =
     r.Manifest.Record.device#on_interaction device_input c.Cs.memory
     |> IO.Functor.map begin fun device ->
@@ -75,7 +74,7 @@ module Interaction_hook = struct
     let records = Manifest.all c.Cs.manifest in
     IO.Monad.fold (interact_with_device device_input) c records
 
-  let periodically c =
+  let invoke c =
     Input_event.poll >>= function
     | Some Input_event.Quit -> IO.terminate 0
     | Some Input_event.Key_down code -> begin
@@ -84,7 +83,7 @@ module Interaction_hook = struct
     | _ -> interact_with_devices Device.Input.none c
 end
 
-module Make (C : Clock.S) (E : Engine.S) (H : HOOK) = struct
+module Make (Clock : Clock.S) (Engine : Engine.S) = struct
   let init ~file_name =
     IO.main begin
       Mem.of_file file_name >>= function
@@ -96,8 +95,8 @@ module Make (C : Clock.S) (E : Engine.S) (H : HOOK) = struct
           make_monitor_window >>= fun window ->
 
           let keyboard = Device_keyboard.make in
-          Device_clock.make (module C) >>= fun clock ->
-          Device_monitor.make (module C) window >>= fun monitor ->
+          Device_clock.make (module Clock) >>= fun clock ->
+          Device_monitor.make (module Clock) window >>= fun monitor ->
 
           let manifest = Manifest.(
               empty
@@ -109,20 +108,36 @@ module Make (C : Clock.S) (E : Engine.S) (H : HOOK) = struct
           let c = Cs.{ default with memory; manifest } in
 
           IO.catch
-            (E.launch
-               ~suspend_every:frame_period
-               ~suspension:H.periodically
-               c)
+            (Engine.launch ~suspend_every:frame_period c)
             handle_error
         end
     end
 end
 
 let () =
-  let module C = Clock.Precision in
-  let module E = Engine.Make (C) in
-  let module M = Make (C) (E) (Interaction_hook) in
+  match Cli.parse_to begin
+      fun file_name start_interactive ->
+        let module Clock = Clock.Precision in
 
-  match Cli.parse_to (fun file_name -> M.init ~file_name) with
+        let (module Control) =
+          Engine.control_with_initial_state
+            (module Control)
+            (if start_interactive then
+               Control.empty_with_unconditional_hit
+             else Control.empty)
+        in
+
+        let module Engine =
+          Engine.Make
+            (Clock)
+            (Control)
+            (Cycle)
+            (Interaction)
+        in
+
+        let module M = Make (Clock) (Engine) in
+        M.init ~file_name
+    end
+  with
   | `Error _ -> exit 1
   | _ -> exit 0

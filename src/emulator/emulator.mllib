@@ -1,10 +1,12 @@
 Address
 Cli
 Clock
+Code
 Common
 Computer
 Computer_state
-Code
+Cond
+Control
 Cpu
 Decode
 Device
