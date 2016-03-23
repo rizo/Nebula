@@ -12,7 +12,7 @@ OCAMLBUILD = ocamlbuild -use-ocamlfind
 
 default: top
 
-top: emulator_top asm_top compiler_top
+top: emulator_top asm_top
 	$(OCAMLBUILD) shell.byte
 	mv shell.byte run-shell
 
@@ -27,17 +27,6 @@ install: default uninstall libraries nebula_asm
 
 uninstall:
 	ocamlfind remove nebula
-
-# Compiler
-
-compiler_top: nebula_compiler
-	$(OCAMLBUILD) top/compiler/nebula_compiler.top
-	install nebula_compiler.top $(SHELL_DIR)/compiler
-	rm nebula_compiler.top
-
-nebula_compiler: nebula_asm libraries
-	$(OCAMLBUILD) src/compiler/nebula_compiler.cma
-	$(OCAMLBUILD) src/compiler/nebula_compiler.cmxa
 
 # Assembler
 
