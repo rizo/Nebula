@@ -1,5 +1,5 @@
 let known_shells =
-  ["emulator"; "asm"]
+  ["emu"; "asm"]
 
 let directory_name shell =
   "shells/" ^ shell

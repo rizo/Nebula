@@ -55,7 +55,7 @@ Then register the development version with opam:
 $ opam pin add nebula .
 ```
 
-and finally install the `nebula` executable with
+and finally install the `nebula` executables and libraries with
 
 ```bash
 $ opam install nebula
@@ -69,7 +69,7 @@ $ opam upgrade nebula
 
 ## Running
 
-Nebula consists of two executables: `nebula-asm` and `nebula-emulator`. Both have a command-line interface.
+Nebula consists of two executables: `nebula-asm` and `nebula-emu`. Both have a command-line interface.
 
 ## Development
 
@@ -82,10 +82,10 @@ In addition to requiring the opam package manager, Nebula depends on two package
 
 Nebula is built by invoking the `make` command with one of the following targets:
 
-- `top`: Interactive OCaml top-level REPL for `nebula-asm` and `nebula-emulator`
+- `top`: Interactive OCaml top-level REPL for `nebula-asm` and `nebula-emu`
 - `libraries`: Nebula's support libraries.
 - `test`: Unit tests (also runs tests)
-- `nebula_emulator`: The `nebula-emulator` program and libraries
+- `nebula_emulator`: The `nebula-emu` program and libraries
 - `nebula_asm`: The `nebula-asm` program and libraries
 
 ### Testing
@@ -98,9 +98,9 @@ Nebula tests used to be written with the `oUnit` package, but that is being phas
 
 Nebula comes with an interactive REPL built on top of [utop](https://opam.ocaml.org/blog/about-utop/) that starts with all modules loaded and with extra pretty-printers for Nebula types installed.
 
-Once built with `make top`, REPLs exist for both development of `nebula-emulator` and for `nebula-asm`.
+Once built with `make top`, REPLs exist for both development of `nebula-emu` and for `nebula-asm`.
 
-The REPLs for `nebula-asm` and `nebula-emulator` can be invoked as
+The REPLs for `nebula-asm` and `nebula-emu` can be invoked as
 
 ```bash
 $ ./run-shell asm
@@ -109,7 +109,7 @@ $ ./run-shell asm
 and
 
 ```bash
-$ ./run-shell emulator
+$ ./run-shell emu
 ```
 
 respectively.

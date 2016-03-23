@@ -1,7 +1,0 @@
-REC
-
-S .
-S devices
-
-B ../../_build/src/emulator
-B ../../_build/src/emulator/devices

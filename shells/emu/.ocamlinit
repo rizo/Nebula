@@ -15,13 +15,13 @@
 
 #install_printer Word.pp
 
-#directory "../../_build/src/emulator" ;;
-#directory "../../_build/src/emulator/devices" ;;
+#directory "../../_build/src/emu" ;;
+#directory "../../_build/src/emu/devices" ;;
 
-#directory "../../src/emulator" ;;
-#directory "../../src/emulator/devices" ;;
+#directory "../../src/emu" ;;
+#directory "../../src/emu/devices" ;;
 
-#load_rec "emulator.cma" ;;
+#load_rec "emu.cma" ;;
 
 open Common
 

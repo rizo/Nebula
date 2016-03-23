@@ -1,7 +1,7 @@
 SHELL = bash
 
-STUB_SOURCES = src/emulator/clock_precision_stub.c
-STUB_OBJECTS = src/emulator/clock_precision_stub.o
+STUB_SOURCES = src/emu/clock_precision_stub.c
+STUB_OBJECTS = src/emu/clock_precision_stub.o
 
 NATIVE_LINKER_FLAGS = -lflags $(STUB_OBJECTS)
 BYTE_LINKER_FLAGS = -lflags -custom,$(STUB_OBJECTS)
@@ -12,11 +12,11 @@ OCAMLBUILD = ocamlbuild -use-ocamlfind
 
 default: top
 
-top: emulator_top asm_top
+top: emu_top asm_top
 	$(OCAMLBUILD) shell.byte
 	mv shell.byte run-shell
 
-test: nebula_emulator_test libraries_test
+test: nebula_emu_test libraries_test
 
 install: default uninstall libraries nebula_asm
 	ocamlfind install nebula META \
@@ -41,21 +41,21 @@ nebula_asm: libraries
 
 # Emulator
 
-emulator_top: nebula_emulator
-	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emulator/nebula_emulator.top
-	install nebula_emulator.top $(SHELL_DIR)/emulator
-	rm nebula_emulator.top
+emu_top: nebula_emu
+	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) top/emu/nebula_emu.top
+	install nebula_emu.top $(SHELL_DIR)/emu
+	rm nebula_emu.top
 
-nebula_emulator_test: nebula_emulator
-	$(OCAMLBUILD) test/emulator/emulator_spec.byte
-	./emulator_spec.byte
+nebula_emu_test: nebula_emu
+	$(OCAMLBUILD) test/emu/emu_spec.byte
+	./emu_spec.byte
 
-nebula_emulator: stubs libraries
-	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/emulator/emulator.cma
-	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_emulator.native
+nebula_emu: stubs libraries
+	$(OCAMLBUILD) $(BYTE_LINKER_FLAGS) src/emu/emu.cma
+	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emu/nebula_emu.native
 
-nebula_emulator_profiled: stubs libraries
-	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emulator/nebula_emulator.p.native
+nebula_emu_profiled: stubs libraries
+	$(OCAMLBUILD) $(NATIVE_LINKER_FLAGS) src/emu/nebula_emu.p.native
 
 stubs: $(STUB_SOURCES)
 	$(OCAMLBUILD) $(STUB_OBJECTS)

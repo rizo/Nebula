@@ -1,0 +1,7 @@
+REC
+
+S .
+S devices
+
+B ../../_build/src/emu
+B ../../_build/src/emu/devices

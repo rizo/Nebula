@@ -3,12 +3,6 @@ true: safe_string, bin_annot, thread, warn_error(+8), \
       package(ctypes.foreign), \
       package(result)
 
-# Compiler
-
-<src/compiler>: include, traverse
-
-<top/compiler/**>: package(utop)
-
 # Assembler
 
 <src/asm>: include, traverse
@@ -17,16 +11,16 @@ true: safe_string, bin_annot, thread, warn_error(+8), \
 
 # Emulator
 
-<src/emulator>: include, traverse
+<src/emu>: include, traverse
 
-<src/emulator/**> or <top/emulator/**> or <test/emulator/**>: \
+<src/emu/**> or <top/emu/**> or <test/emu/**>: \
       package(cmdliner), \
       package(ppx_deriving.std), \
       package(tsdl)
 
-<top/emulator/**>: package(utop)
+<top/emu/**>: package(utop)
 
-<test/emulator/**>: package(oUnit)
+<test/emu/**>: package(oUnit)
 
 # Libraries
 
